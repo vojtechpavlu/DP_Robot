@@ -6,8 +6,8 @@ dynamického načítání modulů s cílem upravovat funkcionalitu za běhu prog
 from abc import ABC, abstractmethod
 
 # Import lokálních knihoven
-import src.fw.utils.loading.identifier as identifier
-import src.fw.utils.loading.validator as validator
+import src.fw.utils.loading.plugin_identifier as identifier
+import src.fw.utils.loading.plugin_validator as validator
 import src.fw.utils.loading.plugin as pl
 import src.fw.utils.error as error
 
