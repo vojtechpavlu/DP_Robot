@@ -9,9 +9,8 @@ from types import ModuleType
 from typing import Callable
 
 # Import lokálních knihoven
-
 import src.fw.utils.loading.plugin_loader as pl_loader
-import src.fw.utils.loading.validator as validator
+import src.fw.utils.loading.plugin_validator as validator
 
 from ..filesystem import module_path_from_abs, exists, is_file
 from ..error import PlatformError
@@ -117,11 +116,25 @@ class Plugin(ABC):
         """
         return tuple(map(lambda fun_desc: fun_desc[0], self.all_functions))
 
+    @property
+    def docstring(self) -> str:
+        """Vlastnost vrací dokumentační komentář modulu, který reprezentuje
+        plugin."""
+        return self.module.__doc__
+
     def has_attribute(self, attr_name: str) -> bool:
         """Funkce vrací informaci o tom, zda-li daný plugin má nebo nemá
         atribut daného názvu.
         """
         return hasattr(self.module, attr_name)
+
+    def has_function(self, fun_name: str) -> bool:
+        """Funkce vrací informaci o tom, zda-li daný obsahuje funkci daného
+        názvu."""
+        for func_desc in self.all_functions:
+            if func_desc[0] == fun_name:
+                return True
+        return False
 
     def get_attribute(self, attr_name: str) -> object:
         """Funkce vrací atribut (resp. jeho hodnotu), kterým je daný modul

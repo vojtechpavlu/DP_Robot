@@ -1,11 +1,21 @@
-""""""
+"""Tento modul sdružuje základní funkcionalitu ve vztahu k validaci pluginů.
+Typicky provádí podrobnější průzkum obsahu souborů, které byly identifikovány
+jako potenciální pluginy, zda splňují podrobnější nároky.
+
+Typicky se zde pracuje s průzkumem kódu a to co do ze statického pohledu
+(např. existuje-li dokumentace modulu), tak i funkčního ověřování (např.
+je-li v modulu definována funkce daného názvu či jaká je návratová funkce
+daného názvu).
+
+Cílem je vytřídit jen ty pluginy (moduly), které jsou zcela validní a které
+mají příslušný požadovaný protokol a lze s nimi bezpečně pracovat.
+"""
 
 # Import standardních knihoven
 from abc import ABC, abstractmethod
 
 # Import lokálních knihoven
 from typing import Type
-
 import src.fw.utils.loading.plugin as pl
 from src.fw.utils.named import Named
 
@@ -44,6 +54,15 @@ class FunctionExistenceValidator(PluginValidator):
     plugin obsahuje funkci daného názvu."""
 
     def __init__(self, function_name: str):
+        """Jednoduchý initior, který přijímá v parametru název funkce, která
+        má být dle pravidel tohoto validátoru v rámci modulu reprezentujícího
+        daný plugin přítomna.
+
+        Pokud funkce tohoto názvu (jsou rozlišována malá a velká písmena) není
+        přítomna, testem, který je touto instancí realizován, tento plugin
+        úspěšně neprojde. Stejně tak v případě, kdy sice modul obsahuje
+        atribut tohoto názvu, nikoliv však volatenou funkci.
+        """
         Named.__init__(self, "Function Existence Validator")
         PluginValidator.__init__(self)
         self._function_name = function_name
@@ -67,6 +86,8 @@ class ModuleDocstringExistenceValidator(PluginValidator):
     """
 
     def __init__(self):
+        """Jednoduchý initor odpovědný za volání initorů svých předků.
+        """
         Named.__init__(self, "Module Docstring Existence Validator")
         PluginValidator.__init__(self)
 
@@ -84,7 +105,15 @@ class FunctionReturnValueTypeValidator(PluginValidator):
 
     def __init__(self, function_name: str, to_be_class: Type,
                  params: "tuple[object]" = ()):
-        """"""
+        """Initor třídy odpovědný kromě volání svých předků také za uložení
+        dodaných hodnot v parametrech funkce.
+
+        Konkrétně zde v parametru přijímá:
+            - název funkce, která má být volána
+            - typ návratové hodnoty
+            - ntici parametrů, které mají být do funkce vloženy pro
+              očekávaný efekt
+        """
         Named.__init__(self, "Function Return Value Type Validator")
         PluginValidator.__init__(self)
         self._function_name: str = function_name
