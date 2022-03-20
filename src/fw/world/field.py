@@ -29,7 +29,9 @@ class Field(ABC):
         """"""
         self._coordinates = Coordinates(x, y)
 
-        # Reference na svět, ke kterému políčko náleží
+        """Reference na svět, ke kterému políčko náleží. Zprvu None; nastavena
+        je až během životního cyklu instance. Zároveň tento svět může být
+        nastaven maximálně jednou."""
         self._world = None
 
     @property
@@ -85,6 +87,19 @@ class Field(ABC):
                 f"Nelze přenastavovat již jednou určenou instanci světa",
                 self)
         self._world = world
+
+    @property
+    def neighbours(self) -> "tuple[Field]":
+        """Vlastnost se pokusí vyhledat všechny sousedy daného políčka ve
+        všech platných směrech. Jejich počet je vždy mezi 0 a počtem platných
+        směrů (typicky 4).
+
+        K tomu je zapotřebí reference na svět. Pokud tato není nastavena,
+        je vyhozena výjimka."""
+        if self.world is None:
+            raise FieldError(
+                f"Nelze zjistit sousedy, když není nastaven svět", self)
+        return self.world.neighbours(self.x, self.y)
 
 
 class Wall(Field):
