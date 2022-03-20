@@ -9,6 +9,8 @@ from abc import ABC, abstractmethod
 from src.fw.utils.error import PlatformError
 from src.fw.world.coordinates import Coordinates
 
+import src.fw.world.world as world_mod
+
 
 class Field(ABC):
     """Abstraktní třída 'Field' je odpovědná za stanovení základního
@@ -17,11 +19,18 @@ class Field(ABC):
     Kromě abstraktních vlastností, které obalují funkce vracející jednoduché
     informace o podstatě políčka (zda-li jde o cestu či stěnu) jsou potomci
     opatřeni i společným mechanismem pro návrat souřadnic v prostoru světa.
+
+    Stejně tak si obecné políčko udržuje informaci o světě, ke kterému náleží.
+    Tento svět však lze nastavit políčku maximálně jednou; při pokusu o
+    znovunastavení je vyhozena výjimka.
     """
 
     def __init__(self, x: int, y: int):
         """"""
         self._coordinates = Coordinates(x, y)
+
+        # Reference na svět, ke kterému políčko náleží
+        self._world = None
 
     @property
     @abstractmethod
@@ -58,6 +67,24 @@ class Field(ABC):
         """Vlastnost vrací hodnotu souřadnice na ose y, kde se políčko nachází.
         """
         return self.coordinates.y
+
+    @property
+    def world(self) -> "world_mod.World":
+        """Vlastnost vrací instanci světa, kterému dané políčko náleží."""
+        return self._world
+
+    @world.setter
+    def world(self, world: "world_mod.World"):
+        """Vlastnost nastavuje dodanou instanci světa jako svět, kterému toto
+        políčko náleží a na který se má obracet v rámci kontextových operací.
+
+        Pokud již jednou svět nastaven je, je vyhozena výjimka pro zajištění
+        konzistence."""
+        if self.world is not None:
+            raise FieldError(
+                f"Nelze přenastavovat již jednou určenou instanci světa",
+                self)
+        self._world = world
 
 
 class Wall(Field):
