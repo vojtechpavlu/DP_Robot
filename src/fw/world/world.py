@@ -5,6 +5,7 @@ manipulace s herním světem.
 # Import lokálních knihoven
 import src.fw.world.field as field_mod
 from src.fw.utils.error import PlatformError
+from src.fw.world.direction import Direction
 
 
 class World:
@@ -22,7 +23,9 @@ class World:
 
         Hlavním parametrem je seznam políček, která mají prostor světa tvořit.
         Tento seznam musí mít délku alespoň jednoho políčka, jinak je vyhozena
-        výjimka o nesmyslnosti takového světa.
+        výjimka o nesmyslnosti takového světa. Stejně tak nesmí existovat dvě
+        políčka se stejnými souřadnicemi, neboť to by způsobovalo mnoho
+        problémů s konzistencí světa.
 
         Dalším krokem je nastavení reference na tuto instanci světa pro každé
         políčko pro snazší manipulaci v kontextu políček světa.
@@ -37,6 +40,16 @@ class World:
         políčka nemá smysl."""
         if len(fields) < 1:
             raise WorldError("Nelze vytvořit svět bez políčka", self)
+
+        """Kontrola unikátnosti souřadnic. Pokud existují dvě políčka se
+        stejnými souřadnicemi, znamená to narušení konzistence. Pokud dvě 
+        políčka mají stejné souřadnice, je vyhozena výjimka."""
+        for index, field in enumerate(self._fields):
+            for next_field in self._fields[index + 1:]:
+                if field.x == next_field.x or field.y == next_field.y:
+                    raise WorldError(
+                        f"Nelze evidovat dvě políčka se "
+                        f"stejnými souřadnicemi", self)
 
     @property
     def fields(self) -> "tuple[field_mod.Field]":
@@ -72,6 +85,29 @@ class World:
         for field in self.fields:
             if field.x == x and field.y == y:
                 return field
+
+    def neighbours(self, x: int, y: int) -> "tuple[field_mod.Field]":
+        """Funkce se pokusí získat všechna políčka sousedící s tím na dodaných
+        souřadnicích ve všech platných směrech. Počet navrácených políček se
+        vždy pohybuje mezi 0 a počtem platných směrů, typicky tedy 4.
+        Navrácení sousedé mnohou být cesty stejně jako stěny.
+
+        Pokud na dodaných souřadnicích není evidované políčko, je vyhozena
+        výjimka.
+        """
+        field = self.field(x, y)
+        if not field:
+            raise WorldError(
+                f"Nelze najít sousedy pro políčko [{x};{y}], protože není "
+                f"ve světě evidováno", self)
+
+        neighbours = []
+        for direction in Direction:
+            moved_coords = field.coordinates.move_in_direction(direction)
+            neighbour = self.field(moved_coords.x, moved_coords.y)
+            if neighbour:
+                neighbours.append(neighbour)
+        return tuple(neighbours)
 
 
 class WorldError(PlatformError):
