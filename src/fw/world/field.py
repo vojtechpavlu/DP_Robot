@@ -10,9 +10,10 @@ from src.fw.utils.error import PlatformError
 from src.fw.world.coordinates import Coordinates
 
 import src.fw.world.world as world_mod
+import src.fw.world.robot_container as rc_module
 
 
-class Field(ABC):
+class Field(ABC, rc_module.SingleRobotContainer):
     """Abstraktní třída 'Field' je odpovědná za stanovení základního
     společného protokolu pro všechny své potomky.
 
@@ -23,10 +24,16 @@ class Field(ABC):
     Stejně tak si obecné políčko udržuje informaci o světě, ke kterému náleží.
     Tento svět však lze nastavit políčku maximálně jednou; při pokusu o
     znovunastavení je vyhozena výjimka.
+
+    Políčko je také svým způsobem kontejnerem robotů; v konkrétní implementaci
+    chápeme jako kontejner jediného robota v daném okamžiku. Proto je také
+    třída Field potomkem třídy SingleRobotContainer.
     """
 
     def __init__(self, x: int, y: int):
         """"""
+        rc_module.SingleRobotContainer.__init__(self)
+
         self._coordinates = Coordinates(x, y)
 
         """Reference na svět, ke kterému políčko náleží. Zprvu None; nastavena
