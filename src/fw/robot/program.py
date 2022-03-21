@@ -32,7 +32,7 @@ class AbortType(Enum):
 
 class AbstractProgram(ABC):
     """Abstraktní třída definující protokol programu robota. Ten je definován
-    několika základími atributy:
+    několika základními atributy:
 
         - jménem autora, ve kterém se autor programu podepisuje
 
@@ -62,7 +62,7 @@ class AbstractProgram(ABC):
 
     @abstractmethod
     def mount(self, robot: "robot_module.Robot",
-              available_units: "Iterable[unit_module.Unit]"):
+              available_units: "Iterable[unit_module.AbstractUnit]"):
         """Abstraktní metoda reprezentující proceduru nastavení osazení
         robota požadovanými jednotkami."""
 

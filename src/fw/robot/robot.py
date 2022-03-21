@@ -1,4 +1,5 @@
-""""""
+"""V tomto modulu je upravena základní podstata robota, tedy jedna z
+klíčových tříd celého systému."""
 
 # Import standardních knihoven
 
@@ -11,17 +12,23 @@ import src.fw.robot.unit as unit_module
 
 
 class Robot(Identifiable, Named):
-    """"""
+    """Třída Robot je jednou z klíčových tříd celého systému. Její podstata
+    je postavena na kombinaci jednotek, kterými je robot osazen a řízení
+    jejich osazování."""
 
     def __init__(self, robot_name: str):
-        """"""
+        """Jednoduchý initor, který má za cíl iniciovat své předky a
+        připravit si prázdný seznam pro jednotky, kterými bude robot osazován.
+        """
         Identifiable.__init__(self)
         Named.__init__(self, robot_name)
 
-        self._units: "list[unit_module.Unit]" = []
+        """Seznam jednotek, kterými je robot osazen. Na začátku jeho 
+        životního cyklu je pochopitelně seznam prázdný."""
+        self._units: "list[unit_module.AbstractUnit]" = []
 
     @property
-    def units(self) -> "tuple[unit_module.Unit]":
+    def units(self) -> "tuple[unit_module.AbstractUnit]":
         """Vlastnost vrací ntici všech jednotek, kterými je robot osazen."""
         return tuple(self._units)
 
@@ -41,13 +48,13 @@ class Robot(Identifiable, Named):
         unikátní identifikátory jednotlivých jednotek."""
         return tuple(map(lambda unit: str(unit.hex_id), self.units))
 
-    def mount(self, unit: "unit_module.Unit"):
+    def mount(self, unit: "unit_module.AbstractUnit"):
         """Funkce se pokusí osadit robota dodanou jednotkou."""
         # TODO - kontrola, zda-li je jednotka validní
         self._units.append(unit)
         unit.mount(self)
 
-    def detach(self, unit: "unit_module.Unit"):
+    def detach(self, unit: "unit_module.AbstractUnit"):
         """Funkce se pokusí odpojit jednotku od robota."""
         if unit.robot == self:
             self._units.remove(unit)
