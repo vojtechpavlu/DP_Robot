@@ -31,9 +31,12 @@ class Field(ABC, rc_module.SingleRobotContainer):
     """
 
     def __init__(self, x: int, y: int):
-        """"""
+        """Initor políčka, který je odpovědný za nastavení defaultních hodnot,
+        stejně jako je odpovědný za volání initorů svých předků.
+        """
         rc_module.SingleRobotContainer.__init__(self)
 
+        """Nastavení souřadnicového identifikátoru z dodaných hodnot."""
         self._coordinates = Coordinates(x, y)
 
         """Reference na svět, ke kterému políčko náleží. Zprvu None; nastavena
