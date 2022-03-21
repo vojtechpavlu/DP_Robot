@@ -79,7 +79,11 @@ class AbstractProgram(ABC):
         program vyjadřuje své ukončení, neboť rozpoznal situaci, kdy je
         vhodné se ukončit. Především je tento způsob vhodný tehdy, když
         robot úspěšně splní svůj cíl, když zjistí, že cíl je nedosažitelný
-        nebo když narazí na neřešitelnou chybu."""
+        nebo když narazí na neřešitelnou chybu.
+
+        Kromě způsobu ukončení ('abort_type') je v parametru funkce dodána
+        i podrobnější zpráva, proč k ukončení došlo ('message'). Tím je
+        umožněna lepší klasifikace, k čemu vlastně došlo."""
         raise ProgramTermination(message, self, abort_type)
 
 
