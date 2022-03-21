@@ -20,21 +20,31 @@ class AbstractUnit(ABC, Identifiable, Named):
     Jádrem je rozlišitelnost senzorů a aktuátorů, stejně jako udržování
     reference na robota, který je instancí této jednotky osazen."""
 
-    def __init__(self, unit_name: str):
+    def __init__(self, unit_name: str, unit_factory: "AbstractUnitFactory"):
         """Jednoduchý initor, který přijímá v parametru název, který je
-        jednotce přiřazen. Kromě uložení této informace je dále odpovědný
-        za iniciaci svých předků a připravení pole pro robota, kterým je
-        jednotka osazena. Ten je pochopitelně v úvodní fázi neurčený.
+        jednotce přiřazen. Stejně tak jednotka vrací referenci na svého
+        tvůrce, tedy instanci továrny jednotek, která tuto vytvořila.
+
+        Kromě uložení těchto informací je dále initor odpovědný za iniciaci
+        svých předků a připravení pole pro robota, kterým je jednotka osazena.
+        Ten je pochopitelně v úvodní fázi neurčený.
         """
         Identifiable.__init__(self)
         Named.__init__(self, unit_name)
 
         self._robot: "robot_module.Robot" = None
+        self._unit_factory = unit_factory
 
     @property
     def robot(self) -> "robot_module.Robot":
         """Vlastnost vrací robota, kterému je tato jednotka přiřazena."""
         return self._robot
+
+    @property
+    def unit_factory(self) -> "AbstractUnitFactory":
+        """Vlastnost vrací referenci na instanci tovární třídy jednotek,
+        která je za vznik této instance odpovědná."""
+        return self._unit_factory
 
     @property
     @abstractmethod
@@ -45,6 +55,11 @@ class AbstractUnit(ABC, Identifiable, Named):
     @abstractmethod
     def is_actuator(self) -> bool:
         """Abstraktní vlastnost vrací, zda-li jde o aktuátor či nikoliv."""
+
+    @abstractmethod
+    def execute(self):
+        """Abstraktní funkce odpovědná za stanovení protokolu provedení
+        interakce se světem."""
 
     def mount(self, robot: "robot_module.Robot"):
         """Vlastnost nastavuje robota, kterému je tato jednotka nastavena.
@@ -60,6 +75,22 @@ class AbstractUnit(ABC, Identifiable, Named):
     def detach(self):
         """Funkce odpojí jednotku od robota z pohledu jednotky."""
         self._robot = None
+
+
+class Actuator(ABC, AbstractUnit):
+    """"""
+
+    def __init__(self, unit_name: str, unit_factory: "AbstractUnitFactory"):
+        """"""
+        AbstractUnit.__init__(self, unit_name, unit_factory)
+
+    def is_sensor(self) -> bool:
+        """Funkce vrací informaci o tom, že tato jednotka není senzorem."""
+        return False
+
+    def is_actuator(self) -> bool:
+        """Funkce vrací informaci o tom, že je aktuátorem."""
+        return True
 
 
 class AbstractUnitFactory(ABC, Identifiable, Named):
