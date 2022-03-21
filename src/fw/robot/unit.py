@@ -1,4 +1,5 @@
-""""""
+"""V modulu 'unit.py' jsou definovány všechny prostředky pro reprezentaci
+a manipulaci v kontextu jednotek robota."""
 
 # Import standardních knihoven
 from abc import ABC, abstractmethod
@@ -13,10 +14,18 @@ import src.fw.robot.robot as robot_module
 
 
 class AbstractUnit(ABC, Identifiable, Named):
-    """"""
+    """Abstraktní třída AbstractUnit definuje základní společný protokol
+    pro všechny jednotky, kterými je možné robota osadit.
+
+    Jádrem je rozlišitelnost senzorů a aktuátorů, stejně jako udržování
+    reference na robota, který je instancí této jednotky osazen."""
 
     def __init__(self, unit_name: str):
-        """"""
+        """Jednoduchý initor, který přijímá v parametru název, který je
+        jednotce přiřazen. Kromě uložení této informace je dále odpovědný
+        za iniciaci svých předků a připravení pole pro robota, kterým je
+        jednotka osazena. Ten je pochopitelně v úvodní fázi neurčený.
+        """
         Identifiable.__init__(self)
         Named.__init__(self, unit_name)
 

@@ -32,7 +32,7 @@ class AbortType(Enum):
 
 class AbstractProgram(ABC):
     """Abstraktní třída definující protokol programu robota. Ten je definován
-    několika základími atributy:
+    několika základními atributy:
 
         - jménem autora, ve kterém se autor programu podepisuje
 
