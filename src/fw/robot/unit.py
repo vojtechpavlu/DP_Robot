@@ -78,10 +78,12 @@ class AbstractUnit(ABC, Identifiable, Named):
 
 
 class Actuator(ABC, AbstractUnit):
-    """"""
+    """Actuator je abstraktní třída definující společný protokol pro všechny
+    aktuátory. Především tedy definuje jednoduché pomocné funkce, které
+    není dále nutné definovat ve všech potomcích."""
 
     def __init__(self, unit_name: str, unit_factory: "AbstractUnitFactory"):
-        """"""
+        """Jednoduchý initor odpovědný za volání předka."""
         AbstractUnit.__init__(self, unit_name, unit_factory)
 
     def is_sensor(self) -> bool:
