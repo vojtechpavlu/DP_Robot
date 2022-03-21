@@ -31,10 +31,15 @@ class RobotContainer(ABC):
 class SingleRobotContainer(RobotContainer):
     """Tento kontejner představuje kontejner, do kterého se 'vejde' pouze
     jeden robot. Způsobem použití je typicky uchování reference na jediného
-    robota, přičemž silně apelujem na ochranu před jeho přepsáním."""
+    robota, přičemž silně apelujeme na ochranu před jeho přepsáním."""
 
     def __init__(self):
-        """"""
+        """Jednoduchý initor odpovědný za 'deklaraci' pole pro uchování
+        robota na úrovni instance.
+
+        Defaultně je nastavena tato proměnná na hodnotu None. Její nastavení
+        lze provést pomocí příslušného setteru - tedy vlastnosti názvu
+        'robot(Robot)'."""
         self._robot: "robot_module.Robot" = None
 
     @property
@@ -82,7 +87,8 @@ class MultiRobotContainer(RobotContainer):
     """
 
     def __init__(self):
-        """"""
+        """Jednoduchý initor odpovědný za 'deklaraci' seznamu reprezentujícího
+        evidenci robotů. Defaultně je tento seznam prázdný."""
         self._robots: "list[robot_module.Robot]" = []
 
     @property
