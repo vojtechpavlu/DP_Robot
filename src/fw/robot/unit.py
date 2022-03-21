@@ -80,7 +80,17 @@ class AbstractUnit(ABC, Identifiable, Named):
 class Actuator(ABC, AbstractUnit):
     """Actuator je abstraktní třída definující společný protokol pro všechny
     aktuátory. Především tedy definuje jednoduché pomocné funkce, které
-    není dále nutné definovat ve všech potomcích."""
+    není dále nutné definovat ve všech potomcích.
+
+    Hlavní podstata je však ve způsobu manipulace s instancemi této třídy.
+    Aktuátory mají za cíl provádět jednorázové operace v rámci světa. Tyto
+    interakce mohou vyústit v chybu. To je rozdíl od senzorů, které naopak
+    žádnou chybu vyhazovat nemohou, zato vrací informaci o světě a změnu v
+    něm neprovádí.
+
+    Instance třídy Actuator mají silnou vazbu na funkci 'execute()', která
+    je na abstraktní úrovni definována předkem.
+    """
 
     def __init__(self, unit_name: str, unit_factory: "AbstractUnitFactory"):
         """Jednoduchý initor odpovědný za volání předka."""
@@ -91,8 +101,35 @@ class Actuator(ABC, AbstractUnit):
         return False
 
     def is_actuator(self) -> bool:
-        """Funkce vrací informaci o tom, že je aktuátorem."""
+        """Funkce vrací informaci o tom, že tato jednotka je aktuátorem."""
         return True
+
+
+class Sensor(ABC, AbstractUnit):
+    """Sensor je abstraktní třída definující společný protokol pro všechny
+    senzory. Především tedy definuje jednoduché pomocné funkce, které není
+    dále nutné definovat ve všech potomcích.
+
+    Hlavní podstata je však ve způsobu manipulace s instancemi této třídy.
+    Senzory mají za cíl získávat informaci o světě, ve kterém se robot
+    vyskytuje a jejich působení na svět nemůže samo o sobě vyústit v chybu.
+    Opakem je tomu u aktuátorů, které naopak žádnou informaci nevrací, zato
+    provádí ve světě operace, které v chybu vyústit mohou.
+
+    Instance třídy Sensor mají silnou vazbu na funkci 'scan()', která je
+    na abstraktní úrovni definována předkem."""
+
+    def __init__(self, unit_name: str, unit_factory: "AbstractUnitFactory"):
+        """Jednoduchý initor odpovědný za volání předka."""
+        AbstractUnit.__init__(self, unit_name, unit_factory)
+
+    def is_sensor(self) -> bool:
+        """Funkce vrací informaci o tom, že tato jednotka je senzorem."""
+        return True
+
+    def is_actuator(self) -> bool:
+        """Funkce vrací informaci o tom, že tato jednotka není aktuátorem."""
+        return False
 
 
 class AbstractUnitFactory(ABC, Identifiable, Named):
