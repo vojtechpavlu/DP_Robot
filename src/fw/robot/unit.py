@@ -12,7 +12,7 @@ from src.fw.utils.named import Named
 import src.fw.robot.robot as robot_module
 
 
-class Unit(ABC, Identifiable, Named):
+class AbstractUnit(ABC, Identifiable, Named):
     """"""
 
     def __init__(self, unit_name: str):

@@ -18,10 +18,10 @@ class Robot(Identifiable, Named):
         Identifiable.__init__(self)
         Named.__init__(self, robot_name)
 
-        self._units: "list[unit_module.Unit]" = []
+        self._units: "list[unit_module.AbstractUnit]" = []
 
     @property
-    def units(self) -> "tuple[unit_module.Unit]":
+    def units(self) -> "tuple[unit_module.AbstractUnit]":
         """Vlastnost vrací ntici všech jednotek, kterými je robot osazen."""
         return tuple(self._units)
 
@@ -41,13 +41,13 @@ class Robot(Identifiable, Named):
         unikátní identifikátory jednotlivých jednotek."""
         return tuple(map(lambda unit: str(unit.hex_id), self.units))
 
-    def mount(self, unit: "unit_module.Unit"):
+    def mount(self, unit: "unit_module.AbstractUnit"):
         """Funkce se pokusí osadit robota dodanou jednotkou."""
         # TODO - kontrola, zda-li je jednotka validní
         self._units.append(unit)
         unit.mount(self)
 
-    def detach(self, unit: "unit_module.Unit"):
+    def detach(self, unit: "unit_module.AbstractUnit"):
         """Funkce se pokusí odpojit jednotku od robota."""
         if unit.robot == self:
             self._units.remove(unit)
