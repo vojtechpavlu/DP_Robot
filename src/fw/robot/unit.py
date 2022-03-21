@@ -162,7 +162,7 @@ class AbstractUnitFactory(ABC, Identifiable, Named):
         return self._unit_desc
 
     @abstractmethod
-    def build(self) -> "Unit":
+    def build(self) -> "AbstractUnit":
         """Abstraktní metoda 'build()' slouží jako přístupová tovární metoda
         pro standardizaci protokolu tovární třídy. Implementace této metody
         mají za cíl tvořit jim příslušné jednotky.
@@ -179,7 +179,7 @@ class UnitError(PlatformError):
     instanci jednotky, v jejímž kontextu k chybě došlo.
     """
 
-    def __init__(self, message: str, unit: "Unit"):
+    def __init__(self, message: str, unit: "AbstractUnit"):
         """Jednoduchý initor třídy, který přijímá v parametru zprávu o chybě a
         jednotku, v souvislosti s kterou došlo k chybě.
         """
@@ -187,7 +187,7 @@ class UnitError(PlatformError):
         self._unit = unit
 
     @property
-    def unit(self) -> "Unit":
+    def unit(self) -> "AbstractUnit":
         """Vlastnost vracející inkriminovanou jednotku, v jejímž kontextu
         došlo k chybě."""
         return self._unit
