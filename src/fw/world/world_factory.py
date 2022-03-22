@@ -48,14 +48,24 @@ class OpenSpaceWorldFactory(WorldFactory):
 
     @property
     def width(self) -> int:
+        """Šířka, jakou generovaný svět má. Dvě políčka z této šířky zabírá
+        okolní zeď."""
         return self._width
 
     @property
     def height(self) -> int:
+        """Výška, jakou generovaný svět má. Dvě políčka z této výšky zabírá
+        okolní zeď."""
         return self._height
 
     def build(self) -> "world_module.World":
-        """"""
+        """Funkce, která vygeneruje obdélníkový svět obehnaný stěnou. Ten
+        je z povahy implementace OpenSpace, tedy otevřený prostor.
+
+        Funkce proiteruje všechny kombinace souřadnic. Pokud jsou souřadnice
+        hraniční (minimální nebo maximální hodnota výšky nebo šířky), je
+        na tuto pozici umístěna stěna, jinak cesta.
+        """
         all_fields = []
         for x in range(self.width):
             for y in range(self.height):
