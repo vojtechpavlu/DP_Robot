@@ -1,4 +1,10 @@
-""""""
+"""Tento modul je odpovědný za řízení testování splnění stanovených cílů
+robota v dodaném prostředí.
+
+Především je zde připravena třída Target odpovědná za sdružování a celkovou
+evaluaci, vedle toho i abstraktní třída TargetFactory, která je odpovědná za
+tvorbu a přípravu takových instancí.
+"""
 
 # Import standardních knihoven
 from abc import ABC, abstractmethod

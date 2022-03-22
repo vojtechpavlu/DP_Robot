@@ -1,4 +1,10 @@
-"""
+"""Modul 'evaluation_function.py' obsahuje definici obecných evaluačních
+funkcí.
+
+Obsahuje tu nejobecnější definici, tedy abstraktní třídu EvaluationFunction,
+dále definice spojkových funkcí (potomci třídy EvaluationFunctionJunction),
+které se starají dle jejich implementace o vyhodnocování více evaluačních
+funkcí zároveň, a konečně negaci - pro snazší použití evaluačních funkcí.
 """
 
 # Import standardních knihoven

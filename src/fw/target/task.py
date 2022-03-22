@@ -1,4 +1,8 @@
-""""""
+"""Modul obsahuje prostředky pro provádění evaluace vyhodnocovacích funkcí.
+
+Především tento definuje, jak má úkol (reprezentovaný třídou Task) vypadat,
+tedy jaký má mít protokol.
+"""
 
 # Import standardních knihoven
 
