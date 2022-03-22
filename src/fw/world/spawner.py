@@ -8,9 +8,11 @@ from abc import ABC, abstractmethod
 import src.fw.world.robot_state as rs_module
 import src.fw.world.world as world_module
 import src.fw.robot.robot as robot_module
+import src.fw.world.field as field_module
 
 from src.fw.utils.error import PlatformError
 from src.fw.utils.named import Named
+from src.fw.world.direction import Direction
 
 
 class Spawner(ABC, Named):
@@ -62,6 +64,73 @@ class SpawnerFactory(ABC):
 
         Konkrétně je tato funkce odpovědná za přípravu instance spawneru,
         který bude schopen zasazovat roboty do světa."""
+
+
+class CoordinatesSpawner(Spawner):
+    """Spawner, který zasadí robota na pevně stanovené souřadnice s předem
+    stanoveným směrem.
+
+    Nejjednodušší spawner. Jeho problémem však je, že nemůže zasazovat na
+    stejné souřadnice jednoho a toho samého robota. Pokud-že se o to pokusí,
+    je vyhozena výjimka. Podobným problémem je situace, kdy dojde k pokusu
+    o zasazení robota na políčko stěny.
+    """
+
+    def __init__(self, x: int, y: int,
+                 default_direction: "Direction" = Direction.EAST):
+        """Jednoduchý initor funkce, který volá svého předka a ukládá dodané
+        hodnoty.
+
+        V parametrech přijímá souřadnice políčka, na které má být robot při
+        registraci ve světě usazen a výchozí směr, kterým má být otočen. Ten
+        je defaultně nastaven na východ, tedy 'Direction.EAST'.
+        """
+        Spawner.__init__(self, "CoordinatesSpawner")
+
+        self._x = x
+        self._y = y
+        self._direction = default_direction
+
+    @property
+    def x(self) -> int:
+        return self._x
+
+    @property
+    def y(self) -> int:
+        return self._y
+
+    @property
+    def default_direction(self) -> "Direction":
+        """Výchozí směr, na který bude zasazený robot namířen."""
+        return self._direction
+
+    def spawn(self, robot: "robot_module.Robot") -> "rs_module.RobotState":
+        """Funkce je odpovědná za zasazení robota do světa na definované
+        souřadnice v definovaném směru.
+
+        V první řadě funkce ověřuje, zda-li dané políčko odpovídá obecným
+        požadavkům na konzistenci a integritu.
+
+        Dále se funkce pokouší o zasazení robota do daného políčka a o
+        vytvoření a vrácení stavu robota.
+        """
+        field = self.world.field(self.x, self.y)
+        if not field:
+            raise SpawnerError(
+                f"Svět nemá políčko o souřadnicích [{self.x};{self.y}]", self)
+        elif field.is_wall:
+            raise SpawnerError(
+                f"Dodané souřadnice [{self.x};{self.y}] patří zdi", self)
+        elif field.has_any_robot:
+            raise SpawnerError(
+                f"Na dodaných souřadnicích [{self.x};{self.y}] "
+                f"již je robot '{field.robot}'", self)
+        else:
+            path: "field_module.Path" = field
+            path.robot = robot
+            return rs_module.RobotState(robot, self.world,
+                                        self.default_direction, path)
+
 
 
 class SpawnerError(PlatformError):
