@@ -16,7 +16,6 @@ import src.fw.world.field as field_module
 import src.fw.robot.robot as robot_module
 
 from src.fw.utils.error import PlatformError
-
 from src.fw.world.direction import Direction
 
 
