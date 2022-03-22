@@ -74,6 +74,9 @@ class CoordinatesSpawner(Spawner):
     stejné souřadnice jednoho a toho samého robota. Pokud-že se o to pokusí,
     je vyhozena výjimka. Podobným problémem je situace, kdy dojde k pokusu
     o zasazení robota na políčko stěny.
+
+    Pro předcházení některým těmto chybám je možné tyto souřadnice a směr
+    natočení měnit během životního cyklu instance.
     """
 
     def __init__(self, x: int, y: int,
@@ -95,14 +98,27 @@ class CoordinatesSpawner(Spawner):
     def x(self) -> int:
         return self._x
 
+    @x.setter
+    def x(self, x: int):
+        self._x = x
+
     @property
     def y(self) -> int:
         return self._y
+
+    @y.setter
+    def y(self, y: int):
+        self._y = y
 
     @property
     def default_direction(self) -> "Direction":
         """Výchozí směr, na který bude zasazený robot namířen."""
         return self._direction
+
+    @default_direction.setter
+    def default_direction(self, default_direction: "Direction"):
+        """Setter pro výchozí směr, tedy směr, kterým bude robot natočen."""
+        self._direction = default_direction
 
     def spawn(self, robot: "robot_module.Robot") -> "rs_module.RobotState":
         """Funkce je odpovědná za zasazení robota do světa na definované
@@ -130,7 +146,6 @@ class CoordinatesSpawner(Spawner):
             path.robot = robot
             return rs_module.RobotState(robot, self.world,
                                         self.default_direction, path)
-
 
 
 class SpawnerError(PlatformError):
