@@ -130,7 +130,12 @@ class CoordinatesSpawner(Spawner):
         Dále se funkce pokouší o zasazení robota do daného políčka a o
         vytvoření a vrácení stavu robota.
         """
+        if self.world is None:
+            raise SpawnerError(
+                f"Svět nebyl doposud nastaven", self)
+
         field = self.world.field(self.x, self.y)
+
         if not field:
             raise SpawnerError(
                 f"Svět nemá políčko o souřadnicích [{self.x};{self.y}]", self)
@@ -172,6 +177,43 @@ class CoordinatesSpawnerFactory(SpawnerFactory):
         """Prostá funkce odpovědná za vytvoření instance spawneru; konkrétně
         instance třídy CoordinatesSpawner."""
         return CoordinatesSpawner(self._x, self._y, self._direction)
+
+
+class RandomSpawner(Spawner):
+    """Spawner, který zasadí robota na náhodné políčko světa."""
+
+    def __init__(self):
+        Spawner.__init__(self, "RandomSpawner")
+
+    def spawn(self, robot: "robot_module.Robot") -> "rs_module.RobotState":
+        """Funkce vybere náhodné políčko (cestu) a pokusí se robota usadit.
+        V první řadě si získá všechny cesty. Poté náhodně vybírá, kam by
+        robota zasadil. Pokud se to na vybrané políčko nepovede, proces
+        náhodného výběru a pokusu o zasazení se opakuje. A to do té doby,
+        dokud nebudou vyzkoušena všechna políčka. Pokud se to ani po posledním
+        nepovede, je vyhozena výjimka o nesplnitelnosti.
+        """
+        if self.world is None:
+            raise SpawnerError(
+                f"Svět nebyl doposud nastaven", self)
+
+        """Import funkce pro náhodný výběr"""
+        from random import choice
+        fields = list(self.world.all_paths)
+
+        while len(fields) > 0:
+            field = choice(fields)
+            if field.has_robot:
+                fields.remove(field)
+                continue
+            else:
+                field.robot = robot
+                direction = choice(Direction.list())
+                return rs_module.RobotState(
+                    robot, self.world, direction, field)
+
+        raise SpawnerError(
+            "Neexistuje políčko, do kterého by bylo možné robota vložit", self)
 
 
 class SpawnerError(PlatformError):
