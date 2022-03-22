@@ -14,6 +14,7 @@ Stav robota se stará o umístění robota ve světě, co do jeho:
 import src.fw.world.world as world_module
 import src.fw.world.field as field_module
 import src.fw.robot.robot as robot_module
+
 from src.fw.utils.error import PlatformError
 
 from src.fw.world.direction import Direction
