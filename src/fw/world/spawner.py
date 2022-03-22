@@ -47,8 +47,21 @@ class Spawner(ABC, Named):
 
         Při zasazování robota do světa musí být dbáno na to, aby nebyla
         porušena integrita světa, především tedy aby nebylo možné přepsat
-        jednoho robota jiným tím, že by byli dva nastaveni na jedno políčko,
+        jednoho robota jiným tím, že by byli dva nastavení na jedno políčko,
         stejně jako nesmí dojít k nastavení robota na políčko zdi."""
+
+
+class SpawnerFactory(ABC):
+    """Abstraktní třída SpawnerFactory má za cíl připravit instanci spawneru,
+    který bude obsluhovat zasazování robota do světa."""
+
+    @abstractmethod
+    def build(self) -> Spawner:
+        """Tato abstraktní funkce definuje protokol, který bude závazný
+        pro všechny své potomky.
+
+        Konkrétně je tato funkce odpovědná za přípravu instance spawneru,
+        který bude schopen zasazovat roboty do světa."""
 
 
 class SpawnerError(PlatformError):
