@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 
 # Import lokálních knihoven
 from src.fw.utils.named import Named
+import src.fw.target.task as task_module
 
 
 class Target(Named):
@@ -19,15 +20,15 @@ class Target(Named):
     def __init__(self, name: str):
         """"""
         Named.__init__(self, name)
-        self._tasks: "list[Task]" = []
+        self._tasks: "list[task_module.Task]" = []
 
     @property
-    def tasks(self) -> "tuple[Task]":
+    def tasks(self) -> "tuple[task_module.Task]":
         """Vlastnost vrací ntici úkolů v rámci úlohy, které mají být
         testovány."""
         return tuple(self._tasks)
 
-    def add_task(self, task: "Task"):
+    def add_task(self, task: "task_module.Task"):
         """Metoda přidává úkol ke splnění do této úlohy."""
         self._tasks.append(task)
 

@@ -7,17 +7,18 @@
 from src.fw.utils.identifiable import Identifiable
 from src.fw.utils.named import Named
 
+import src.fw.target.evaluation_function as ef_module
+
 
 class Task(Identifiable, Named):
     """Instance třídy Task umožňují sledovat postup při řešení problému daného
-    úlohou. Úkolu je přiděleno v první řadě ID, dále název a také člověku
-    čitelný popis, čeho se má dosáhnout a jakými prostředky, resp. jak je
-    dosažení testováno.
-    """
+    úlohou."""
 
-    def __init__(self, name: str, eval_fun: "EvaluationFunction"):
+    def __init__(self, name: str, eval_fun: "ef_module.EvaluationFunction"):
+        """"""
         Identifiable.__init__(self)
         Named.__init__(self, name)
+
         self._eval_fun = eval_fun
 
     def eval(self) -> bool:
@@ -26,12 +27,13 @@ class Task(Identifiable, Named):
         return self._eval_fun.eval()
 
     @property
-    def evaluation_function(self) -> "EvaluationFunction":
+    def evaluation_function(self) -> "ef_module.EvaluationFunction":
         """Vlastnost umožňující získání evaluační funkce."""
         return self._eval_fun
 
     @evaluation_function.setter
-    def evaluation_function(self, new_eval_fun: "EvaluationFunction"):
+    def evaluation_function(self,
+                            new_eval_fun: "ef_module.EvaluationFunction"):
         """Vlastnost umožňující nastavení evaluační funkce mimo initor."""
         self._eval_fun = new_eval_fun
 
