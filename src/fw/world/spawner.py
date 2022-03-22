@@ -148,6 +148,32 @@ class CoordinatesSpawner(Spawner):
                                         self.default_direction, path)
 
 
+class CoordinatesSpawnerFactory(SpawnerFactory):
+    """Třída je odpovědná za tvorbu instancí spawnerů s vazbou na souřadnice.
+    """
+
+    def __init__(self, x: int = 1, y: int = 1,
+                 direction: "Direction" = Direction.EAST):
+        """Initor funkce, který v první řadě volá initor předka a dále
+        ukládá dostupné parametry.
+
+        Vstupními hodnotami jsou souřadnice, kam má být robot zasazen
+        (defaultně [1; 1]), a směr, kterým má být po zasazení natočen
+        (defaultně východ, tedy 'Direction.EAST'). Tyto hodnoty je možné
+        dále měnit; na úrovni konkrétní instance spawneru.
+        """
+        SpawnerFactory.__init__(self)
+
+        self._x = x
+        self._y = y
+        self._direction = direction
+
+    def build(self) -> Spawner:
+        """Prostá funkce odpovědná za vytvoření instance spawneru; konkrétně
+        instance třídy CoordinatesSpawner."""
+        return CoordinatesSpawner(self._x, self._y, self._direction)
+
+
 class SpawnerError(PlatformError):
     """Výjimka rozšiřující obecnou výjimku tím, že v sobě uchovává referenci
     na spawner, v jehož kontextu došlo k chybě."""
