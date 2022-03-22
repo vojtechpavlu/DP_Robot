@@ -216,6 +216,17 @@ class RandomSpawner(Spawner):
             "Neexistuje políčko, do kterého by bylo možné robota vložit", self)
 
 
+class RandomSpawnerFactory(SpawnerFactory):
+    """Třída RandomSpawnerFactory je odpovědná za poskytování instance třídy
+    RandomSpawner, tedy prostředku pro náhodné zasazování robota do světa."""
+
+    @abstractmethod
+    def build(self) -> Spawner:
+        """Jednoduchá funkce, která dodá novou instanci náhodného zasazovače
+        robotů do světů."""
+        return RandomSpawner()
+
+
 class SpawnerError(PlatformError):
     """Výjimka rozšiřující obecnou výjimku tím, že v sobě uchovává referenci
     na spawner, v jehož kontextu došlo k chybě."""
