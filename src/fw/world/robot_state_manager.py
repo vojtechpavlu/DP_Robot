@@ -6,8 +6,9 @@
 
 
 # Import lokálních knihoven
-import src.fw.world.robot_state as robot_state_module
+import src.fw.world.robot_state as rs_module
 import src.fw.robot.robot as robot_module
+import src.fw.world.spawner as spawner_module
 
 from src.fw.utils.error import PlatformError
 
@@ -19,19 +20,27 @@ class RobotStateManager:
 
     Registrace probíhá v součinnosti s instancí třídy Spawner."""
 
-    def __init__(self):
-        """Jednoduchý initor třídy, který se stará o iniciaci pole
-        pro stavy robotů, které bude následně evidovat.
+    def __init__(self, spawner: "spawner_module.Spawner"):
+        """Jednoduchý initor třídy, který se stará o iniciaci pole pro stavy
+        robotů, které bude následně evidovat. Tento seznam stavů je v úvodní
+        fázi pochopitelně defaultně prázdný.
 
-        Tento seznam stavů je v úvodní fázi pochopitelně defaultně prázdný.
+        Kromě toho však přijímá v argumentu spawner, který má být použit
+        pro zasazování robotů do světa při jejich registraci.
         """
-        self._robot_states: "list[robot_state_module.RobotState]" = []
+        self._spawner = spawner
+        self._robot_states: "list[rs_module.RobotState]" = []
 
     @property
-    def robot_states(self) -> "tuple[robot_state_module.RobotState]":
+    def robot_states(self) -> "tuple[rs_module.RobotState]":
         """Vlastnost vrací ntici ze seznamu všech stavů robota, které
         má správce evidovány."""
         return tuple(self._robot_states)
+
+    @property
+    def spawner(self) -> "spawner_module.Spawner":
+        """Spawner, který je používán pro zasazování robotů do světa."""
+        return self._spawner
 
     def has_robot(self, robot: "robot_module.Robot") -> bool:
         """Funkce se pokusí projít stavy robotů a vyhledat ten, který
@@ -55,12 +64,12 @@ class RobotStateManager:
             raise RobotStateManagerError(
                 f"Správce stavů robotů již robota '{robot.name}' "
                 f"s ID '{robot.id}' evidovaného má", self)
-        robot_state = self.spawner.spawn(robot)     # TODO - Spawner
+        robot_state = self.spawner.spawn(robot)
         self._robot_states.append(robot_state)
         return robot_state
 
     def robot_state(self, robot: "robot_module.Robot"
-                    ) -> "robot_state_module.RobotState":
+                    ) -> "rs_module.RobotState":
         """Funkce se pokusí dohledat stav dodaného robota. Pokud tento není
         nalezen, je vyhozena příslušná výjimka."""
         for robot_state in self.robot_states:
@@ -84,6 +93,8 @@ class RobotStateManagerError(PlatformError):
 
     @property
     def robot_state_manager(self) -> RobotStateManager:
+        """Instance třídy RobotStateManager, v jejímž kontextu došlo k chybě.
+        """
         return self._robot_state_manager
 
 
