@@ -59,6 +59,12 @@ class UnitFactoryLoader(loader_module.PluginLoader):
             # TODO - log nevalidního pluginu
         return tuple(valid_plugins)
 
+    def load_unit_factories(self) -> "tuple[unit_module.AbstractUnitFactory]":
+        """Funkce obsluhuje načítání všech továrních tříd jednotek tak.
+        Tyto načtené továrny pak vrací v podobě ntice."""
+        return tuple(map(lambda valid_plugin:
+                         valid_plugin.unit_factory, self.load()))
+
 
 class UnitFactoryPlugin(plugin_module.Plugin):
     """Třída UnitFactoryPlugin je odpovědná za zpřístupnění dynamického
