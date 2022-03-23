@@ -14,6 +14,7 @@ from abc import ABC, abstractmethod
 
 # Import lokálních knihoven
 import src.fw.utils.filesystem as fs
+from src.fw.utils.described import Described
 from src.fw.utils.named import Named
 
 """Defaultní regulární výraz, dle kterého jsou identifikovány soubory, které
@@ -41,13 +42,28 @@ Naopak vyřazenými pak jsou moduly s názvem:
 _MODULE_REGEX = "[a-z]([a-z0-9]|\\_)+\\.py"
 
 
-class PluginIdentifier(ABC, Named):
+class PluginIdentifier(ABC, Named, Described):
     """Identifikátor pluginů, který je odpovědný za vytipování souborů, které
     jsou potenciálními pluginy."""
 
+    def __init__(self, identifier_name: str, identifier_desc: str):
+        """Initor pluginů, který přijímá v parametru název a popis.
+
+        Název hraje roli spíše pro lidskou identifikaci, popis plní funkci
+        předání podrobnější informace o způsobu identifikace, o podmínkách
+        pro úspěšnou identifikaci nebo specifické hodnoty pro tuto konkrétní
+        instanci.
+        """
+        Named.__init__(self, identifier_name)
+        Described.__init__(self, identifier_desc)
+
     @staticmethod
     def formal_check(abs_path: str) -> bool:
-        """"""
+        """Formální kontrola, která otestuje, že na dodané cestě je existující
+        soubor názvu platného v souladu s definovaným regulárním výrazem.
+
+        Tato formální kontrola je prvním a nejobecnějším sítem před zabýváním
+        se dalším zpracováváním potenciálních pluginů."""
         global _MODULE_REGEX
         return (fs.exists(abs_path) and fs.is_file(abs_path) and
                 fs.has_regex_name(abs_path, _MODULE_REGEX))
@@ -84,8 +100,12 @@ class PrefixPluginIdentifier(PluginIdentifier):
             - 'program.py'
             - '_program_.py'
         """
-        Named.__init__(self, "Prefix Plugin Identifier")
-        PluginIdentifier.__init__(self)
+        PluginIdentifier.__init__(
+            self,
+            "Prefix Plugin Identifier",
+            f"Prefix Plugin Identifier ověřuje, zda má potenciální plugin "
+            f"název počínající předponou; v tomto případe '{prefix}'")
+
         self._prefix = prefix
 
     @property
@@ -112,8 +132,12 @@ class ExtensionPluginIdentifier(PluginIdentifier):
 
         Její defaultní hodnota je '.py'.
         """
-        Named.__init__(self, "Extension Plugin Identifier")
-        PluginIdentifier.__init__(self)
+        PluginIdentifier.__init__(
+            self, "Extension Plugin Identifier",
+            f"Tento identifikátor je odpovědný za ověření, že dodaný soubor "
+            f"má název končící koncovkou; v tomto případe '{extension}'"
+        )
+
         self._extension = extension
 
     @property
@@ -151,8 +175,12 @@ class NotStartingWithPluginIdentifier(PluginIdentifier):
         název může počínat řetězcem 'template_' a zcela jistě ho dále nemá
         smysl uvažovat jako validní a kompletní plugin.
         """
-        Named.__init__(self, "Not Starting With Plugin Identifier")
-        PluginIdentifier.__init__(self)
+        PluginIdentifier.__init__(
+            self, "Not Starting With Plugin Identifier",
+            f"Tento identifikátor potenciálních pluginů je odpovědný za "
+            f"vytipování takových souborů, které nesou název nezačínající"
+            f"konkrétní předponou, v tomto případě '{forbidden_prefix}'."
+        )
         self._forbidden_prefix = forbidden_prefix
 
     @property
