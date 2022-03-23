@@ -10,22 +10,36 @@ tvorbu a přípravu takových instancí.
 from abc import ABC, abstractmethod
 
 # Import lokálních knihoven
+from src.fw.utils.described import Described
 from src.fw.utils.named import Named
 import src.fw.target.task as task_module
 
 
-class Target(Named):
+class Target(Named, Described):
     """Instance třídy Target reprezentují konkrétní úlohu, která má být řešena.
     Z důvodu potřeby variability slouží tyto instance coby kontejnery pro
     jednotlivé úkoly (jmenovitě instance třídy Task).
 
     Úloze vedle toho náleží i potřeba být pojmenována. Proto dědí protokol
-    třídy 'Named'.
+    třídy 'Named'. Stejně tak vyžadujeme, aby byla úloha i popsána, co do
+    jejího účelu, lidsky čitelných cílů a případně co úloha testuje. Proto
+    dědí také tentokrát třídu Described.
     """
 
-    def __init__(self, name: str):
-        """"""
-        Named.__init__(self, name)
+    def __init__(self, target_name: str, target_description: str):
+        """Initor třídy, který přijímá název úlohy a její popis. Obé je v
+        podobě textového řetězce.
+
+        Název by měl sloužit spíše k jednoduché, člověku srozumitelné
+        identifikaci, přičemž popis by v sobě měl nést informace o podstatě,
+        smyslu a požadovaném výstupu řešení pro tuto úlohu.
+        """
+        Named.__init__(self, target_name)
+        Described.__init__(self, target_description)
+
+        """Příprava seznamu, který bude použit pro ukládání úkolů ke splnění.
+        V úvodní fázi životního cyklu je pochopitelně tento seznam defaultně
+        prázdný. Instance třídy 'Task' jsou do něj dodávány až za běhu."""
         self._tasks: "list[task_module.Task]" = []
 
     @property
