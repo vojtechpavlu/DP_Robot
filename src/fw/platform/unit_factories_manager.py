@@ -29,36 +29,65 @@ class UnitFactoryManager:
     """
 
     def __init__(
-            self, uf_loaders: "Iterable[loader_module.UnitFactoryLoader]",
+            self, uf_loaders: "Iterable[loader_module.UnitFactoryLoader]" = (),
             default_ufs: "Iterable[unit_module.AbstractUnitFactory]" = ()):
         """Initor třídy je odpovědný za inicializaci. V první řadě si uloží
-        všechny """
+        všechny hodnoty postoupené v argumentech initoru a dále provede
+        test validace.
 
+        Initor přijímá množinu loaderů továrních tříd jednotek. Ty jsou
+        použity pro dynamický import všech implicitně dodaných továren. Vedle
+        toho přijímá také defaultní tovární třídy jednotek, které jsou dodány
+        explicitně 'as is'.
+
+        Po uložení těchto vstupů je proveden test validity. Správce továrních
+        tříd jednotek musí mít dostupnou alespoň jednu tovární třídu. Pokud
+        není nastavena žádná defaultní a zároveň není ani stanoven jediný
+        loader, je vyhozena výjimka.
+        """
+
+        # Uložení vstupních parametrů
         self._loaders = list(uf_loaders)
         self._default_ufs = list(default_ufs)
+
+        # Inicializace prázdného seznamu registrovaných jednotek
         self._registered: "list[unit_module.AbstractUnitFactory]" = []
 
+        # Validace, že bude mít správce potenciálně možnost pracovat s
+        # alespoň jednou instancí tovární třídy jednotky
         if len(self._loaders) + len(self._default_ufs) == 0:
             raise UnitFactoryManagerError(
                 f"Správce továrních jednotek nemá s čím pracovat", self)
 
     @property
     def loaders(self) -> "tuple[loader_module.UnitFactoryLoader]":
-        """"""
+        """Vlastnost vrací v ntici všechny loadery, které má v sobě evidované.
+        Těch je použito pro načítání továrních tříd jednotek."""
         return tuple(self._loaders)
 
     @property
     def registered_factories(self) -> "tuple[unit_module.AbstractUnitFactory]":
-        """"""
+        """Vlastnost vrací všechny evidované (tzn. registrované) instance
+        továrních tříd jednotek.
+
+        K tomu, aby byl seznam (resp. ntice) neprázdný, musí být nejdříve
+        tyto načteny."""
         return tuple(self._registered)
 
     @property
     def num_of_registered(self) -> int:
-        """"""
+        """Vlastnost vrací počet načtených instancí továrních tříd jednotek.
+        """
         return len(self.registered_factories)
 
     def register(self, unit_factory: "unit_module.AbstractUnitFactory"):
-        """"""
+        """Registrace nové instance tovární třídy jednotky.
+
+        Registrace podléhá předpokladu, že neexistují dvě továrny tvořící
+        jednotky stejného názvu. To znamená, že je-li již jedna továrna
+        odpovědná za poskytování jednotek stejného názvu, jako aktuálně
+        dodaná, je vyhozena výjimka.
+        """
         for registered_factory in self.registered_factories:
             if registered_factory.unit_name == unit_factory.unit_name:
                 raise UnitFactoryManagerError(
@@ -67,7 +96,11 @@ class UnitFactoryManager:
         self._registered.append(unit_factory)
 
     def load(self):
-        """"""
+        """Funkce odpovědná za registraci instancí továrních tříd jednotek.
+        Funkce v první řadě vyčistí původní evidenci, pokusí se zaregistrovat
+        všechny defaultní (explicitní; dodané v initoru) a dále se pokusí
+        zaregistrovat všechny dynamicky načtené ze všech loaderů.
+        """
         # Vyprázdnění evidence registrovaných továren jednotek
         self._registered: "list[unit_module.AbstractUnitFactory]" = []
 
@@ -82,7 +115,14 @@ class UnitFactoryManager:
 
     def factory_by_unit_name(self,
                              name: str) -> "unit_module.AbstractUnitFactory":
-        """"""
+        """Funkce se pokusí vyhledat instanci tovární třídy jednotek, která je
+        odpovědná za tvorbu jednotek dodaného názvu. Pokud je taková nalezena,
+        je vrácena.
+
+        Funkce může vyhodit výjimku, a to v případě, že není jediná továrna
+        registrována, nebo nebyla-li továrna tvořící jednotky tohoto názvu
+        nalezena.
+        """
         # Pro správné fungování musí existovat alespoň jedna evidovaná
         # instance tovární třídy jednotek
         if self.num_of_registered == 0:
@@ -102,23 +142,30 @@ class UnitFactoryManager:
     def build_units_by_names(
             self, unit_names:
             "Iterable[str]") -> "tuple[unit_module.AbstractUnit]":
-        """"""
+        """Funkce je odpovědná za přijetí množiny názvů jednotek a zbrusu
+        nové instance jednotek opatřit.
+        
+        Podrobněji pro každý dodaný název vyhledá instanci tovární třídy,
+        která tvoří instance tohoto názvu a tuto požádá o vytvoření jedné.
+        Celý seznam reprezentovaný nticí je pak vrácen jako návratová hodnota.
+        """
         return tuple(map(
             lambda u_name:
             self.factory_by_unit_name(u_name).build(), unit_names))
 
 
 class UnitFactoryManagerError(PlatformError):
-    """"""
+    """Výjimky tohoto typu jsou vyhazovány pro symbolizaci a rozšíření
+    informace, že došlo k chybě v kontextu UnitFactoryManager."""
 
     def __init__(self, message: str, manager: "UnitFactoryManager"):
-        """"""
         PlatformError.__init__(self, message)
         self._manager = manager
 
     @property
     def manager(self) -> "UnitFactoryManager":
-        """"""
+        """Vlastnost vrací instanci UnitFactoryManager, v jehož kontextu
+        došlo k chybě."""
         return self._manager
 
 
