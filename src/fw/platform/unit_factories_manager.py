@@ -31,12 +31,14 @@ class UnitFactoryManager:
     def __init__(
             self, uf_loaders: "Iterable[loader_module.UnitFactoryLoader]",
             default_ufs: "Iterable[unit_module.AbstractUnitFactory]" = ()):
-        """Initor třídy je odpovědný za inicializaci."""
+        """Initor třídy je odpovědný za inicializaci. V první řadě si uloží
+        všechny """
+
         self._loaders = list(uf_loaders)
         self._default_ufs = list(default_ufs)
         self._registered: "list[unit_module.AbstractUnitFactory]" = []
 
-        if len(self._loaders) + len(self._registered) == 0:
+        if len(self._loaders) + len(self._default_ufs) == 0:
             raise UnitFactoryManagerError(
                 f"Správce továrních jednotek nemá s čím pracovat", self)
 
@@ -55,12 +57,28 @@ class UnitFactoryManager:
         """"""
         return len(self.registered_factories)
 
+    def register(self, unit_factory: "unit_module.AbstractUnitFactory"):
+        """"""
+        for registered_factory in self.registered_factories:
+            if registered_factory.unit_name == unit_factory.unit_name:
+                raise UnitFactoryManagerError(
+                    f"Nelze evidovat dvě továrny produkující jednotky stejného"
+                    f"názvu '{unit_factory.unit_name=}'", self)
+        self._registered.append(unit_factory)
+
     def load(self):
         """"""
+        # Vyprázdnění evidence registrovaných továren jednotek
         self._registered: "list[unit_module.AbstractUnitFactory]" = []
+
+        # Registrace defaultních továren jednotek
+        for unit_factory in self._default_ufs:
+            self.register(unit_factory)
+
+        # Registrace všech továren jednotek z dodaných loaderů
         for loader in self.loaders:
-            self._registered.extend(loader.unit_factories)
-        self._registered.extend(self._default_ufs)
+            for unit_factory in loader.unit_factories:
+                self.register(unit_factory)
 
     def factory_by_unit_name(self,
                              name: str) -> "unit_module.AbstractUnitFactory":
