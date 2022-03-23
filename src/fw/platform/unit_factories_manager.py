@@ -1,4 +1,10 @@
-""""""
+"""Tento modul definuje prostředky pro správu továrních instancí jednotek.
+
+Především je zde definována třída UnitFactoryManager, která se stará o
+jednotlivé loadery odpovědné za dynamický import továrních tříd, stejně
+jako se stará o poskytování registrovaných továren a dalších služeb s
+tím spojených.
+"""
 
 
 # Import standardních knihoven
@@ -12,12 +18,20 @@ import src.fw.robot.unit as unit_module
 
 
 class UnitFactoryManager:
-    """"""
+    """Tato třída je odpovědná za správu načítání a poskytování instancí
+    továrních tříd jednotek.
+
+    Je schopná pracovat s továrnami poskytnutými explicitně v initoru, stejně
+    jako umí implicitně donačíst potřebné pomocí dodaných loaderů.
+
+    Ovšem před manipulací je třeba, aby bylo vše načteno (zavolána funkce
+    'load()'). Jinak by totiž tato neměla co poskytovat a co spravovat.
+    """
 
     def __init__(
             self, uf_loaders: "Iterable[loader_module.UnitFactoryLoader]",
             default_ufs: "Iterable[unit_module.AbstractUnitFactory]" = ()):
-        """"""
+        """Initor třídy je odpovědný za inicializaci."""
         self._loaders = list(uf_loaders)
         self._default_ufs = list(default_ufs)
         self._registered: "list[unit_module.AbstractUnitFactory]" = []
