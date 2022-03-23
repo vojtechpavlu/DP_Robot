@@ -13,7 +13,9 @@ import src.fw.utils.loading.plugin as plugin_module
 import src.fw.robot.unit as unit_module
 
 
-_ACCESS_FUN = "get_program"
+"""Název funkce, která bude volána coby klíčový přístupový bod pro obdržení
+instance továrny jednotek"""
+_ACCESS_FUN = "get_unit_factory"
 
 
 class UnitFactoryLoader(loader_module.PluginLoader):
