@@ -21,7 +21,11 @@ class PluginLoader(ABC):
     """
 
     def __init__(self, destination: str):
-        """"""
+        """Initor třídy, který přijímá v parametru absolutní cestu k
+        adresáři, který obsahuje moduly, jenž reprezentují dané pluginy.
+
+        Pokud tato cesta neexistuje nebo není adresářem, je vyhozena výjimka.
+        """
         self._destination: str = destination
 
         self._plugin_identifiers: "list[identifier.PluginIdentifier]" = []
@@ -35,17 +39,30 @@ class PluginLoader(ABC):
 
     @property
     def destination(self) -> str:
-        """"""
+        """Vlastnost vrací absolutní cestu k adresáři, který má být prohledán.
+        """
         return self._destination
 
     @property
     def identifiers(self) -> "tuple[identifier.PluginIdentifier]":
-        """"""
+        """Vlastnost vrací ntici identifikátorů, které budou použity pro
+        úvodní vyfiltrování potenciálních pluginů.
+
+        Tyto obvykle pracují jen na úrovni obecných popisných znaků; typicky
+        zkoumají pouze název souboru, zda odpovídá definovaným konvencím.
+        """
         return tuple(self._plugin_identifiers)
 
     @property
     def validators(self) -> "tuple[validator.PluginValidator]":
-        """"""
+        """Vlastnost vrací ntici validátorů, kterých bude použito pro ověření,
+        že potenciální plugin je skutečným validním pluginem.
+
+        Tyto obvykle pracují na úrovni přečtení modulu co do vnitřního kódu;
+        typicky je-li syntakticky validní, zda obsahuje předepsané atributy
+        a funkce a zda návratové hodnoty daných funkcí odpovídají předepsaným
+        požadavkům.
+        """
         return tuple(self._plugin_validators)
 
     @property
