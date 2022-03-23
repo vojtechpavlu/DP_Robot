@@ -9,21 +9,28 @@ from src.fw.robot.mounting_error import MountingError
 from src.fw.utils.error import PlatformError
 from src.fw.utils.identifiable import Identifiable
 from src.fw.utils.named import Named
+from src.fw.utils.described import Described
 
 import src.fw.robot.robot as robot_module
 
 
-class AbstractUnit(ABC, Identifiable, Named):
+class AbstractUnit(ABC, Identifiable, Named, Described):
     """Abstraktní třída AbstractUnit definuje základní společný protokol
     pro všechny jednotky, kterými je možné robota osadit.
 
     Jádrem je rozlišitelnost senzorů a aktuátorů, stejně jako udržování
     reference na robota, který je instancí této jednotky osazen."""
 
-    def __init__(self, unit_name: str, unit_factory: "AbstractUnitFactory"):
+    def __init__(self, unit_name: str, unit_desc: str,
+                 unit_factory: "AbstractUnitFactory"):
         """Jednoduchý initor, který přijímá v parametru název, který je
-        jednotce přiřazen. Stejně tak jednotka vrací referenci na svého
-        tvůrce, tedy instanci továrny jednotek, která tuto vytvořila.
+        jednotce přiřazen. Dále přijímá popis jednotky, kterým bude tato dále
+        schopna sebe sama popsat co do jejího účelu, způsobu použití nebo
+        různých omezení.
+
+        Stejně tak jednotka vrací referenci na svého tvůrce, tedy instanci
+        továrny jednotek, která tuto vytvořila. Proto tuto referenci v
+        parametru také vyžaduje.
 
         Kromě uložení těchto informací je dále initor odpovědný za iniciaci
         svých předků a připravení pole pro robota, kterým je jednotka osazena.
@@ -31,6 +38,7 @@ class AbstractUnit(ABC, Identifiable, Named):
         """
         Identifiable.__init__(self)
         Named.__init__(self, unit_name)
+        Described.__init__(self, unit_desc)
 
         self._robot: "robot_module.Robot" = None
         self._unit_factory = unit_factory
