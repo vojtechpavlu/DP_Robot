@@ -1,4 +1,5 @@
-""""""
+"""Modul obsahuje prostředky pro dynamické načítání továrních tříd jednotek.
+"""
 
 
 # Import standardních knihoven
