@@ -11,7 +11,6 @@ import src.fw.utils.loading.plugin_identifier as identifier
 import src.fw.utils.loading.plugin_validator as validator
 import src.fw.utils.loading.plugin as pl
 import src.fw.utils.error as error
-
 from ..filesystem import exists, is_directory, deep_list_files
 
 
@@ -26,12 +25,10 @@ class PluginLoader(ABC):
         adresáři, který obsahuje moduly, jenž reprezentují dané pluginy.
 
         Pokud tato cesta neexistuje nebo není adresářem, je vyhozena výjimka.
-
         Dále jsou instance odpovědné za uložení všech identifikátorů a
         validátorů pluginů. Ty jsou v úvodní fázi prázdné a dodávají se až
         dynamicky.
         """
-
         self._destination: str = destination
 
         """Kontrola, že dodaná cesta, která bude co do potenciálních pluginů 
@@ -56,7 +53,6 @@ class PluginLoader(ABC):
     def identifiers(self) -> "tuple[identifier.PluginIdentifier]":
         """Vlastnost vrací ntici identifikátorů, které budou použity pro
         úvodní vyfiltrování potenciálních pluginů.
-
         Tyto obvykle pracují jen na úrovni obecných popisných znaků; typicky
         zkoumají pouze název souboru, zda odpovídá definovaným konvencím.
         """
@@ -66,7 +62,6 @@ class PluginLoader(ABC):
     def validators(self) -> "tuple[validator.PluginValidator]":
         """Vlastnost vrací ntici validátorů, kterých bude použito pro ověření,
         že potenciální plugin je skutečným validním pluginem.
-
         Tyto obvykle pracují na úrovni přečtení modulu co do vnitřního kódu;
         typicky je-li syntakticky validní, zda obsahuje předepsané atributy
         a funkce a zda návratové hodnoty daných funkcí odpovídají předepsaným
@@ -79,7 +74,6 @@ class PluginLoader(ABC):
         """Vlastnost obaluje funkci, která má za cíl vytipovat ty moduly,
         které jsou potenciálními pluginy, resp. soubory odpovídající pravidlům
         definovaným identifikátory pluginů.
-
         Proces je proveden tak, že je hloubkově prozkoumán dodaný adresář
         (viz proměnná 'destination') a z něj jsou všechny soubory podrobeny
         zkoušce, zda jsou potenciálními pluginy.
@@ -94,7 +88,7 @@ class PluginLoader(ABC):
     def valid_plugins(self) -> "tuple[pl.Plugin]":
         """Vlastnost se pokusí vyextrahovat ty pluginy, které jsou nejen
         identifikovány, ale které jsou validní.
-
+        Nejsou-li žádné identifikované, je vyhozena výjimka.
         K tomu využívá abstraktní funkce 'load()' obstarávající identifikaci
         potenciálních pluginů a vytvoření instancí potomků třídy Plugin.
         """
@@ -105,8 +99,8 @@ class PluginLoader(ABC):
         vytipování potenciálních pluginů."""
         self._plugin_identifiers.append(plugin_ident)
 
-    def add_all_identifiers(
-            self, plugin_idents: "Iterable[identifier.PluginIdentifier]"):
+    def add_all_identifiers(self, plugin_idents:
+                            "Iterable[identifier.PluginIdentifier]"):
         """Funkce přidá všechny dodané identifikátory."""
         for i in plugin_idents:
             self.add_identifier(i)
@@ -116,8 +110,8 @@ class PluginLoader(ABC):
         správnosti a použitelnosti pluginu v daném kontextu."""
         self._plugin_validators.append(plugin_validator)
 
-    def add_all_validators(
-            self, plugin_validators: "Iterable[validator.PluginValidator]"):
+    def add_all_validators(self, plugin_validators:
+                           "Iterable[validator.PluginValidator]"):
         """Funkce přidá všechny dodané identifikátory."""
         for v in plugin_validators:
             self.add_validator(v)
@@ -129,7 +123,7 @@ class PluginLoader(ABC):
         """
         return tuple(filter(
             lambda ident: not ident.is_plugin(abs_path), self.identifiers))
-
+    
     def is_potential_plugin(self, abs_path: str) -> bool:
         """Funkce vrací, zda-li je na dodané cestě potenciální plugin. To je
         zjištěno tak, že se zjistí počet porušených pravidel, tedy je-li počet
@@ -149,13 +143,11 @@ class PluginLoader(ABC):
 class PluginLoaderError(error.PlatformError):
     """Třída definuje výjimku, která značí vznik chyby v kontextu načítání
     pluginů."""
-
     def __init__(self, message: str, plugin_loader: PluginLoader):
         error.PlatformError.__init__(self, message)
         self._plugin_loader = plugin_loader
-
+        
     @property
     def plugin_loader(self) -> PluginLoader:
-        """Vlasnost vrací PluginLoader, v jehož kontextu došlo k chybě."""
+        """Vlastnost vrací PluginLoader, v jehož kontextu došlo k chybě."""
         return self._plugin_loader
-

@@ -1,4 +1,5 @@
-""""""
+"""Modul obsahuje prostředky pro dynamické načítání továrních tříd jednotek.
+"""
 
 
 # Import standardních knihoven
@@ -19,7 +20,6 @@ _ACCESS_FUN = "get_unit_factory"
 class UnitFactoryLoader(loader_module.PluginLoader):
     """Loader továren jednotek UnitFactoryLoader je odpovědný za dynamické
     načítání pluginů obsahujících definici továrních tříd jednotek.
-
     Třída poskytuje dynamickou správu načítání pluginů v kontextu získávání
     továrních jednotek. Oproti abstraktnímu předkovi ('PluginLoader') je tato
     obohacena ještě o implementaci funkce 'load()', která vyfiltruje všechny
@@ -38,14 +38,19 @@ class UnitFactoryLoader(loader_module.PluginLoader):
         self.add_all_identifiers(identifiers)
         self.add_all_validators(validators)
 
+    @property
+    def unit_factories(self) -> "tuple[unit_module.AbstractUnitFactory]":
+        """Funkce obsluhuje načítání všech továrních tříd jednotek tak.
+        Tyto načtené továrny pak vrací v podobě ntice."""
+        return tuple(map(lambda valid_plugin:
+                         valid_plugin.unit_factory, self.load()))
+
     def load(self) -> "tuple[UnitFactoryPlugin]":
         """Funkce se stará o načtení všech validních pluginů a ty dále vrací
         uspořádané v ntici.
-
         V první řadě si vytipuje potenciální pluginy (tedy ty soubory, které
         se zdají býti dle pravidel identifikace jako zdrojové soubory v rámci
         daného kontextu) a ty dále ověřuje, zda-li jsou platné.
-
         Vrací pak vrací pouze ty, které projdou testem validity, tedy všemi
         validačními procedurami definovanými instancemi třídy PluginValidator.
         """
@@ -59,20 +64,12 @@ class UnitFactoryLoader(loader_module.PluginLoader):
             # TODO - log nevalidního pluginu
         return tuple(valid_plugins)
 
-    def load_unit_factories(self) -> "tuple[unit_module.AbstractUnitFactory]":
-        """Funkce obsluhuje načítání všech továrních tříd jednotek tak.
-        Tyto načtené továrny pak vrací v podobě ntice."""
-        return tuple(map(lambda valid_plugin:
-                         valid_plugin.unit_factory, self.load()))
-
 
 class UnitFactoryPlugin(plugin_module.Plugin):
     """Třída UnitFactoryPlugin je odpovědná za zpřístupnění dynamického
     načítání modulů v kontextu továren jednotek.
-
     Instance této třídy rozšiřují funkcionalitu rodičovské třídy (tedy Plugin)
     a mají nad rámec i vlastnost pro získání dané tovární třídy.
-
     V rámci kontextového způsobu použití lze mluvit o třídě podle návrhového
     vzoru Služebník."""
 
@@ -81,7 +78,6 @@ class UnitFactoryPlugin(plugin_module.Plugin):
                  access_point_fun: str):
         """Initor třídy odpovědný za iniciaci svého předka a za uložení
         všech potřebných hodnot.
-
         V parametrech přijímá absolutní cestu k modulu, který má být ověřen a
         z něhož má být čteno, dále referenci na PluginLoader, který tuto
         instanci tvoří, a také název přístupové funkce, která vrací instanci
