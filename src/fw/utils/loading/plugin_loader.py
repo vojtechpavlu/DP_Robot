@@ -4,7 +4,6 @@ dynamického načítání modulů s cílem upravovat funkcionalitu za běhu prog
 
 # Import standardních knihoven
 from abc import ABC, abstractmethod
-from typing import Iterable
 
 # Import lokálních knihoven
 import src.fw.utils.loading.plugin_identifier as identifier
@@ -16,62 +15,37 @@ from ..filesystem import exists, is_directory, deep_list_files
 
 
 class PluginLoader(ABC):
-    """Abstrakatní třída PluginLoader definuje obecný protokol pro práci s
+    """Abstrkatní třída PluginLoader definuje obecný protokol pro práci s
     pluginy (instancemi třídy Plugin), tedy pro dynamické načítání zdrojových
     souborů.
     """
 
     def __init__(self, destination: str):
-        """Initor třídy, který přijímá v parametru absolutní cestu k
-        adresáři, který obsahuje moduly, jenž reprezentují dané pluginy.
-
-        Pokud tato cesta neexistuje nebo není adresářem, je vyhozena výjimka.
-
-        Dále jsou instance odpovědné za uložení všech identifikátorů a
-        validátorů pluginů. Ty jsou v úvodní fázi prázdné a dodávají se až
-        dynamicky.
-        """
-
+        """"""
         self._destination: str = destination
 
-        """Kontrola, že dodaná cesta, která bude co do potenciálních pluginů 
-        prohledávána, skutečně odkazuje na existující adresář."""
+        self._plugin_identifiers: "list[identifier.PluginIdentifier]" = []
+        self._plugin_validators: "list[validator.PluginValidator]" = []
+        self._plugins: "list[pl.Plugin]" = []
+
         if not (exists(destination) and is_directory(destination)):
             raise PluginLoaderError(
                 f"Dodaná cesta neukazuje na existující adresář: {destination}",
                 self)
 
-        """Příprava seznamů pro identifikátory a validátory pluginů; v úvodní
-        fázi jsou tyto seznamy prázdné a lze je dodat dynamicky."""
-        self._plugin_identifiers: "list[identifier.PluginIdentifier]" = []
-        self._plugin_validators: "list[validator.PluginValidator]" = []
-
     @property
     def destination(self) -> str:
-        """Vlastnost vrací absolutní cestu k adresáři, který má být prohledán.
-        """
+        """"""
         return self._destination
 
     @property
     def identifiers(self) -> "tuple[identifier.PluginIdentifier]":
-        """Vlastnost vrací ntici identifikátorů, které budou použity pro
-        úvodní vyfiltrování potenciálních pluginů.
-
-        Tyto obvykle pracují jen na úrovni obecných popisných znaků; typicky
-        zkoumají pouze název souboru, zda odpovídá definovaným konvencím.
-        """
+        """"""
         return tuple(self._plugin_identifiers)
 
     @property
     def validators(self) -> "tuple[validator.PluginValidator]":
-        """Vlastnost vrací ntici validátorů, kterých bude použito pro ověření,
-        že potenciální plugin je skutečným validním pluginem.
-
-        Tyto obvykle pracují na úrovni přečtení modulu co do vnitřního kódu;
-        typicky je-li syntakticky validní, zda obsahuje předepsané atributy
-        a funkce a zda návratové hodnoty daných funkcí odpovídají předepsaným
-        požadavkům.
-        """
+        """"""
         return tuple(self._plugin_validators)
 
     @property
@@ -92,35 +66,27 @@ class PluginLoader(ABC):
 
     @property
     def valid_plugins(self) -> "tuple[pl.Plugin]":
-        """Vlastnost se pokusí vyextrahovat ty pluginy, které jsou nejen
+        """Vlasnost se pokusí vyextrahovat ty pluginy, které jsou nejen
         identifikovány, ale které jsou validní.
 
-        K tomu využívá abstraktní funkce 'load()' obstarávající identifikaci
-        potenciálních pluginů a vytvoření instancí potomků třídy Plugin.
+        Nejsou-li žádné identifikované, je vyhozena výjimka.
         """
-        return tuple(filter(lambda plg: plg.is_valid_plugin, self.load()))
+        if len(self._plugins) == 0:
+            raise PluginLoaderError(
+                f"Nebyly nalezeny žádné identifikované pluginy. Možná "
+                f"nebyly doposud žádné hledány (volání funkce 'load').", self)
+        else:
+            return tuple(filter(
+                lambda plugin: plugin.is_valid_plugin,
+                self._plugins))
 
     def add_identifier(self, plugin_ident: "identifier.PluginIdentifier"):
-        """Funkce přidává identifikátor pluginů, který bude použit pro
-        vytipování potenciálních pluginů."""
+        """"""
         self._plugin_identifiers.append(plugin_ident)
 
-    def add_all_identifiers(
-            self, plugin_idents: "Iterable[identifier.PluginIdentifier]"):
-        """Funkce přidá všechny dodané identifikátory."""
-        for i in plugin_idents:
-            self.add_identifier(i)
-
     def add_validator(self, plugin_validator: "validator.PluginValidator"):
-        """Funkce přidává validátor pluginů, který bude použit pro ověření
-        správnosti a použitelnosti pluginu v daném kontextu."""
+        """"""
         self._plugin_validators.append(plugin_validator)
-
-    def add_all_validators(
-            self, plugin_validators: "Iterable[validator.PluginValidator]"):
-        """Funkce přidá všechny dodané identifikátory."""
-        for v in plugin_validators:
-            self.add_validator(v)
 
     def violated_identifiers(
             self, abs_path: str) -> "tuple[identifier.PluginIdentifier]":
@@ -138,12 +104,17 @@ class PluginLoader(ABC):
         """
         return len(self.violated_identifiers(abs_path)) == 0
 
+    def flush_plugins(self):
+        """Funkce vyprázdní doposud identifikované pluginy."""
+        self._plugins = []
+
     @abstractmethod
     def load(self) -> "tuple[pl.Plugin]":
-        """Abstraktní funkce load je odpovědná za načtení všech potenciálních
-        pluginů a jejich vrácení. Výstupem funkce je tedy ntice všech pluginů,
-        obalujících modul k importování, které dle definovaných pravidel v
-        rámci množiny identifikátorů se zdají být platnými pluginy."""
+        """Abstraktní funkce load je odpovědná za načtení všech nových
+        potenciálních pluginů. To znamená, že původní seznam musí být
+        vyčištěn a musí se vytipovat všechny nové pluginy z dodaného
+        adresáře."""
+
 
 
 class PluginLoaderError(error.PlatformError):
