@@ -4,6 +4,7 @@ dynamického načítání modulů s cílem upravovat funkcionalitu za běhu prog
 
 # Import standardních knihoven
 from abc import ABC, abstractmethod
+from typing import Iterable
 
 # Import lokálních knihoven
 import src.fw.utils.loading.plugin_identifier as identifier
@@ -104,10 +105,22 @@ class PluginLoader(ABC):
         vytipování potenciálních pluginů."""
         self._plugin_identifiers.append(plugin_ident)
 
+    def add_all_identifiers(
+            self, plugin_idents: "Iterable[identifier.PluginIdentifier]"):
+        """Funkce přidá všechny dodané identifikátory."""
+        for i in plugin_idents:
+            self.add_identifier(i)
+
     def add_validator(self, plugin_validator: "validator.PluginValidator"):
         """Funkce přidává validátor pluginů, který bude použit pro ověření
         správnosti a použitelnosti pluginu v daném kontextu."""
         self._plugin_validators.append(plugin_validator)
+
+    def add_all_validators(
+            self, plugin_validators: "Iterable[validator.PluginValidator]"):
+        """Funkce přidá všechny dodané identifikátory."""
+        for v in plugin_validators:
+            self.add_validator(v)
 
     def violated_identifiers(
             self, abs_path: str) -> "tuple[identifier.PluginIdentifier]":
