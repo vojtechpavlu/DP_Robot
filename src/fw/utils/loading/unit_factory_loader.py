@@ -7,6 +7,7 @@ dynamické načítání.
 
 
 # Import standardních knihoven
+from typing import Iterable
 
 # Import lokálních knihoven
 import src.fw.utils.loading.plugin_loader as loader_module
@@ -30,8 +31,8 @@ class UnitFactoryLoader(loader_module.PluginLoader):
     nevalidní pluginy a vrátí množinu pluginů třídy UnitFactoryPlugin."""
 
     def __init__(self, dest_dir: str,
-                 identifiers: "tuple[pl_identifier.PluginIdentifier]",
-                 validators: "tuple[pl_validator.PluginValidator]"):
+                 identifiers: "Iterable[pl_identifier.PluginIdentifier]",
+                 validators: "Iterable[pl_validator.PluginValidator]"):
         """Initor třídy odpovědný za inicializaci předka a uložení
         všech identifikátorů a validátorů pluginů.
 
