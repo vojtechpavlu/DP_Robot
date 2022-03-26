@@ -7,6 +7,7 @@ import src.fw.utils.loading.plugin_loader as loader_module
 import src.fw.utils.loading.plugin_identifier as pl_identifier
 import src.fw.utils.loading.plugin_validator as pl_validator
 import src.fw.utils.loading.plugin as plugin_module
+import src.fw.robot.program as program_module
 
 
 _ACCESS_FUN = "get_program"
@@ -24,11 +25,20 @@ class ProgramLoader(loader_module.PluginLoader):
         self.add_all_validators(validators)
 
     @property
-    def programs(self):
+    def programs(self) -> "tuple[program_module.AbstractProgram]":
         """"""
+        return tuple(map(
+            lambda valid_plugin: valid_plugin.program, self.load()))
 
-    def load(self):
+    def load(self) -> "tuple[ProgramPlugin]":
         """"""
+        valid_plugins = []
+        for potential_plg_path in self.potential_plugins:
+            plugin = ProgramPlugin(potential_plg_path, self, _ACCESS_FUN)
+            if plugin.is_valid_plugin:
+                valid_plugins.append(plugin)
+            # TODO - log nevalidního pluginu
+        return tuple(valid_plugins)
 
 
 class ProgramPlugin(plugin_module.Plugin):
@@ -47,5 +57,14 @@ class ProgramPlugin(plugin_module.Plugin):
         return self._access_point_function
 
     @property
-    def program(self):
+    def program(self) -> "program_module.AbstractProgram":
         """"""
+        if not self.has_function(self.access_point_function):
+            raise plugin_module.PluginError(
+                f"Plugin nemá přístupovou funkci názvu "
+                f"'{self.access_point_function}'", self)
+        return self.get_function(self._access_point_function)()
+
+
+
+
