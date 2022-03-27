@@ -82,7 +82,7 @@ class RobotFactory(ABC):
         řetězce, který by symbolizoval název robota."""
 
     @abstractmethod
-    def premount(self, robot: "Robot"):
+    def premount(self, robot: "Robot") -> "Robot":
         """Abstraktní funkce 'premount(Robot)' (resp. její implementace) je
         odpovědná za 'předosazení' robota definovanými jednotkami.
 
@@ -99,6 +99,27 @@ class RobotFactory(ABC):
         'premount(Robot)'."""
 
 
+class EmptyRobotFactory(RobotFactory):
+    """Třída EmptyRobotFactory připravuje prázdného robota bez specifického
+    názvu a specifických jednotek, kterými ho v rámci přípravy osadí."""
+
+    @property
+    def robot_name(self) -> str:
+        """Vlastnost vrací defaultní název robota, který je pro všechny roboty
+        vytvořené touto tovární třídou identický."""
+        return "«no_name»"
+
+    def premount(self, robot: "Robot") -> "Robot":
+        """Tato funkce nijak robota neosazuje. Pouze vrátí nezměněného robota,
+        kterého přijala.
+        """
+        return robot
+
+    def build(self) -> "Robot":
+        """Funkce vrací instanci nově vytvořeného robota včetně předosazení
+        defaultními jednotkami.
+        """
+        return self.premount(Robot(self.robot_name))
 
 
 
