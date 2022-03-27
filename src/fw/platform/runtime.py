@@ -1,4 +1,8 @@
-""""""
+"""Tento modul je odpovědný za definici protokolu běhového prostředí a
+protokolu jeho tovární třídy. Je zde tedy obsažena definice AbstractRuntime
+(abstraktní třída běhového prostředí) a AbstractRuntimeFactory (abstraktní
+třída továrny běhových prostředí).
+"""
 
 
 # Import standardních knihoven
