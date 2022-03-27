@@ -98,6 +98,8 @@ class AbstractRuntime(ABC, Identifiable):
         """
         self._world = self.world_factory.build()
         self._target = self.target_factory.build()
+        # TODO - doplnění kompletní integrace úkolu a světa, handlery
+        # TODO - interakcí atp.
 
     @abstractmethod
     def run(self):
