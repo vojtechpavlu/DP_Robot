@@ -3,6 +3,7 @@ klíčových tříd celého systému."""
 
 # Import standardních knihoven
 from abc import ABC, abstractmethod
+from typing import Iterable
 
 # Import lokálních knihoven
 from src.fw.robot.mounting_error import MountingError
@@ -10,6 +11,7 @@ from src.fw.utils.identifiable import Identifiable
 from src.fw.utils.named import Named
 
 import src.fw.robot.unit as unit_module
+import src.fw.robot.robot_name_generator as name_gnrtr_module
 
 
 class Robot(Identifiable, Named):
@@ -122,5 +124,43 @@ class EmptyRobotFactory(RobotFactory):
         return self.premount(Robot(self.robot_name))
 
 
+class CompleteRobotFactory(EmptyRobotFactory):
+    """Třída CompleteRobotFactory je odpovědná za vytváření instancí robotů
+    pomocí kompletních procedur pojmenování a osazení výchozími jednotkami.
+    """
+
+    def __init__(self,
+                 unit_factories: "Iterable[unit_module.AbstractUnitFactory]",
+                 name_generator: "name_gnrtr_module.RobotNameGenerator"):
+        """Initor třídy přijímá množinu všech továrních tříd jednotek, kterými
+        je možné robota osadit. Dále přijímá generátor názvů robotů, kterého
+        bude použito pro pojmenovávání robotů."""
+
+        EmptyRobotFactory.__init__(self)
+
+        self._unit_factories = list(unit_factories)
+        self._name_generator = name_generator
+
+    @property
+    def unit_factories(self) -> "tuple[unit_module.AbstractUnitFactory]":
+        """Vlastnost vrací ntici všech továren jednotek, kterými bude v úvodní
+        fázi robot osazen."""
+        return tuple(self._unit_factories)
+
+    @property
+    def robot_name(self) -> str:
+        """Vlastnost vrací název, který byl pro robota vygenerován. Typicky
+        se odvíjí od náhodně zvoleného textového řetězce; pochopitelně vychází
+        z implementace dodaného generátoru."""
+        return self._name_generator.get()
+
+    def premount(self, robot: "Robot") -> "Robot":
+        """Funkce odpovědná za přípravu robota co do osazení výchozími
+        jednotkami. Napříč všemi továrními třídami jednotek je robot osazen
+        každou z těchto jednotek. Vrácen je osazený robot.
+        """
+        for unit_factory in self.unit_factories:
+            robot.mount(unit_factory.build())
+        return robot
 
 
