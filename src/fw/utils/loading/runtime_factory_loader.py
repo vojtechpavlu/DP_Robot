@@ -32,6 +32,8 @@ class RuntimeFactoryLoader(loader_module.PluginLoader):
     def runtime_factories(
             self) -> "tuple[runtime_module.AbstractRuntimeFactory]":
         """"""
+        return tuple(map(lambda valid_plugin:
+                         valid_plugin.runtime_factory, self.load()))
 
     def load(self) -> "tuple[RuntimeFactoryPlugin]":
         """"""
