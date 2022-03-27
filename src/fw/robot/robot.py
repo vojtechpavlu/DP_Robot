@@ -2,6 +2,7 @@
 klíčových tříd celého systému."""
 
 # Import standardních knihoven
+from abc import ABC, abstractmethod
 
 # Import lokálních knihoven
 from src.fw.robot.mounting_error import MountingError
@@ -65,4 +66,17 @@ class Robot(Identifiable, Named):
                 f"tento: {unit.robot=}, {self}")
 
 
+class RobotFactory(ABC):
+    """"""
+
+    def __init__(self):
+        """"""
+
+    @abstractmethod
+    def premount(self, robot: "Robot"):
+        """"""
+
+    @abstractmethod
+    def build(self):
+        """"""
 
