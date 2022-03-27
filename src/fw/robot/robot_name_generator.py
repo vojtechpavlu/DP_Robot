@@ -4,6 +4,7 @@ a priori unikátnost, nýbrž spíše popisná a rozlišovací přidaná hodnota
 # Import standardních knihoven
 from abc import ABC, abstractmethod
 from random import choice
+from typing import Iterable
 
 
 class RobotNameGenerator(ABC):
@@ -121,6 +122,30 @@ class RandomRobotName(RobotNameGenerator):
         gen_name = self.get()
         return (gen_name if len(gen_name) == self.name_length
                 else f"{choice(self.alphabet)}{gen_name}")
+
+
+class NameGeneratorContainer(RobotNameGenerator):
+    """Kontejner, který umožňuje kombinaci více generátorů pro získávání
+    názvů robotů."""
+
+    def __init__(self, generators: "Iterable[RobotNameGenerator]"):
+        """Initor třídy, který přijímá množinu generátorů názvů, kterých dále
+        používá pro získávání názvů pro roboty.
+        """
+        self._generators = list(generators)
+
+    @property
+    def generators(self) -> "tuple[RobotNameGenerator]":
+        """Vlastnost vrací ntici všech generátorů, které instance eviduje."""
+        return tuple(self._generators)
+
+    def get(self) -> str:
+        """Funkce vybere náhodný řetězec tak, že náhodně vybere evidovaný
+        generátor názvů a ten požádá o nějaký název. Ten typicky pojmenovává
+        také na základě náhody.
+
+        Tento náhodný řetězec je pak vrácen coby budoucí název pro robota."""
+        return choice(self.generators).get()
 
 
 
