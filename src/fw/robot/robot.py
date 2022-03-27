@@ -91,12 +91,15 @@ class RobotFactory(ABC):
         jednotky předdefinovat jako výchozí."""
 
     @abstractmethod
-    def build(self):
+    def build(self) -> "Robot":
         """Implementace této funkce jsou odpovědné za připravení instance
         robota a její vrácení.
 
         Typicky k tomu je použito funkcí (resp. vlastností) 'robot_name' a
         'premount(Robot)'."""
+
+
+
 
 
 
