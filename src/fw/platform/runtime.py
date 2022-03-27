@@ -10,6 +10,7 @@ from src.fw.utils.identifiable import Identifiable
 
 import src.fw.world.world as world_module
 import src.fw.world.world_factory as world_fact_module
+import src.fw.robot.robot as robot_module
 import src.fw.target.target as target_module
 import src.fw.robot.program as program_module
 import src.fw.robot.unit as unit_module
@@ -104,8 +105,13 @@ class AbstractRuntimeFactory(ABC):
     běhového prostředí tak, aby ji bylo možné spustit a ověřit tak plnění
     úlohy robotem s dodaným programem."""
 
-    def __init__(self):
+    def __init__(self, robot_factory: "robot_module.RobotFactory",
+                 world_factory: "world_fact_module.WorldFactory",
+                 target_factory: "target_module.TargetFactory"):
         """"""
+        self._robot_factory = robot_factory
+        self._world_factory = world_factory
+        self._target_factory = target_factory
 
     @abstractmethod
     def build(self) -> "AbstractRuntime":
