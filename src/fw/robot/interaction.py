@@ -52,5 +52,47 @@ class InteractionHandler(ABC):
         return type(interaction) is self._interaction_type
 
 
+class InteractionHandlerManager(ABC):
+    """"""
+
+    def __init__(self):
+        """"""
+        self._handlers: "list[InteractionHandler]" = []
+
+    @property
+    def interaction_handlers(self) -> "tuple[InteractionHandler]":
+        """"""
+        return tuple(self._handlers)
+
+    def add_interaction_handler(self, handler: "InteractionHandler"):
+        """"""
+        for i_h in self.interaction_handlers:
+            if i_h.interaction_type is handler.interaction_type:
+                # TODO - specifikace výjimky
+                raise Exception(
+                    f"Nelze mít evidovány dva handlery pro stejný typ "
+                    f"interakce: '{handler.interaction_type}'")
+
+    def has_handler(self, interaction: "Interaction") -> bool:
+        """"""
+        for handler in self.interaction_handlers:
+            if handler.is_mine(interaction):
+                return True
+        return False
+
+    def get_handler(self, interaction: "Interaction") -> "InteractionHandler":
+        """"""
+        for handler in self.interaction_handlers:
+            if handler.is_mine(interaction):
+                return handler
+        # TODO - specifikace výjimky
+        raise Exception(
+            f"Pro interakci '{type(interaction)}' není handler evidován")
+
+    @abstractmethod
+    def process_interaction(self, interaction: "Interaction") -> object:
+        """"""
+
+
 
 
