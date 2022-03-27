@@ -15,18 +15,18 @@ class ProgramManager:
     def __init__(self, program_loaders: "Iterable[pl_module.ProgramLoader]"):
         """"""
 
-        self._loaders = tuple(program_loaders)
+        self._loaders = list(program_loaders)
         self._registered: "list[program_module.AbstractProgram]" = []
 
     @property
     def program_loaders(self) -> "tuple[pl_module.ProgramLoader]":
         """"""
-        return self._loaders
+        return tuple(self._loaders)
 
     @property
     def registered_programs(self) -> "tuple[program_module.AbstractProgram]":
         """"""
-        return self._registered
+        return tuple(self._registered)
 
     @property
     def num_of_registered(self) -> int:
