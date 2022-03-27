@@ -19,6 +19,7 @@ import src.fw.target.target as target_module
 import src.fw.robot.program as program_module
 import src.fw.robot.unit as unit_module
 import src.fw.platform.platform as platform_module
+import src.fw.platform.unit_factories_manager as uf_manager_module
 
 
 class AbstractRuntime(ABC, Identifiable):
@@ -118,13 +119,47 @@ class AbstractRuntimeFactory(ABC):
     běhového prostředí tak, aby ji bylo možné spustit a ověřit tak plnění
     úlohy robotem s dodaným programem."""
 
-    def __init__(self, robot_factory: "robot_module.RobotFactory",
+    def __init__(self, available_units_names: "Iterable[str]",
+                 robot_factory: "robot_module.RobotFactory",
                  world_factory: "world_fact_module.WorldFactory",
                  target_factory: "target_module.TargetFactory"):
-        """"""
+        """Initor třídy, který přijímá instance továren, které budou dále
+        použity pro přípravu běhového prostředí.
+
+        V první řadě přijímá seznam názvů jednotek, kterými je možné robota
+        osadit. Jejich továrny musí být k dispozici, jinak tato továrna musí
+        při tvorbě instance běhového prostředí vyhazovat výjimku.
+
+        Vedle toho přijímá initor továrnu robotů, která slouží ke generování
+        a úvodní přípravě instancí robotů, kteří se budou v běhovém prostředí
+        vyskytovat.
+
+        Dále přijímá továrnu světa, které bude použito pro generování světa,
+        s nímž bude robot interagovat a v kterém bude plnit svoji úlohu.
+
+        Konečně přijímá i instanci samotné úlohy, která má být v rámci tohoto
+        běhového prostředí splněna a která testuje kvalitu programu.
+        """
+
+        # Evidence všech jednotek, kterými je možné robota osadit
+        self._available_units_names = list(available_units_names)
+
+        # Uložení potřebných továren - robotů, světa a úlohy
         self._robot_factory = robot_factory
         self._world_factory = world_factory
         self._target_factory = target_factory
+
+        """Seznam všech továrních tříd jednotek, kterými je možné v tomto
+        běhovém prostředí robota osadit. Jejich seznam je na počátku životního 
+        cyklu pochopitelně prázdný."""
+        self._unit_factories: "list[unit_module.AbstractUnitFactory]" = []
+
+    @property
+    def available_units_names(self) -> "tuple[str]":
+        """Funkce vrací názvy všech jednotek, které by měly být robotům k
+        dispozici pro plnění jejich cílů a kterými je možné tyto roboty osadit.
+        """
+        return tuple(self._available_units_names)
 
     @property
     def robot_factory(self) -> "robot_module.RobotFactory":
@@ -136,7 +171,7 @@ class AbstractRuntimeFactory(ABC):
     def world_factory(self) -> "world_fact_module.WorldFactory":
         """Vlastnost vrací továrnu světa, která je použita pro tvorbu světa,
         se kterým bude robot interagovat."""
-        return self._robot_factory
+        return self._world_factory
 
     @property
     def target_factory(self) -> "target_module.TargetFactory":
@@ -144,13 +179,29 @@ class AbstractRuntimeFactory(ABC):
         """
         return self._target_factory
 
+    def prepare_unit_factories(
+            self,
+            unit_factory_manager: "uf_manager_module.UnitFactoryManager"):
+        """Funkce je odpovědná za načtení všech továrních tříd jednotek z
+        předepsaného seznamu.
+
+        Všechny zadané tovární jednotky (dle jejich názvů definovaných v
+        initoru této třídy) musí být v rámci daného správce továren jednotek
+        dostupné. Pokud-že některá chybí je vyhozena výjimka.
+        """
+        for unit_name in self.available_units_names:
+            self._unit_factories.append(
+                unit_factory_manager.factory_by_unit_name(unit_name))
+
     @abstractmethod
-    def build(self, platform: "platform_module.Platform") -> "AbstractRuntime":
+    def build(self, platform: "platform_module.Platform",
+              program: "program_module.AbstractProgram") -> "AbstractRuntime":
         """Abstraktní funkce odpovědná za vybudování nové instance potomka
         třídy AbstractRuntime.
 
         V parametru přijímá instanci platformy, které toto běhové prostředí
-        náleží."""
+        náleží, vedle reference na program, který mají roboti mít a dle
+        kterého se mají chovat."""
 
 
 
