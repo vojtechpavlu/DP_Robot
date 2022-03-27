@@ -14,6 +14,7 @@ import src.fw.robot.robot as robot_module
 import src.fw.target.target as target_module
 import src.fw.robot.program as program_module
 import src.fw.robot.unit as unit_module
+import src.fw.platform.platform as platform_module
 
 
 class AbstractRuntime(ABC, Identifiable):
@@ -31,12 +32,11 @@ class AbstractRuntime(ABC, Identifiable):
     def __init__(self, world_factory: "world_fact_module.WorldFactory",
                  target_factory: "target_module.TargetFactory",
                  unit_factories: "Iterable[unit_module.AbstractUnitFactory]",
-                 program: "program_module.AbstractProgram"):
+                 program: "program_module.AbstractProgram",
+                 platform: "platform_module.Platform"):
         """Initor funkce, který přijímá tovární třídu světa, tovární třídu
         úlohy, množinu povolených továrních tříd jednotek a referenci na
         program."""
-
-        # TODO - doplnit integraci na platformu
 
         Identifiable.__init__(self)
 
@@ -44,6 +44,7 @@ class AbstractRuntime(ABC, Identifiable):
         self._world_factory = world_factory
         self._unit_factories = tuple(unit_factories)
         self._program = program
+        self._platform = platform
 
         self._world = None
         self._target = None
@@ -80,6 +81,12 @@ class AbstractRuntime(ABC, Identifiable):
         """Vlastnost vrací referenci na program, který má být spuštěn pro
         každého robota."""
         return self._program
+
+    @property
+    def platform(self) -> "platform_module.Platform":
+        """Vlastnost vrací platformu, které tato instance běhového prostředí
+        náleží."""
+        return self._platform
 
     def prepare(self):
         """Funkce připravující svět a úlohu ke spuštění. V podstatě si z
@@ -132,8 +139,13 @@ class AbstractRuntimeFactory(ABC):
         return self._target_factory
 
     @abstractmethod
-    def build(self) -> "AbstractRuntime":
+    def build(self, platform: "platform_module.Platform") -> "AbstractRuntime":
         """Abstraktní funkce odpovědná za vybudování nové instance potomka
-        třídy AbstractRuntime."""
+        třídy AbstractRuntime.
+
+        V parametru přijímá instanci platformy, které toto běhové prostředí
+        náleží."""
+
+
 
 
