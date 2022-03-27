@@ -11,6 +11,7 @@ from src.fw.utils.described import Described
 from src.fw.utils.identifiable import Identifiable
 
 import src.fw.robot.unit as unit_module
+import src.fw.world.world_interface as world_interface_module
 
 
 class Interaction(ABC, Identifiable, Named, Described):
@@ -57,12 +58,31 @@ class InteractionHandlerManager(ABC):
 
     def __init__(self):
         """"""
+        self._world_interface = None
         self._handlers: "list[InteractionHandler]" = []
 
     @property
     def interaction_handlers(self) -> "tuple[InteractionHandler]":
         """"""
         return tuple(self._handlers)
+
+    @property
+    def world_interface(self) -> "world_interface_module.WorldInterface":
+        """"""
+        return self._world_interface
+
+    @world_interface.setter
+    def world_interface(
+            self, world_interface: "world_interface_module.WorldInterface"):
+        """"""
+        if self.has_world_interface:
+            raise Exception("Rozhraní světa nelze znovu měnit")
+        self._world_interface = world_interface
+
+    @property
+    def has_world_interface(self) -> bool:
+        """"""
+        return self._world_interface is not None
 
     def add_interaction_handler(self, handler: "InteractionHandler"):
         """"""
