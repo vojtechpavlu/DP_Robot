@@ -121,7 +121,20 @@ class AbstractRuntimeFactory(ABC):
     def __init__(self, robot_factory: "robot_module.RobotFactory",
                  world_factory: "world_fact_module.WorldFactory",
                  target_factory: "target_module.TargetFactory"):
-        """"""
+        """Initor třídy, který přijímá instance továren, které budou dále
+        použity pro přípravu běhového prostředí.
+
+        V první řadě přijímá továrnu robotů, která slouží ke generování a
+        úvodní přípravě instancí robotů, kteří se budou v běhovém prostředí
+        vyskytovat.
+
+        Dále přijímá továrnu světa, které bude použito pro generování světa,
+        s nímž bude robot interagovat a v kterém bude plnit svoji úlohu.
+
+        Konečně přijímá i instanci samotné úlohy, která má být v rámci tohoto
+        běhového prostředí splněna a která testuje kvalitu programu.
+        """
+
         self._robot_factory = robot_factory
         self._world_factory = world_factory
         self._target_factory = target_factory
@@ -136,7 +149,7 @@ class AbstractRuntimeFactory(ABC):
     def world_factory(self) -> "world_fact_module.WorldFactory":
         """Vlastnost vrací továrnu světa, která je použita pro tvorbu světa,
         se kterým bude robot interagovat."""
-        return self._robot_factory
+        return self._world_factory
 
     @property
     def target_factory(self) -> "target_module.TargetFactory":
