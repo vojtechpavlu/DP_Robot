@@ -2,6 +2,8 @@
 klíčových tříd celého systému."""
 
 # Import standardních knihoven
+from abc import ABC, abstractmethod
+from typing import Iterable
 
 # Import lokálních knihoven
 from src.fw.robot.mounting_error import MountingError
@@ -9,6 +11,7 @@ from src.fw.utils.identifiable import Identifiable
 from src.fw.utils.named import Named
 
 import src.fw.robot.unit as unit_module
+import src.fw.robot.robot_name_generator as name_gnrtr_module
 
 
 class Robot(Identifiable, Named):
@@ -64,5 +67,100 @@ class Robot(Identifiable, Named):
                 f"Robot, ke kterému je napojena jednotka {unit} není "
                 f"tento: {unit.robot=}, {self}")
 
+
+class RobotFactory(ABC):
+    """Abstraktní třída RobotFactory je odpovědná za poskytování instancí
+    třídy Robot a jejich předpřipravení pomocí specifických procedur.
+
+    Tyto procedury jsou definovány zde jako funkce. Hlavní funkcí v kontextu
+    tovární třídy je zde funkce 'build()', která poskytuje novou instanci
+    robota."""
+
+    @property
+    @abstractmethod
+    def robot_name(self) -> str:
+        """Abstraktní vlastnost 'robot_name' je odpovědná za dodání názvu pro
+        robota. Její implementace by se měly postarat o poskytnutí textového
+        řetězce, který by symbolizoval název robota."""
+
+    @abstractmethod
+    def premount(self, robot: "Robot") -> "Robot":
+        """Abstraktní funkce 'premount(Robot)' (resp. její implementace) je
+        odpovědná za 'předosazení' robota definovanými jednotkami.
+
+        Zatímco součástí programu robota je i definice jednotek, kterými má
+        být robot osazen, v rámci zjednodušení celého procesu lze některé
+        jednotky předdefinovat jako výchozí."""
+
+    @abstractmethod
+    def build(self) -> "Robot":
+        """Implementace této funkce jsou odpovědné za připravení instance
+        robota a její vrácení.
+
+        Typicky k tomu je použito funkcí (resp. vlastností) 'robot_name' a
+        'premount(Robot)'."""
+
+
+class EmptyRobotFactory(RobotFactory):
+    """Třída EmptyRobotFactory připravuje prázdného robota bez specifického
+    názvu a specifických jednotek, kterými ho v rámci přípravy osadí."""
+
+    @property
+    def robot_name(self) -> str:
+        """Vlastnost vrací defaultní název robota, který je pro všechny roboty
+        vytvořené touto tovární třídou identický."""
+        return "«no_name»"
+
+    def premount(self, robot: "Robot") -> "Robot":
+        """Tato funkce nijak robota neosazuje. Pouze vrátí nezměněného robota,
+        kterého přijala.
+        """
+        return robot
+
+    def build(self) -> "Robot":
+        """Funkce vrací instanci nově vytvořeného robota včetně předosazení
+        defaultními jednotkami.
+        """
+        return self.premount(Robot(self.robot_name))
+
+
+class CompleteRobotFactory(EmptyRobotFactory):
+    """Třída CompleteRobotFactory je odpovědná za vytváření instancí robotů
+    pomocí kompletních procedur pojmenování a osazení výchozími jednotkami.
+    """
+
+    def __init__(self,
+                 unit_factories: "Iterable[unit_module.AbstractUnitFactory]",
+                 name_generator: "name_gnrtr_module.RobotNameGenerator"):
+        """Initor třídy přijímá množinu všech továrních tříd jednotek, kterými
+        je možné robota osadit. Dále přijímá generátor názvů robotů, kterého
+        bude použito pro pojmenovávání robotů."""
+
+        EmptyRobotFactory.__init__(self)
+
+        self._unit_factories = list(unit_factories)
+        self._name_generator = name_generator
+
+    @property
+    def unit_factories(self) -> "tuple[unit_module.AbstractUnitFactory]":
+        """Vlastnost vrací ntici všech továren jednotek, kterými bude v úvodní
+        fázi robot osazen."""
+        return tuple(self._unit_factories)
+
+    @property
+    def robot_name(self) -> str:
+        """Vlastnost vrací název, který byl pro robota vygenerován. Typicky
+        se odvíjí od náhodně zvoleného textového řetězce; pochopitelně vychází
+        z implementace dodaného generátoru."""
+        return self._name_generator.get()
+
+    def premount(self, robot: "Robot") -> "Robot":
+        """Funkce odpovědná za přípravu robota co do osazení výchozími
+        jednotkami. Napříč všemi továrními třídami jednotek je robot osazen
+        každou z těchto jednotek. Vrácen je osazený robot.
+        """
+        for unit_factory in self.unit_factories:
+            robot.mount(unit_factory.build())
+        return robot
 
 
