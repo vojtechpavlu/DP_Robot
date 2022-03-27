@@ -67,16 +67,36 @@ class Robot(Identifiable, Named):
 
 
 class RobotFactory(ABC):
-    """"""
+    """Abstraktní třída RobotFactory je odpovědná za poskytování instancí
+    třídy Robot a jejich předpřipravení pomocí specifických procedur.
 
-    def __init__(self):
-        """"""
+    Tyto procedury jsou definovány zde jako funkce. Hlavní funkcí v kontextu
+    tovární třídy je zde funkce 'build()', která poskytuje novou instanci
+    robota."""
+
+    @property
+    @abstractmethod
+    def robot_name(self) -> str:
+        """Abstraktní vlastnost 'robot_name' je odpovědná za dodání názvu pro
+        robota. Její implementace by se měly postarat o poskytnutí textového
+        řetězce, který by symbolizoval název robota."""
 
     @abstractmethod
     def premount(self, robot: "Robot"):
-        """"""
+        """Abstraktní funkce 'premount(Robot)' (resp. její implementace) je
+        odpovědná za 'předosazení' robota definovanými jednotkami.
+
+        Zatímco součástí programu robota je i definice jednotek, kterými má
+        být robot osazen, v rámci zjednodušení celého procesu lze některé
+        jednotky předdefinovat jako výchozí."""
 
     @abstractmethod
     def build(self):
-        """"""
+        """Implementace této funkce jsou odpovědné za připravení instance
+        robota a její vrácení.
+
+        Typicky k tomu je použito funkcí (resp. vlastností) 'robot_name' a
+        'premount(Robot)'."""
+
+
 
