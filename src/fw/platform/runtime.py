@@ -113,6 +113,24 @@ class AbstractRuntimeFactory(ABC):
         self._world_factory = world_factory
         self._target_factory = target_factory
 
+    @property
+    def robot_factory(self) -> "robot_module.RobotFactory":
+        """Vlastnost vrací továrnu robotů, které bude použito pro tvorbu
+        robotů."""
+        return self._robot_factory
+
+    @property
+    def world_factory(self) -> "world_fact_module.WorldFactory":
+        """Vlastnost vrací továrnu světa, která je použita pro tvorbu světa,
+        se kterým bude robot interagovat."""
+        return self._robot_factory
+
+    @property
+    def target_factory(self) -> "target_module.TargetFactory":
+        """Vlastnost vrací továrnu úlohy, které bude použito pro tvorbu úlohy.
+        """
+        return self._target_factory
+
     @abstractmethod
     def build(self) -> "AbstractRuntime":
         """Abstraktní funkce odpovědná za vybudování nové instance potomka
