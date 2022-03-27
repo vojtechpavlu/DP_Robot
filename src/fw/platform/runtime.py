@@ -50,5 +50,14 @@ class AbstractRuntime(ABC, Identifiable):
         """"""
 
 
+class AbstractRuntimeFactory(ABC):
+    """"""
+
+    def __init__(self):
+        """"""
+
+    @abstractmethod
+    def build(self):
+        """"""
 
 
