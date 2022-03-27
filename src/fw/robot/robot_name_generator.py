@@ -79,4 +79,34 @@ class FamousExplorers(RobotNameGenerator):
         return choice(FamousExplorers._NAMES).lower()
 
 
+class RandomRobotName(RobotNameGenerator):
+    """"""
+
+    _DEF_ALPHABET = "abcdefghijklmnopqrstuvwxyz123456789"
+
+    def __init__(self, name_length: int = 8, alphabet: str = _DEF_ALPHABET):
+        """"""
+        self._length = name_length
+        self._alphabet = alphabet.split("")
+
+        if len(self._alphabet) <= 1:
+            raise Exception("Použitá abeceda musí být delší než 1 znak")
+
+    @property
+    def alphabet(self) -> "tuple[str]":
+        """"""
+        return tuple(self._alphabet)
+
+    @property
+    def name_length(self) -> int:
+        """"""
+        return self._length
+
+    def get(self) -> str:
+        """"""
+        gen_name = self.get()
+        return (gen_name if len(gen_name) == self.name_length
+                else f"{choice(self.alphabet)}{gen_name}")
+
+
 
