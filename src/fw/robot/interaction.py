@@ -83,9 +83,15 @@ class InteractionHandler(ABC):
         dodané interakce."""
         return type(interaction) is self.interaction_type
 
-    @abstractmethod
-    def execute(self, interaction: "Interaction") -> object:
+    def execute(self, interaction: "Interaction",
+                interface: "wrld_interf_module.WorldInterface") -> object:
         """"""
+        if self.is_mine(interaction):
+            return interaction.execute_interaction(interface)
+        else:
+            raise Exception(
+                f"Interakce typu '{type(interaction)}' nelze zpracovávat "
+                f"tímto handlerem: '{self}'")
 
 
 class InteractionHandlerFactory(ABC):
