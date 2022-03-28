@@ -36,6 +36,7 @@ class WorldInterface(interaction_module.InteractionHandlerManager):
         """Funkce odpovědná za zprocesování požadované interakce na úrovni
         světa, resp. jeho rozhraní.
         """
+        # TODO - Přidat kontrolu (příslušnost, roboti, jednotky, ...) a rules
         return self.get_interaction_handler(interaction).execute(
             interaction, self)
 
