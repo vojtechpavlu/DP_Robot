@@ -33,8 +33,11 @@ class WorldInterface(interaction_module.InteractionHandlerManager):
 
     def process_interaction(
             self, interaction: "interaction_module.Interaction") -> object:
-        """"""
-        self.get_interaction_handler(interaction).execute(interaction, self)
+        """Funkce odpovědná za zprocesování požadované interakce na úrovni
+        světa, resp. jeho rozhraní.
+        """
+        return self.get_interaction_handler(interaction).execute(
+            interaction, self)
 
 
 
