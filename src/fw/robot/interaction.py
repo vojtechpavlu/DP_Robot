@@ -83,6 +83,10 @@ class InteractionHandler(ABC):
         dodané interakce."""
         return type(interaction) is self.interaction_type
 
+    @abstractmethod
+    def execute(self, interaction: "Interaction") -> object:
+        """"""
+
 
 class InteractionHandlerFactory(ABC):
     """Abstraktní třída InteractionHandlerFactory slouží k tvorbě handlerů,
