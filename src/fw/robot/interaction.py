@@ -106,9 +106,16 @@ class InteractionHandlerFactory(ABC):
 class InteractionFactory(ABC):
     """"""
 
+    def __init__(self):
+        """"""
+        self.__world_interface: "wrld_interf_module.WorldInterface" = None
+
     @abstractmethod
     def build_interaction(self) -> "Interaction":
         """"""
+
+    def interact(self) -> object:
+        """Funkce odpovědná za provedení interakce, resp. její iniciace."""
 
 
 class InteractionHandlerManager(ABC):
@@ -117,14 +124,10 @@ class InteractionHandlerManager(ABC):
 
     def __init__(self):
         """Initor třídy, který je odpovědný především za inicializaci
-        proměnných.
+        proměnných, tedy handlerů, které má správce evidovány. V úvodní
+        fázi je evidence prázdná, tyto jsou dodávány až za běhu životního
+        cyklu instance.
         """
-
-        # Rozhraní světa, které je definováno až po vytvoření instance
-        self._world_interface = None
-
-        """Handlery, které má správce evidovány. V úvodní fázi je evidence 
-        prázdná, tyto jsou dodávány až za běhu životního cyklu instance."""
         self._handlers: "list[InteractionHandler]" = []
 
     @property
@@ -132,32 +135,6 @@ class InteractionHandlerManager(ABC):
         """Vlastnost vrací ntici všech handlerů, které má správce v evidenci.
         """
         return tuple(self._handlers)
-
-    @property
-    def world_interface(self) -> "wrld_interf_module.WorldInterface":
-        """Vlastnost vrací rozhraní světa, které je tomuto správci přiděleno.
-        """
-        return self._world_interface
-
-    @world_interface.setter
-    def world_interface(
-            self, world_interface: "wrld_interf_module.WorldInterface"):
-        """Vlastnost nastavuje rozhraní světa. Toto rozhraní lze nastavit
-        pouze jednou. Při pokusu o nastavení hodnoty None nebo přenastavení
-        již jednou nastaveného rozhraní je vyhozena výjimka. Tato typicky
-        značí pokus o podvod nebo chybu ve specifikaci budování systému.
-        """
-        # TODO - specifikace výjimek
-        if world_interface is None:
-            raise Exception("Nelze nastavit prázdné rozhraní světa")
-        elif self.has_world_interface:
-            raise Exception("Rozhraní světa nelze znovu měnit")
-        self._world_interface = world_interface
-
-    @property
-    def has_world_interface(self) -> bool:
-        """Vlastnost vrací, bylo-li rozhraní světa nastaveno či nikoliv."""
-        return self._world_interface is not None
 
     def add_interaction_handler(self, handler: "InteractionHandler"):
         """Funkce se pokusí přidat dodaný handler do evidence tohoto správce.
@@ -172,7 +149,7 @@ class InteractionHandlerManager(ABC):
                     f"interakce: '{handler.interaction_type}'")
         self._handlers.append(handler)
 
-    def has_handler(self, interaction: "Interaction") -> bool:
+    def has_interaction_handler(self, interaction: "Interaction") -> bool:
         """Funkce se pokusí vyhledat handler odpovědný za zpracování interakcí
         daného typu. Pokud-že takový není nalezen, je vráceno False, jinak
         True."""
@@ -181,7 +158,8 @@ class InteractionHandlerManager(ABC):
                 return True
         return False
 
-    def get_handler(self, interaction: "Interaction") -> "InteractionHandler":
+    def get_interaction_handler(
+            self, interaction: "Interaction") -> "InteractionHandler":
         """Funkce se pokusí vrátit pro danou interakci handler, který je za
         zpracování této interakce odpovědný.
 
