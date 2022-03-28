@@ -12,14 +12,22 @@ from src.fw.utils.named import Named
 from src.fw.utils.described import Described
 
 import src.fw.robot.robot as robot_module
+import src.fw.robot.interaction as interaction_module
 
 
-class AbstractUnit(ABC, Identifiable, Named, Described):
+class AbstractUnit(ABC, Identifiable, Named, Described,
+                   interaction_module.InteractionFactory):
     """Abstraktní třída AbstractUnit definuje základní společný protokol
     pro všechny jednotky, kterými je možné robota osadit.
 
     Jádrem je rozlišitelnost senzorů a aktuátorů, stejně jako udržování
-    reference na robota, který je instancí této jednotky osazen."""
+    reference na robota, který je instancí této jednotky osazen.
+
+    Kromě toho zastávají jednotky i roli tzv. 'InteractionFactory'. Z titulu
+    rodičovství této třídy vůči abstraktní jednotce jsou potomci třídy
+    AbstractUnit opatřeni schopností interagovat s rozhraním světa, tedy
+    budovat a posílat instance interakcí na toto rozhraní, které tyto zpracuje.
+    """
 
     def __init__(self, unit_name: str, unit_desc: str,
                  unit_factory: "AbstractUnitFactory"):
@@ -39,6 +47,7 @@ class AbstractUnit(ABC, Identifiable, Named, Described):
         Identifiable.__init__(self)
         Named.__init__(self, unit_name)
         Described.__init__(self, unit_desc)
+        interaction_module.InteractionFactory.__init__(self)
 
         self._robot: "robot_module.Robot" = None
         self._unit_factory = unit_factory
@@ -100,9 +109,10 @@ class Actuator(ABC, AbstractUnit):
     je na abstraktní úrovni definována předkem.
     """
 
-    def __init__(self, unit_name: str, unit_factory: "AbstractUnitFactory"):
+    def __init__(self, unit_name: str, unit_desc: str,
+                 unit_factory: "AbstractUnitFactory"):
         """Jednoduchý initor odpovědný za volání předka."""
-        AbstractUnit.__init__(self, unit_name, unit_factory)
+        AbstractUnit.__init__(self, unit_name, unit_desc, unit_factory)
 
     def is_sensor(self) -> bool:
         """Funkce vrací informaci o tom, že tato jednotka není senzorem."""
@@ -127,9 +137,10 @@ class Sensor(ABC, AbstractUnit):
     Instance třídy Sensor mají silnou vazbu na funkci 'scan()', která je
     na abstraktní úrovni definována předkem."""
 
-    def __init__(self, unit_name: str, unit_factory: "AbstractUnitFactory"):
+    def __init__(self, unit_name: str, unit_desc: str,
+                 unit_factory: "AbstractUnitFactory"):
         """Jednoduchý initor odpovědný za volání předka."""
-        AbstractUnit.__init__(self, unit_name, unit_factory)
+        AbstractUnit.__init__(self, unit_name, unit_desc, unit_factory)
 
     def is_sensor(self) -> bool:
         """Funkce vrací informaci o tom, že tato jednotka je senzorem."""
@@ -140,12 +151,18 @@ class Sensor(ABC, AbstractUnit):
         return False
 
 
-class AbstractUnitFactory(ABC, Identifiable, Named):
+class AbstractUnitFactory(ABC, Identifiable, Named,
+                          interaction_module.InteractionHandlerFactory):
     """Abstraktní třída 'UnitFactory' definuje obecný protokol pro své
     potomky, tedy již konkrétní tovární třídy jednotlivých jednotek.
 
     Koncepce tovární třídy umožňuje standardizaci definice a znovupoužití
     procesu tvorby instancí jednotek (instancí třídy 'Unit').
+
+    Kromě toho zastává roli také tzv. 'InteractionHandlerFactory', tedy že
+    jsou instance této třídy odpovědné za poskytování instancí handlerů. Tím
+    je zajištěno, že lze obdržet nástroje pro zpracování interakcí vytvořených
+    jednotkou vytvořenou touto továrnou.
     """
 
     def __init__(self, factory_name: str, unit_name: str):
@@ -155,6 +172,7 @@ class AbstractUnitFactory(ABC, Identifiable, Named):
 
         Identifiable.__init__(self)
         Named.__init__(self, factory_name)
+        interaction_module.InteractionHandlerFactory.__init__(self)
 
         """Název, který budou jednotlivé jednotky nést."""
         self._unit_name = unit_name
