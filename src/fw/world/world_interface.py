@@ -10,9 +10,10 @@ pro stanovení jednotného a snazšího rozhraní pro manipulaci se světem."""
 
 # Import lokálních knihoven
 import src.fw.world.world as world_module
+import src.fw.robot.interaction as interaction_module
 
 
-class WorldInterface:
+class WorldInterface(interaction_module.InteractionHandlerManager):
     """Instance této třídy slouží jako jakási fasáda světa. Tato vrstva mezi
     světem a robotem (resp. jeho jednotkami) je navržena tak, aby zpracovávala
     interakce robota a propisovala je do světa, stejně jako o světě vracela
@@ -22,12 +23,21 @@ class WorldInterface:
         """Initor třídy, který přijímá instanci světa, kterému náleží a se
         kterým bude tato komunikovat.
         """
+        interaction_module.InteractionHandlerManager.__init__(self)
         self._world = world
 
     @property
     def world(self) -> "world_module.World":
         """Svět, kterému toto rozhraní náleží."""
         return self._world
+
+    def process_interaction(
+            self, interaction: "interaction_module.Interaction") -> object:
+        """"""
+        #self.get_interaction_handler(interaction)
+
+
+
 
 
 
