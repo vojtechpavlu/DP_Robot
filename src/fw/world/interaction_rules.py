@@ -70,6 +70,30 @@ class LimitedCounter(InteractionRule):
         return self.have_left > 0
 
 
+class LimitPerInteractionType(InteractionRule):
+    """"""
+
+    def __init__(self, num_of_allowed: int = 500):
+        """"""
+        self._num_of_allowed = 500
+        self._registry = {}
+
+    def tick(self, interaction: "interaction_module.Interaction") -> int:
+        """"""
+        typename = interaction.interaction_type.__name__
+        if typename in self._registry:
+            self._registry[typename] += 1
+        else:
+            self._registry[typename] = 1
+        return self._registry[typename]
+
+    def check(self, interaction: "interaction_module.Interaction") -> bool:
+        return self.tick(interaction) < self._num_of_allowed
+
+
+
+
+
 
 
 
