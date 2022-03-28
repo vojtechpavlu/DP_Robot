@@ -114,18 +114,42 @@ class InteractionHandlerFactory(ABC):
 
 
 class InteractionFactory(ABC):
-    """"""
+    """Abstraktní třída InteractionFactory definuje způsob, jakým mají být
+    vytvářeny a postupovány interakce se světem, resp. jeho rozhraním."""
 
     def __init__(self):
-        """"""
+        """Initor třídy, který je odpovědná především za připravení prázdných
+        polí. Konkrétně o privátní uložení reference na rozhraní světa; tak,
+        aby byl co nejvíce znepříjemněn pokus o její získání.
+        """
         self.__world_interface: "wrld_interf_module.WorldInterface" = None
+
+    def set_world_interface(
+            self, world_interface: "wrld_interf_module.WorldInterface"):
+        """Funkce se pokusí nastavit rozhraní světa (se kterým má být
+        interagováno). Pokud je postoupena prázdná instance (None), je
+        vyhozena výjimka; stejně tak v případě, že by zde byl pokus o
+        znovunastavení již existujícího rozhraní.
+        """
+        # TODO - Specifikace výjimky
+        if world_interface is None:
+            raise Exception("Nelze nastavit prázdné rozhraní světa")
+        elif self.__world_interface is not None:
+            raise Exception("Rozhraní světa již jednou nastaveno bylo")
+        self.__world_interface = world_interface
 
     @abstractmethod
     def build_interaction(self) -> "Interaction":
-        """"""
+        """Abstraktní funkce, která definuje protokol způsobu získávání
+        instance interakce."""
 
     def interact(self) -> object:
-        """Funkce odpovědná za provedení interakce, resp. její iniciace."""
+        """Funkce odpovědná za provedení interakce, resp. její iniciace.
+        Ta je odeslána na objekt rozhraní světa, které je z titulu
+        'InteractionHandlerManager' odpovědné za její zprocesování.
+        """
+        return self.__world_interface.process_interaction(
+            self.build_interaction())
 
 
 class InteractionHandlerManager(ABC):
