@@ -6,6 +6,7 @@ zabezpečit svět před nepovolenými interakcemi, pro zajištění jeho integri
 pro stanovení jednotného a snazšího rozhraní pro manipulaci se světem."""
 
 # Import standardních knihoven
+from abc import ABC, abstractmethod
 
 
 # Import lokálních knihoven
@@ -76,6 +77,13 @@ class WorldInterface(interaction_module.InteractionHandlerManager):
         return self.get_interaction_handler(interaction).execute(
             interaction, self)
 
+
+class WorldInterfaceFactory(ABC):
+    """"""
+
+    @abstractmethod
+    def build(self):
+        """"""
 
 
 
