@@ -97,6 +97,19 @@ class WorldInterfaceFactory(ABC):
         instance schopné přijímat a aplikovat interakce robotů."""
 
 
+class DefaultWorldInterfaceFactory(WorldInterfaceFactory):
+    """"""
 
+    def __init__(self):
+        """"""
+        WorldInterfaceFactory.__init__(self)
 
+    def build(self, world: "world_module.World") -> "WorldInterface":
+        """"""
+
+        # Definice továrny správce interakčních pravidel; použití výchozí
+        ir_manager_factory = inter_rls.DefaultInteractionRuleManagerFactory()
+
+        # Vrácení nově vytvořené instance rozhraní světa
+        return WorldInterface(world, ir_manager_factory)
 
