@@ -79,12 +79,22 @@ class WorldInterface(interaction_module.InteractionHandlerManager):
 
 
 class WorldInterfaceFactory(ABC):
-    """"""
+    """Abstraktní továrna rozhraní světa stanovuje obecný protokol pro
+    všechny továrny starající se o dynamické poskytování instancí třídy
+    WorldInterface.
+
+    Cílem je poskytnout instanci rozhraní světa se všemi potřebnými
+    vlastnostmi; typicky především včetně umělých (interakčních) pravidel.
+    """
 
     @abstractmethod
-    def build(self):
-        """"""
+    def build(self, world: "world_module.World") -> "WorldInterface":
+        """Abstraktní funkce 'build()' odpovědná za vytvoření rozhraní
+        světa. Funkce přijímá referenci na svět, jehož rozhraní má být
+        touto funkcí vytvořeno a vráceno jako návratová hodnota funkce.
 
+        Její implementace v potomcích této třídy se musí postarat o vytvoření
+        instance schopné přijímat a aplikovat interakce robotů."""
 
 
 
