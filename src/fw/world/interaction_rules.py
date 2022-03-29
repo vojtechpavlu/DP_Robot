@@ -163,6 +163,17 @@ class InteractionRuleManagerFactory(ABC):
         a celkového připravení do provozuschopného stavu."""
 
 
+class DefaultInteractionRuleManagerFactory(InteractionRuleManagerFactory):
+    """"""
+
+    def build(self) -> "InteractionRuleManager":
+        """"""
+        ir_manager = InteractionRuleManager()
+        ir_manager.add_all_interaction_rules([
+            LimitedCounter(), LimitPerInteractionType()])
+        return ir_manager
+
+
 class InteractionRulesError(PlatformError):
     """Výjimka značící vznik chyby v souvislosti s interakčními pravidly.
     Obecnou výjimku rozšiřuje kromě zprávy o množinu interakčních pravidel,
