@@ -1,5 +1,8 @@
-""""""
+"""Modul obsahuje definici omezujících podmínek, za kterých je či není možné
+aplikovat interakci.
 
+Typickým zástupcem je třída LimitedCounter, která definuje, že pro každý běh
+je možné aplikovat jen shora omezený počet interakcí."""
 
 # Import standardních knihoven
 from abc import ABC, abstractmethod
@@ -109,32 +112,36 @@ class LimitPerInteractionType(InteractionRule):
 
 
 class InteractionRuleManager:
-    """"""
+    """Správce interakčních pravidel je kontejner, který umožňuje sdružovat
+    a hromadně vyhodnocovat definovaná interakční pravidla."""
 
     def __init__(self):
-        """"""
+        """Initor, který pouze připravuje seznam interakčních pravidel.
+        Ten je na počátku prázdný; pravidla se přidávají až během dalších
+        fází životního cyklu instance.
+        """
         self._rules: "list[InteractionRule]" = []
 
     @property
     def interaction_rules(self) -> "tuple[InteractionRule]":
-        """"""
+        """Vlastnost vrací ntici reprezentující množinu interakčních pravidel.
+        """
         return tuple(self._rules)
 
     def add_interaction_rule(self, rule: "InteractionRule"):
-        """"""
+        """Funkce přidá interakční pravidlo do evidence."""
         self._rules.append(rule)
 
+    def add_all_interaction_rules(self, rules: "Iterable[InteractionRule]"):
+        """Funkce přidá všechna dodaná interakční pravidla do evidence."""
+        self._rules.extend(rules)
+
     def violated_rules(self, interaction: "interaction_module.Interaction"
-              ) -> "tuple[InteractionRule]":
-        """"""
+                       ) -> "tuple[InteractionRule]":
+        """Funkce z dodané interakce vyhodnotí seznam porušených interakčních
+        pravidel, který vrátí v podobě ntice.
+
+        Všechna vrácená pravidla značí ta porušená. Pokud je vrácená ntice
+        prázdná, znamená to, že žádné nebylo při zpracování porušeno."""
         return tuple(filter(
             lambda rule: not rule.check(interaction), self.interaction_rules))
-
-
-
-
-
-
-
-
-
