@@ -1,4 +1,5 @@
-""""""
+"""Tento modul je odpovědný za definici továrních tříd světů. Jejich účelem
+je dynamicky tvořit na požádání nové instance světa."""
 
 # Import standardních knihoven
 from abc import ABC, abstractmethod
