@@ -163,6 +163,42 @@ class InteractionRuleManagerFactory(ABC):
         a celkového připravení do provozuschopného stavu."""
 
 
+class DefaultInteractionRuleManagerFactory(InteractionRuleManagerFactory):
+    """Továrna implementující svého předka 'InteractionRuleManagerFactory'
+    odpovědná za poskytování nových instancí třídy 'InteractionRuleManager'
+    s obecnými a doporučenými pravidly a defaultními hodnotami."""
+
+    def build(self) -> "InteractionRuleManager":
+        """Funkce implementuje abstraktní funkci svého předka. Jejím cílem
+        je poskytnutí nové instance třídy InteractionRuleManager s defaultním
+        nastavením."""
+
+        # Vytvoření nové prázdné instance správce interakčních pravidel
+        ir_manager = InteractionRuleManager()
+
+        # Naplnění defaultními pravidly s výchozími hodnotami
+        ir_manager.add_all_interaction_rules([
+            LimitedCounter(), LimitPerInteractionType()])
+
+        # Vrácení vytvořeného správce s výchozím nastavením
+        return ir_manager
+
+
+class EmptyInteractionRuleManagerFactory(InteractionRuleManagerFactory):
+    """Továrna odpovědná za vytvoření prázdného správce interakčních pravidel.
+    Poskytované instance správců (instancí třídy 'InteractionRuleManager')
+    jsou prosty jakýchkoliv pravidel a zastávají roli jen doplňující.
+
+    Není doporučeno používat tuto továrnu za jiným, než účelem testování
+    a ladění, bez dalšího rozšiřování evidence pravidel."""
+
+    def build(self) -> "InteractionRuleManager":
+        """Funkce je odpovědná za vytvoření prázdného správce interakčních
+        pravidel, tedy správce bez pravidel.
+        """
+        return InteractionRuleManager()
+
+
 class InteractionRulesError(PlatformError):
     """Výjimka značící vznik chyby v souvislosti s interakčními pravidly.
     Obecnou výjimku rozšiřuje kromě zprávy o množinu interakčních pravidel,

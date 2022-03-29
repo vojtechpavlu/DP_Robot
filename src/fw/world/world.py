@@ -4,6 +4,8 @@ manipulace s herním světem.
 
 # Import lokálních knihoven
 import src.fw.world.field as field_mod
+import src.fw.world.world_interface as world_inter_module
+
 from src.fw.utils.error import PlatformError
 from src.fw.world.direction import Direction
 
@@ -17,7 +19,8 @@ class World:
     sousedy sledovaného políčka.
     """
 
-    def __init__(self, fields: "list[field_mod.Field]"):
+    def __init__(self, fields: "list[field_mod.Field]",
+                 world_if_fact: "world_inter_module.WorldInterfaceFactory"):
         """Initor třídy je odpovědný za přijetí všech parametrů a jejich
         uložení.
 
@@ -29,6 +32,11 @@ class World:
 
         Dalším krokem je nastavení reference na tuto instanci světa pro každé
         políčko pro snazší manipulaci v kontextu políček světa.
+
+        Dalším významným parametrem je továrna rozhraní světa (world_if_fact),
+        která je odpovědná za vytvoření rozhraní světa, které bude tomuto
+        světu náležet a které se bude starat o zajištění integrity světa při
+        interakcích se světem.
         """
         self._fields = fields
 
@@ -51,6 +59,9 @@ class World:
                         f"Nelze evidovat dvě políčka se "
                         f"stejnými souřadnicemi", self)
 
+        """Připravení rozhraní světa z dodané továrny"""
+        self._world_interface = world_if_fact.build(self)
+
     @property
     def fields(self) -> "tuple[field_mod.Field]":
         """Vlastnost vrací ntici ze seznamu všech políček, která má svět
@@ -68,6 +79,11 @@ class World:
         """Vlastnost vrací ntici ze seznamu všech políček, která jsou stěnou,
         tedy potomky třídy Wall."""
         return tuple(filter(lambda field: field.is_wall, self.fields))
+
+    @property
+    def world_interface(self) -> "world_inter_module.WorldInterface":
+        """Vlastnost vrací rozhraní světa, které tomuto světu náleží."""
+        return self._world_interface
 
     def has_field(self, x: int, y: int) -> bool:
         """Funkce vrací boolovskou informaci o tom, zda-li je v daném světě

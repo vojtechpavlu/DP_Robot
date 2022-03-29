@@ -6,6 +6,7 @@ zabezpečit svět před nepovolenými interakcemi, pro zajištění jeho integri
 pro stanovení jednotného a snazšího rozhraní pro manipulaci se světem."""
 
 # Import standardních knihoven
+from abc import ABC, abstractmethod
 
 
 # Import lokálních knihoven
@@ -77,8 +78,45 @@ class WorldInterface(interaction_module.InteractionHandlerManager):
             interaction, self)
 
 
+class WorldInterfaceFactory(ABC):
+    """Abstraktní továrna rozhraní světa stanovuje obecný protokol pro
+    všechny továrny starající se o dynamické poskytování instancí třídy
+    WorldInterface.
+
+    Cílem je poskytnout instanci rozhraní světa se všemi potřebnými
+    vlastnostmi; typicky především včetně umělých (interakčních) pravidel.
+    """
+
+    @abstractmethod
+    def build(self, world: "world_module.World") -> "WorldInterface":
+        """Abstraktní funkce 'build()' odpovědná za vytvoření rozhraní
+        světa. Funkce přijímá referenci na svět, jehož rozhraní má být
+        touto funkcí vytvořeno a vráceno jako návratová hodnota funkce.
+
+        Její implementace v potomcích této třídy se musí postarat o vytvoření
+        instance schopné přijímat a aplikovat interakce robotů."""
 
 
+class DefaultWorldInterfaceFactory(WorldInterfaceFactory):
+    """Tovární třída odpovědná za poskytování výchozích instancí třídy
+    'WorldInterface', tedy s výchozím nastavením."""
 
+    def __init__(self):
+        """Jednoduchý initor odpovědný za iniciaci předka."""
+        WorldInterfaceFactory.__init__(self)
 
+    def build(self, world: "world_module.World") -> "WorldInterface":
+        """Implementace abstraktní funkce předka. Jejím cílem je poskytnutí
+        instance rozhraní světa. Konkrétně má tato za cíl poskytnout instanci
+        s výchozím nastavením.
+
+        Konkrétněji tedy dodává instanci rozhraní světa pro dodaný svět s
+        defaultními interakčními pravidly, resp. s defaultním správcem
+        interakčních pravidel."""
+
+        # Definice továrny správce interakčních pravidel; použití výchozí
+        ir_manager_factory = inter_rls.DefaultInteractionRuleManagerFactory()
+
+        # Vrácení nově vytvořené instance rozhraní světa
+        return WorldInterface(world, ir_manager_factory)
 
