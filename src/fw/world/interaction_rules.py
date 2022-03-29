@@ -108,6 +108,30 @@ class LimitPerInteractionType(InteractionRule):
         return self.tick(interaction) <= self._num_of_allowed
 
 
+class InteractionRuleManager:
+    """"""
+
+    def __init__(self):
+        """"""
+        self._rules: "list[InteractionRule]" = []
+
+    @property
+    def interaction_rules(self) -> "tuple[InteractionRule]":
+        """"""
+        return tuple(self._rules)
+
+    def add_interaction_rule(self, rule: "InteractionRule"):
+        """"""
+        self._rules.append(rule)
+
+    def violated_rules(self, interaction: "interaction_module.Interaction"
+              ) -> "tuple[InteractionRule]":
+        """"""
+        return tuple(filter(
+            lambda rule: not rule.check(interaction), self.interaction_rules))
+
+
+
 
 
 
