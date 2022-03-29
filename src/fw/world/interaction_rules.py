@@ -164,13 +164,23 @@ class InteractionRuleManagerFactory(ABC):
 
 
 class DefaultInteractionRuleManagerFactory(InteractionRuleManagerFactory):
-    """"""
+    """Továrna implementující svého předka 'InteractionRuleManagerFactory'
+    odpovědná za poskytování nových instancí třídy 'InteractionRuleManager'
+    s obecnými a doporučenými pravidly a defaultními hodnotami."""
 
     def build(self) -> "InteractionRuleManager":
-        """"""
+        """Funkce implementuje abstraktní funkci svého předka. Jejím cílem
+        je poskytnutí nové instance třídy InteractionRuleManager s defaultním
+        nastavením."""
+
+        # Vytvoření nové prázdné instance správce interakčních pravidel
         ir_manager = InteractionRuleManager()
+
+        # Naplnění defaultními pravidly s výchozími hodnotami
         ir_manager.add_all_interaction_rules([
             LimitedCounter(), LimitPerInteractionType()])
+
+        # Vrácení vytvořeného správce s výchozím nastavením
         return ir_manager
 
 
