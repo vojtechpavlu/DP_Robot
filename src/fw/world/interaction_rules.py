@@ -10,12 +10,16 @@ from typing import Iterable
 
 # Import lokálních knihoven
 import src.fw.robot.interaction as interaction_module
+from src.fw.utils.error import PlatformError
 
 
 class InteractionRule(ABC):
     """Abstraktní třída InteractionRule definuje protokol pro všechna
     pravidla, která ověřují formální správnost interakcí; tedy zda-li je je
     možné aplikovat.
+
+    Tato pravidla jsou svým způsobem umělá - nemají přímou vazbu na svět
+    a nepředchází nutně případným narušením integrity tohoto světa.
 
     Typickými pravidly je například omezení aplikovatelného počtu interakcí.
     """
@@ -145,3 +149,39 @@ class InteractionRuleManager:
         prázdná, znamená to, že žádné nebylo při zpracování porušeno."""
         return tuple(filter(
             lambda rule: not rule.check(interaction), self.interaction_rules))
+
+
+class InteractionRuleManagerFactory(ABC):
+    """Továrna správce interakčních pravidel umožňuje dynamicky tvořit
+    instance těchto správců. Tato abstraktní třída umožňuje definovat základní
+    společný protokol pro všechny instance takových továren."""
+
+    @abstractmethod
+    def build(self) -> "InteractionRuleManager":
+        """Abstraktní funkce odpovědná za definici protokolu dynamické
+        tvorby instance správce interakčních pravidel včetně jejich dodání
+        a celkového připravení do provozuschopného stavu."""
+
+
+class InteractionRulesError(PlatformError):
+    """Výjimka značící vznik chyby v souvislosti s interakčními pravidly.
+    Obecnou výjimku rozšiřuje kromě zprávy o množinu interakčních pravidel,
+    v jejichž kontextu došlo k problému.
+
+    Typicky je výjimka vyhazována, bylo-li porušeno jedno nebo více pravidel.
+    """
+
+    def __init__(self, message: str, rules: "Iterable[InteractionRule]"):
+        """Initor, který přijímá průvodní zprávu specifikující chybu a
+        množinu interakčních pravidel, v jejichž kontextu došlo k problému.
+        """
+        PlatformError.__init__(self, message)
+        self._rules = tuple(rules)
+
+    @property
+    def interaction_rules(self) -> "tuple[InteractionRule]":
+        """Vlastnost vrací ntici interakčních pravidel, v jejichž kontextu
+        došlo k problému."""
+        return self._rules
+
+
