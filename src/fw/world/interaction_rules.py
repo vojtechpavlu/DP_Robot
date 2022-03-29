@@ -145,3 +145,15 @@ class InteractionRuleManager:
         prázdná, znamená to, že žádné nebylo při zpracování porušeno."""
         return tuple(filter(
             lambda rule: not rule.check(interaction), self.interaction_rules))
+
+
+class InteractionRuleManagerFactory(ABC):
+    """Továrna správce interakčních pravidel umožňuje dynamicky tvořit
+    instance těchto správců. Tato abstraktní třída umožňuje definovat základní
+    společný protokol pro všechny instance takových továren."""
+
+    @abstractmethod
+    def build(self) -> "InteractionRuleManager":
+        """Abstraktní funkce odpovědná za definici protokolu dynamické
+        tvorby instance správce interakčních pravidel včetně jejich dodání
+        a celkového připravení do provozuschopného stavu."""
