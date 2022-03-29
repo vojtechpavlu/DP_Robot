@@ -98,14 +98,21 @@ class WorldInterfaceFactory(ABC):
 
 
 class DefaultWorldInterfaceFactory(WorldInterfaceFactory):
-    """"""
+    """Tovární třída odpovědná za poskytování výchozích instancí třídy
+    'WorldInterface', tedy s výchozím nastavením."""
 
     def __init__(self):
-        """"""
+        """Jednoduchý initor odpovědný za iniciaci předka."""
         WorldInterfaceFactory.__init__(self)
 
     def build(self, world: "world_module.World") -> "WorldInterface":
-        """"""
+        """Implementace abstraktní funkce předka. Jejím cílem je poskytnutí
+        instance rozhraní světa. Konkrétně má tato za cíl poskytnout instanci
+        s výchozím nastavením.
+
+        Konkrétněji tedy dodává instanci rozhraní světa pro dodaný svět s
+        defaultními interakčními pravidly, resp. s defaultním správcem
+        interakčních pravidel."""
 
         # Definice továrny správce interakčních pravidel; použití výchozí
         ir_manager_factory = inter_rls.DefaultInteractionRuleManagerFactory()
