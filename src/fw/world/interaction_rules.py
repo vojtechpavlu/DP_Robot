@@ -184,6 +184,21 @@ class DefaultInteractionRuleManagerFactory(InteractionRuleManagerFactory):
         return ir_manager
 
 
+class EmptyInteractionRuleManagerFactory(InteractionRuleManagerFactory):
+    """Továrna odpovědná za vytvoření prázdného správce interakčních pravidel.
+    Poskytované instance správců (instancí třídy 'InteractionRuleManager')
+    jsou prosty jakýchkoliv pravidel a zastávají roli jen doplňující.
+
+    Není doporučeno používat tuto továrnu za jiným, než účelem testování
+    a ladění, bez dalšího rozšiřování evidence pravidel."""
+
+    def build(self) -> "InteractionRuleManager":
+        """Funkce je odpovědná za vytvoření prázdného správce interakčních
+        pravidel, tedy správce bez pravidel.
+        """
+        return InteractionRuleManager()
+
+
 class InteractionRulesError(PlatformError):
     """Výjimka značící vznik chyby v souvislosti s interakčními pravidly.
     Obecnou výjimku rozšiřuje kromě zprávy o množinu interakčních pravidel,
