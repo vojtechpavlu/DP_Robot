@@ -18,6 +18,9 @@ class InteractionRule(ABC):
     pravidla, která ověřují formální správnost interakcí; tedy zda-li je je
     možné aplikovat.
 
+    Tato pravidla jsou svým způsobem umělá - nemají přímou vazbu na svět
+    a nepředchází nutně případným narušením integrity tohoto světa.
+
     Typickými pravidly je například omezení aplikovatelného počtu interakcí.
     """
 
