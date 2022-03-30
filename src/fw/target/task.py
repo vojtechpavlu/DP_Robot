@@ -57,10 +57,9 @@ class Task(Identifiable, Named, Described):
         Pokud je dodaná úloha prázdná (None), je vyhozena výjimka. Podobně pak
         v případě, že je již jednou úloha nastavena."""
         if target is None:
-            raise Exception(f"Dodaná úloha je None")
+            raise TaskError(f"Dodaná úloha je None", self)
         elif self.target is not None:
-            raise Exception(f"Nelze přenastavovat úlohu")
-        # TODO - specifikace výjimek
+            raise TaskError(f"Nelze přenastavovat úlohu", self)
         self._target = target
 
     @property
@@ -81,16 +80,24 @@ class Task(Identifiable, Named, Described):
 
 
 class TaskError(PlatformError):
-    """"""
+    """Výjimka rozšiřující svého předka o referenci na úkol, v jehož kontextu
+    došlo k chybě. Tato výjimka umožňuje svojí symbolizací blíže specifikovat,
+    co se stalo."""
 
     def __init__(self, message: str, task: "Task"):
-        """"""
+        """Initor, který postupuje svému předkovi zprávu o chybě, stejně jako
+        si ukládá referenci na úkol, v jehož kontextu došlo k chybě."""
+
+        # Volání předka
         PlatformError.__init__(self, message)
+
+        # Uložení úkolu, v jehož kontextu došlo k chybě
         self._task = task
 
     @property
     def task(self) -> "Task":
-        """"""
+        """Vlastnost vrací referenci na úkol, v jehož kontextu došlo k chybě.
+        """
         return self._task
 
 
