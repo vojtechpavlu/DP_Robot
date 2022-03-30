@@ -83,6 +83,31 @@ class LoggingOutput(ABC):
         Funkce přijímá referenci na log, který by měl být zpracován."""
 
 
+class OutputWithMemo(ABC, LoggingOutput):
+    """"""
+
+    def __init__(self, take_all: bool = False):
+        """"""
+        LoggingOutput.__init__(self, take_all)
+        self._logs: "list[logger_module.Log]" = []
+
+    @property
+    def remember(self) -> "tuple[logger_module.Log]":
+        """"""
+        return tuple(self._logs)
+
+    def filter_by_context(self, context: str) -> "tuple[logger_module.Log]":
+        """"""
+        return tuple(filter(lambda log: log.context == context.upper(),
+                            self.remember))
+
+    def flush(self) -> "tuple[logger_module.Log]":
+        """"""
+        logs = self.remember
+        self._logs: "list[logger_module.Log]" = []
+        return logs
+
+
 class PrintingOutput(LoggingOutput):
     """Třída PrintingOutput je odpovědná za vypisování logů na konzoli."""
 
