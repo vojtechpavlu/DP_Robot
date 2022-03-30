@@ -9,6 +9,7 @@ tedy jaký má mít protokol.
 
 # Import lokálních knihoven
 from src.fw.utils.described import Described
+from src.fw.utils.error import PlatformError
 from src.fw.utils.identifiable import Identifiable
 from src.fw.utils.named import Named
 
@@ -77,5 +78,19 @@ class Task(Identifiable, Named, Described):
         """Metoda umožňující vyhodnocení daného úkolu co do jeho splnění pomocí
         instance vyhodnocovací funkce."""
         return self._eval_fun.eval()
+
+
+class TaskError(PlatformError):
+    """"""
+
+    def __init__(self, message: str, task: "Task"):
+        """"""
+        PlatformError.__init__(self, message)
+        self._task = task
+
+    @property
+    def task(self) -> "Task":
+        """"""
+        return self._task
 
 
