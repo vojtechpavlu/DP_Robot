@@ -38,8 +38,9 @@ class Task(Identifiable, Named, Described):
         Named.__init__(self, task_name)
         Described.__init__(self, task_desc)
 
-        """Uložení dodané evaluační funkce"""
+        """Uložení dodané evaluační funkce a vzájemné propojení"""
         self._eval_fun = eval_fun
+        self._eval_fun.task = self
 
         """Úloha, které tato instance úkolu náleží"""
         self._target: "target_module.Target" = None
