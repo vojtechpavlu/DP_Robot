@@ -147,6 +147,19 @@ class PrintingOutput(LoggingOutput):
         print(f"[{log.time}][{log.context}]: {log.message}")
 
 
+class SimpleOutputWithMemo(OutputWithMemo):
+    """Elementární funkce umožňující zaznamenávat jednotlivé logy ve své
+    evidenci. Kromě jejich ukládání se nestará o nic jiného."""
+
+    def __init__(self, take_all: bool = False):
+        """Initor, který pouze postupuje informaci o univerzálním přijímání
+        záznamů do evidence."""
+        OutputWithMemo.__init__(self, take_all)
+
+    def log(self, log: "logger_module.Log"):
+        """Funkce, která implementuje protokol prapředka (LoggingOutput) a
+        stará se pouze o zaznamenání daného logu do evidence."""
+        self.save_log(log)
 
 
 
