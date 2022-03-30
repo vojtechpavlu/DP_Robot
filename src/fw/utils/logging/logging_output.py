@@ -84,13 +84,19 @@ class LoggingOutput(ABC):
 
 
 class PrintingOutput(LoggingOutput):
-    """"""
+    """Třída PrintingOutput je odpovědná za vypisování logů na konzoli."""
 
-    def __init__(self, take_all: bool):
+    def __init__(self, take_all: bool = True):
+        """Initor, který přijímá informaci o tom, zda-li přijímat všechny
+        kontexty či nikoliv.
+
+        Pokud je nastavena tato defaultní hodnota na False, je třeba všechny
+        výstupní kontexty přidat do evidence posteriorně."""
         LoggingOutput.__init__(self, take_all)
 
     def log(self, log: "logger_module.Log"):
-        """"""
+        """Funkce implementující protokol definovaný v předkovi. Funkce se
+        pouze stará o výpis v daném formátu."""
         print(f"[{log.time}][{log.context}]: {log.message}")
 
 
