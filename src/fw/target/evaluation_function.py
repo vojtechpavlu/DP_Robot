@@ -23,9 +23,14 @@ class EvaluationFunction(ABC, Named, Identifiable):
     Tato abstraktní třída definuje obecný protokol pro takovou funkci."""
 
     def __init__(self, name: str):
+        """Initor třídy, který přijímá člověku čitelný název evaluační
+        funkce."""
+
+        # Volání předka
         Identifiable.__init__(self)
         Named.__init__(self, name)
 
+        """Úkol, ke kterému evaluační funkce náleží"""
         self._task: "task_module.Task" = None
 
     @property
@@ -89,7 +94,7 @@ class Conjunction(EvaluationFunctionJunction):
     hodnotu o splnění."""
 
     def __init__(self, name: str):
-        """"""
+        """Initor třídy, který pouze postupuje dodaný název svému předkovi."""
         EvaluationFunctionJunction.__init__(self, name)
 
     def eval(self) -> bool:
@@ -128,12 +133,21 @@ class Negation(EvaluationFunction):
     funkce."""
 
     def __init__(self, name: str, ef: "EvaluationFunction"):
+        """Initor třídy, který je odpovědná za postoupení názvu evaluační
+        funkce svému předkovi, stejně jako je odpovědný za uložení reference
+        na vyhodnocovací funkci, jejíž hodnotu bude negovat."""
+
+        # Volání předka
         EvaluationFunction.__init__(self, name)
+
+        """Vyhodnocovací funkce, jejíž hodnotu bude tato instance vracet 
+        znegovanou"""
         self._eval_fun = ef
 
     @property
     def evaluation_function(self) -> "EvaluationFunction":
-        """"""
+        """Vlastnost vrací evaluační funkci, jejíž hodnotu tato instance
+        obrací."""
         return self._eval_fun
 
     def eval(self) -> bool:
