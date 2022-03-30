@@ -83,4 +83,18 @@ class LoggingOutput(ABC):
         Funkce přijímá referenci na log, který by měl být zpracován."""
 
 
+class PrintingOutput(LoggingOutput):
+    """"""
+
+    def __init__(self, take_all: bool):
+        LoggingOutput.__init__(self, take_all)
+
+    def log(self, log: "logger_module.Log"):
+        """"""
+        print(f"[{log.time}][{log.context}]: {log.message}")
+
+
+
+
+
 
