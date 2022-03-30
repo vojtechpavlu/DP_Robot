@@ -57,3 +57,16 @@ class Log:
         return timeworks.date(self.timestamp)
 
 
+class Logger:
+    """"""
+
+    def __init__(self):
+        self._outputs = []
+
+    @property
+    def outputs(self) -> "tuple":
+        return tuple(self._outputs)
+
+    def log(self, context: str, message: str):
+        """"""
+
