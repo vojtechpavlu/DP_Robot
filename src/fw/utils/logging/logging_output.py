@@ -28,6 +28,14 @@ class LoggingOutput(ABC):
         """Vlastnost vrací všechny evidované kontexty."""
         return tuple(self._contexts)
 
+    def has_context(self, context_name: str) -> bool:
+        """Funkce vrací, zda-li má tento výstupní logger daný kontext evidován.
+        Pokud ano, vrací True, pokud ne, vrací False.
+
+        Funkce není case-sensitive, tedy vstupní názvy kontextů jsou převedeny
+        na kapitálky a prověřovány co do incidence v evidenci kontextů."""
+        return context_name.upper() in self.contexts
+
     def add_context(self, context_name: str):
         """Funkce je odpovědná za přidání nového kontextu do evidence.
         Pokud již jednou evidován je, již znovu přidáván není.
