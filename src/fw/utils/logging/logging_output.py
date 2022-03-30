@@ -8,6 +8,7 @@ definuje obecný protokol pro všechny výstupní loggery, konkrétně třídu
 from abc import ABC, abstractmethod
 
 # Import lokálních knihoven
+import src.fw.utils.logging.logger as logger_module
 
 
 class LoggingOutput(ABC):
@@ -36,6 +37,13 @@ class LoggingOutput(ABC):
         na kapitálky a prověřovány co do incidence v evidenci kontextů."""
         return context_name.upper() in self.contexts
 
+    def is_responsible_for(self, log: "logger_module.Log") -> bool:
+        """Funkce vrací, zda-li je tato instance odpovědná za zpracování
+        daného logu. Pokud je jeho kontext v evidenci kontextů této instance,
+        pak je vrácena hodnota True, jinak False.
+        """
+        return self.has_context(log.context)
+
     def add_context(self, context_name: str):
         """Funkce je odpovědná za přidání nového kontextu do evidence.
         Pokud již jednou evidován je, již znovu přidáván není.
@@ -47,10 +55,12 @@ class LoggingOutput(ABC):
             self._contexts.append(context_name.upper())
 
     @abstractmethod
-    def log(self, context: str, message: str):
+    def log(self, log: "logger_module.Log"):
         """Abstraktní funkce definující protokol pomocí předepsání signatury
         funkce. Implementace této funkce jsou odpovědné za vytvoření
-        příslušného výstupu dle pravidel dané třídy."""
+        příslušného výstupu dle pravidel dané třídy.
+
+        Funkce přijímá referenci na log, který by měl být zpracován."""
 
 
 
