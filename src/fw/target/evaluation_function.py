@@ -11,6 +11,7 @@ funkcí zároveň, a konečně negaci - pro snazší použití evaluačních fun
 from abc import ABC, abstractmethod
 
 # Import lokálních knihoven
+from src.fw.utils.error import PlatformError
 from src.fw.utils.identifiable import Identifiable
 from src.fw.utils.named import Named
 
@@ -138,3 +139,27 @@ class Negation(EvaluationFunction):
     def eval(self) -> bool:
         """Vrací převrácenou hodnotu vnitřní evaluační funkce."""
         return not self.evaluation_function.eval()
+
+
+class EvaluationFunctionError(PlatformError):
+    """Tato výjimka symbolizuje chyby, které můžou nastat v kontextu
+    vyhodnocovacích funkcí. Svého předka rozšiřuje o referenci na evaluační
+    funkci, v jejímž kontextu došlo k chybě."""
+
+    def __init__(self, message: str, eval_fun: "EvaluationFunction"):
+        """Initor, který postupuje zprávu o chybě svému předkovi a ukládá
+        referenci na evaluační funkci, jejímž kontextu došlo k chybě.
+        """
+
+        # Volání předka
+        PlatformError.__init__(self, message)
+
+        # Evaluační funkce, v jejímž kontextu došlo k chybě
+        self._eval_fun = eval_fun
+
+    @property
+    def evaluation_function(self) -> "EvaluationFunction":
+        """Vlastnost vrací referenci na evaluační funkci, v jejímž kontextu
+        došlo k chybě."""
+        return self._eval_fun
+
