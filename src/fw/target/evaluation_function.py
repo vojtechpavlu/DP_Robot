@@ -11,8 +11,11 @@ funkcí zároveň, a konečně negaci - pro snazší použití evaluačních fun
 from abc import ABC, abstractmethod
 
 # Import lokálních knihoven
+from src.fw.utils.error import PlatformError
 from src.fw.utils.identifiable import Identifiable
 from src.fw.utils.named import Named
+
+import src.fw.target.task as task_module
 
 
 class EvaluationFunction(ABC, Named, Identifiable):
@@ -20,8 +23,36 @@ class EvaluationFunction(ABC, Named, Identifiable):
     Tato abstraktní třída definuje obecný protokol pro takovou funkci."""
 
     def __init__(self, name: str):
+        """Initor třídy, který přijímá člověku čitelný název evaluační
+        funkce."""
+
+        # Volání předka
         Identifiable.__init__(self)
         Named.__init__(self, name)
+
+        """Úkol, ke kterému evaluační funkce náleží"""
+        self._task: "task_module.Task" = None
+
+    @property
+    def task(self) -> "task_module.Task":
+        """Vlastnost, která vrací referenci na úkol, ke kterému tato
+        evaluační funkce náleží."""
+        return self._task
+
+    @task.setter
+    def task(self, task: "task_module.Task"):
+        """Vlastnost se pokusí nastavit dodaný úkol jako vlastníka této
+        evaluační funkce.
+
+        Tento dodaný úkol nesmí být None a stejně tak nesmí být již jednou
+        jedna instance úkolu být této funkci přiřazena. V opačném případě
+        je vyhozena příslušná výjimka.
+        """
+        if task is None:
+            raise Exception(f"Dodaný úkol nesmí být None")
+        elif self.task is not None:
+            raise Exception(f"Úkol nelze znovu přenastavovat")
+        self._task = task
 
     @abstractmethod
     def eval(self) -> bool:
@@ -63,7 +94,7 @@ class Conjunction(EvaluationFunctionJunction):
     hodnotu o splnění."""
 
     def __init__(self, name: str):
-        """"""
+        """Initor třídy, který pouze postupuje dodaný název svému předkovi."""
         EvaluationFunctionJunction.__init__(self, name)
 
     def eval(self) -> bool:
@@ -102,14 +133,47 @@ class Negation(EvaluationFunction):
     funkce."""
 
     def __init__(self, name: str, ef: "EvaluationFunction"):
+        """Initor třídy, který je odpovědná za postoupení názvu evaluační
+        funkce svému předkovi, stejně jako je odpovědný za uložení reference
+        na vyhodnocovací funkci, jejíž hodnotu bude negovat."""
+
+        # Volání předka
         EvaluationFunction.__init__(self, name)
+
+        """Vyhodnocovací funkce, jejíž hodnotu bude tato instance vracet 
+        znegovanou"""
         self._eval_fun = ef
 
     @property
     def evaluation_function(self) -> "EvaluationFunction":
-        """"""
+        """Vlastnost vrací evaluační funkci, jejíž hodnotu tato instance
+        obrací."""
         return self._eval_fun
 
     def eval(self) -> bool:
         """Vrací převrácenou hodnotu vnitřní evaluační funkce."""
         return not self.evaluation_function.eval()
+
+
+class EvaluationFunctionError(PlatformError):
+    """Tato výjimka symbolizuje chyby, které můžou nastat v kontextu
+    vyhodnocovacích funkcí. Svého předka rozšiřuje o referenci na evaluační
+    funkci, v jejímž kontextu došlo k chybě."""
+
+    def __init__(self, message: str, eval_fun: "EvaluationFunction"):
+        """Initor, který postupuje zprávu o chybě svému předkovi a ukládá
+        referenci na evaluační funkci, jejímž kontextu došlo k chybě.
+        """
+
+        # Volání předka
+        PlatformError.__init__(self, message)
+
+        # Evaluační funkce, v jejímž kontextu došlo k chybě
+        self._eval_fun = eval_fun
+
+    @property
+    def evaluation_function(self) -> "EvaluationFunction":
+        """Vlastnost vrací referenci na evaluační funkci, v jejímž kontextu
+        došlo k chybě."""
+        return self._eval_fun
+

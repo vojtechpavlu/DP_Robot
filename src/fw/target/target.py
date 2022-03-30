@@ -51,6 +51,7 @@ class Target(Named, Described):
     def add_task(self, task: "task_module.Task"):
         """Metoda přidává úkol ke splnění do této úlohy."""
         self._tasks.append(task)
+        task.target = self
 
 
 class TargetFactory(ABC):
