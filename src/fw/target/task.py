@@ -13,6 +13,7 @@ from src.fw.utils.identifiable import Identifiable
 from src.fw.utils.named import Named
 
 import src.fw.target.evaluation_function as ef_module
+import src.fw.target.target as target_module
 
 
 class Task(Identifiable, Named, Described):
@@ -39,10 +40,27 @@ class Task(Identifiable, Named, Described):
         """Uložení dodané evaluační funkce"""
         self._eval_fun = eval_fun
 
-    def eval(self) -> bool:
-        """Metoda umožňující vyhodnocení daného úkolu co do jeho splnění pomocí
-        instance vyhodnocovací funkce."""
-        return self._eval_fun.eval()
+        """Úloha, které tato instance úkolu náleží"""
+        self._target: "target_module.Target" = None
+
+    @property
+    def target(self) -> "target_module.Target":
+        """Vlastnost vrací úlohu, ke které tento úkol náleží."""
+        return self._target
+
+    @target.setter
+    def target(self, target: "target_module.Target"):
+        """Vlastnost umožňující nastavit úlohu, ke které tento úkol náleží.
+        To ovšem umožňuje právě jednou.
+
+        Pokud je dodaná úloha prázdná (None), je vyhozena výjimka. Podobně pak
+        v případě, že je již jednou úloha nastavena."""
+        if target is None:
+            raise Exception(f"Dodaná úloha je None")
+        elif self.target is not None:
+            raise Exception(f"Nelze přenastavovat úlohu")
+        # TODO - specifikace výjimek
+        self._target = target
 
     @property
     def evaluation_function(self) -> "ef_module.EvaluationFunction":
@@ -54,5 +72,10 @@ class Task(Identifiable, Named, Described):
                             new_eval_fun: "ef_module.EvaluationFunction"):
         """Vlastnost umožňující nastavení evaluační funkce mimo initor."""
         self._eval_fun = new_eval_fun
+
+    def eval(self) -> bool:
+        """Metoda umožňující vyhodnocení daného úkolu co do jeho splnění pomocí
+        instance vyhodnocovací funkce."""
+        return self._eval_fun.eval()
 
 
