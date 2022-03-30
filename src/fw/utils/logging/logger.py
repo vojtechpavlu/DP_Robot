@@ -8,8 +8,10 @@ from datetime import datetime
 import src.fw.utils.timeworks as timeworks
 import src.fw.utils.logging.logging_output as output_module
 
+from src.fw.utils.identifiable import Identifiable
 
-class Log:
+
+class Log(Identifiable):
     """Instance třídy Log mají za cíl obalit důležité informace okolo logu.
     Jejich cílem je uchovat především zprávu, stejně jako uchovat časový
     bod, ve kterém zpráva vznikla, stejně jako její kontext."""
@@ -20,6 +22,8 @@ class Log:
 
         Kromě uložení těchto hodnot do proměnných je initor odpovědný za
         označení časového bodu, ve kterém instance vznikla."""
+
+        Identifiable.__init__(self)
 
         self._timestamp = datetime.now()
         self._context = context.upper()
