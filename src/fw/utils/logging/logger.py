@@ -6,6 +6,7 @@ from datetime import datetime
 
 # Import lokálních knihoven
 import src.fw.utils.timeworks as timeworks
+import src.fw.utils.logging.logging_output as output_module
 
 
 class Log:
@@ -58,15 +59,51 @@ class Log:
 
 
 class Logger:
-    """"""
+    """Třída Logger je odpovědná za definici loggeru, který bude schopen
+    přijímat zprávy z různých kontextů a s řídit jejich výstupní zpracování.
+
+    K tomu, aby tyto zprávy mohl zpracovat pro výstup, je definována třída
+    jako kontejner evidovaných výstupních loggovacích zpracovatelů."""
 
     def __init__(self):
-        self._outputs = []
+        """Initor třídy, který je odpovědný za iniciaci evidence výstupních
+        loggovacích zpracovatelů. Tato evidence je v úvodu prázdná."""
+        self._outputs: "list[output_module.LoggingOutput]" = []
 
     @property
-    def outputs(self) -> "tuple":
+    def outputs(self) -> "tuple[output_module.LoggingOutput]":
+        """Vlastnost vrací množinu všech výstupních logovacích zpracovatelů
+        v podobě ntice."""
         return tuple(self._outputs)
 
+    def add_output(self, output: "output_module.LoggingOutput"):
+        """Funkce přidá nového výstupního logovacího zpracovatele do evidence.
+        """
+        self._outputs.append(output)
+
+    def remove_output(self, output: "output_module.LoggingOutput"):
+        """Funkce odstraňuje dodaného výstupního logovacího zpracovatele z
+        evidence."""
+        self._outputs.remove(output)
+
+    def clear(self) -> "tuple[output_module.LoggingOutput]":
+        """Funkce odstraňuje všechny logovací výstupní zpracovatele z
+        evidence. Množinu (konkrétně ntici) doposud evidovaných však vrací.
+        """
+        outputs = self.outputs
+        self._outputs: "list[output_module.LoggingOutput]" = []
+        return outputs
+
     def log(self, context: str, message: str):
-        """"""
+        """Funkce se postará o zalogování dodané zprávy v daném kontextu.
+        Funkce vytvoří instanci logu z dodaných vstupů a tuto pak předá všem
+        výstupním zpracovatelům k vytvoření výstupu."""
+
+        # Tvorba instance třídy Log
+        log_instance = Log(context, message)
+
+        # Pro každý výstup: je-li odpovědný za tento typ logu, zaloguj ho
+        for output in self.outputs:
+            if output.is_responsible_for(log_instance):
+                output.log(log_instance)
 
