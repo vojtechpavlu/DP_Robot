@@ -14,6 +14,8 @@ from abc import ABC, abstractmethod
 from src.fw.utils.identifiable import Identifiable
 from src.fw.utils.named import Named
 
+import src.fw.target.task as task_module
+
 
 class EvaluationFunction(ABC, Named, Identifiable):
     """Evaluační funkce slouží k vyhodnocení splnění daného úkolu.
@@ -22,6 +24,29 @@ class EvaluationFunction(ABC, Named, Identifiable):
     def __init__(self, name: str):
         Identifiable.__init__(self)
         Named.__init__(self, name)
+
+        self._task: "task_module.Task" = None
+
+    @property
+    def task(self) -> "task_module.Task":
+        """Vlastnost, která vrací referenci na úkol, ke kterému tato
+        evaluační funkce náleží."""
+        return self._task
+
+    @task.setter
+    def task(self, task: "task_module.Task"):
+        """Vlastnost se pokusí nastavit dodaný úkol jako vlastníka této
+        evaluační funkce.
+
+        Tento dodaný úkol nesmí být None a stejně tak nesmí být již jednou
+        jedna instance úkolu být této funkci přiřazena. V opačném případě
+        je vyhozena příslušná výjimka.
+        """
+        if task is None:
+            raise Exception(f"Dodaný úkol nesmí být None")
+        elif self.task is not None:
+            raise Exception(f"Úkol nelze znovu přenastavovat")
+        self._task = task
 
     @abstractmethod
     def eval(self) -> bool:
