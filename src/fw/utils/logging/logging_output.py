@@ -84,25 +84,47 @@ class LoggingOutput(ABC):
 
 
 class OutputWithMemo(ABC, LoggingOutput):
-    """"""
+    """Abstraktní třída OutputWithMemo má za cíl definovat obecný protokol
+    pro všechny své potomky, tedy výstupní zpracovatelé logů, které jsou si
+    schopny zapamatovat (a udržet v paměti) dodané logy."""
 
     def __init__(self, take_all: bool = False):
-        """"""
+        """Initor třídy, který postupuje dodanou informaci o univerzálním
+        kontextu svému předkovi.
+
+        Dále si připravuje evidenční seznam všech záznamů, které jsou této
+        instanci postoupeny k zaznamenání. V úvodní fázi je tento seznam
+        prázdný."""
+
+        # Volání předka
         LoggingOutput.__init__(self, take_all)
+
+        # Evidenční seznam pro uchování logů
         self._logs: "list[logger_module.Log]" = []
 
     @property
     def remember(self) -> "tuple[logger_module.Log]":
-        """"""
+        """Vlastnost vrací všechny logy, které byly zapamatovány. Tyto vrací
+        v podobě ntice."""
         return tuple(self._logs)
 
+    def save_log(self, log: "logger_module.Log"):
+        """Funkce odpovědná za uložení logu do evidence. Je přitom ověřována
+        příslušnost. Pokud tato instance není odpovědná za zpracovávání logů
+        tohoto kontextu, log přidán není."""
+        if self.is_responsible_for(log):
+            self._logs.append(log)
+
     def filter_by_context(self, context: str) -> "tuple[logger_module.Log]":
-        """"""
+        """Funkce, která poskytuje funkcionalitu filtrování podle dodaného
+        kontextu. Název tohoto kontextu není case-sensitive; převádí se
+        defaultně na kapitálky."""
         return tuple(filter(lambda log: log.context == context.upper(),
                             self.remember))
 
     def flush(self) -> "tuple[logger_module.Log]":
-        """"""
+        """Funkce, která se postará o vyčištění evidence logů. Všechny doposud
+        zapamatované jsou však vráceny v podobě ntice."""
         logs = self.remember
         self._logs: "list[logger_module.Log]" = []
         return logs
