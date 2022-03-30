@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 
 # Import lokálních knihoven
+import src.fw.utils.timeworks as timeworks
 
 
 class Log:
@@ -42,12 +43,17 @@ class Log:
     @property
     def time(self) -> str:
         """Vlastnost vrací textovou reprezentaci časového bodu (konkrétně jeho
-        časové podmnožiny), kdy log vznikl."""
+        časové podmnožiny), kdy log vznikl.
 
+        Výsledný řetězec odpovídá plnému formátu, tedy 'HH:MM:SS.ffffff'."""
+        return timeworks.time(self.timestamp, True)
 
     @property
     def date(self) -> str:
         """Vlastnost vrací textovou reprezentaci časového bodu (konkrétně jeho
-        datumové podmnožiny), kdy log vznikl."""
+        datumové podmnožiny), kdy log vznikl.
+
+        Výsledný řetězec odpovídá defaultnímu formátu, tedy 'DD-MM-YY'."""
+        return timeworks.date(self.timestamp)
 
 
