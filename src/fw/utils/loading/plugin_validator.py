@@ -11,6 +11,7 @@ Cílem je vytřídit jen ty pluginy (moduly), které jsou zcela validní a kter�
 mají příslušný požadovaný protokol a lze s nimi bezpečně pracovat.
 """
 
+# Prevence cyklických importů
 from __future__ import annotations
 
 # Import standardních knihoven

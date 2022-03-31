@@ -1,6 +1,7 @@
 """Modul 'plugin' je odpovědný za sdružení všech potřebných protokolů pro
 práci s pluginy."""
 
+# Prevence cyklických importů
 from __future__ import annotations
 
 # Import standardních knihoven
@@ -32,11 +33,29 @@ class Plugin(ABC):
     """
 
     def __init__(self, abs_path: str, plugin_loader: pl_loader.PluginLoader):
-        """"""
+        """Initor třídy přijímající absolutní cestu ke zdrojovému souboru,
+        který reprezentuje daný plugin, a referenci na loader pluginů, který
+        je za vytvoření tohoto pluginu odpovědný.
+
+        Dodaná cesta je absolutní, tedy plná. Zároveň platí, že musí ukazovat
+        na existující soubor, tedy nikoliv na adresář a nikoliv na
+        neexistující souborový objekt. Pokud některá z těchto podmínek není
+        splněna, je vyhozena výjimka.
+
+        PluginLoader je vyplněn, protože sdružuje všechny validátory, kterými
+        bude instance této třídy (tato instance) ověřovat platnost a správnost
+        pluginu pro zajištění bezpečnosti a integrity celého rozšiřitelného
+        systému.
+        """
+
+        # Uložení dodaných hodnot
         self._absolute_path = abs_path
-        self._module_path = module_path_from_abs(abs_path)
         self._plugin_loader = plugin_loader
 
+        # Převedení absolutní cesty na 'balíčkovou'
+        self._module_path = module_path_from_abs(abs_path)
+
+        # Ověření, že dodaná absolutní cesta ukazuje na existující soubor
         if not (exists(abs_path) and is_file(abs_path)):
             raise PluginError(
                 f"Na dodané cestě '{abs_path}' není existující soubor", self)
