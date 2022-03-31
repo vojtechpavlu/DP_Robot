@@ -18,10 +18,48 @@ import src.fw.utils.loading.plugin_validator as pl_validator
 import src.fw.utils.loading.plugin as plugin_module
 import src.fw.robot.unit as unit_module
 
+from src.fw.utils.filesystem import plugin_path, join_paths
+
 
 """Název funkce, která bude volána coby klíčový přístupový bod pro obdržení
 instance továrny jednotek"""
 _ACCESS_FUN = "get_unit_factory"
+
+"""Název adresáře v rámci adresáře s pluginy, který obsahuje pluginy z
+kontextu jednotek a jejich továren"""
+_UNITS_DIR_NAME = "units"
+
+"""Absolutní cesta k adresáři, ve kterém jsou pluginy s jednotkami"""
+_ABSOLUTE_UNIT_PLUGINS_DIR_PATH = join_paths(plugin_path(), _UNITS_DIR_NAME)
+
+"""Výchozí identifikátory pluginů, které jsou používány pro vytipování
+pluginů v kontextu továren jednotek."""
+_DEFAULT_IDENTIFIERS = [
+
+    # Zdrojové soubory musí mít koncovku '.py'
+    pl_identifier.ExtensionPluginIdentifier(".py"),
+
+    # Zdrojové soubory musí začínat řetězcem 'unit_'
+    pl_identifier.PrefixPluginIdentifier("unit_")
+]
+
+"""Výchozí validátory pluginů, které jsou používány pro ověření platnosti
+a správnosti pluginů v kontextu továren jednotek."""
+_DEFAULT_VALIDATORS = [
+
+    # Modul musí být syntakticky validní
+    pl_validator.SyntaxValidator(),
+
+    # Modul musí být opatřen neprázdným dokumentačním komentářem
+    pl_validator.ModuleDocstringExistenceValidator(),
+
+    # Modul musí obsahovat funkci s definovaným názvem
+    pl_validator.FunctionExistenceValidator(_ACCESS_FUN),
+
+    # Modul musí obsahovat funkci vracející hodnotu konkrétního typu
+    pl_validator.FunctionReturnValueTypeValidator(
+        _ACCESS_FUN, unit_module.AbstractUnitFactory)
+]
 
 
 class UnitFactoryLoader(loader_module.PluginLoader):
