@@ -164,3 +164,15 @@ class UnitFactoryPlugin(plugin_module.Plugin):
 
         # Vrácení výstupu volání přístupové funkce
         return self.get_function(self._access_point_function)()
+
+
+class DefaultUnitFactoryLoader(UnitFactoryLoader):
+    """"""
+
+    def __init__(self):
+        """"""
+        UnitFactoryLoader.__init__(self, _ABSOLUTE_UNIT_PLUGINS_DIR_PATH,
+                                   _DEFAULT_IDENTIFIERS, _DEFAULT_VALIDATORS)
+
+
+
