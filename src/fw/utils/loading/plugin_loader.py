@@ -97,6 +97,17 @@ class PluginLoader(ABC):
         """
         return tuple(filter(lambda plg: plg.is_valid_plugin, self.load()))
 
+    @property
+    def not_identified_plugins(self) -> "tuple[str]":
+        """Funkce vrací ntici absolutních cest ke všem souborům, které byly
+        při identifikaci shledány jako 'not-plugins', tedy nebyly vybrány k
+        užšímu výběru (validaci)."""
+        not_potential_plugins = []
+        for file in deep_list_files(self.destination, False):
+            if not self.is_potential_plugin(file):
+                not_potential_plugins.append(file)
+        return tuple(not_potential_plugins)
+
     def add_identifier(self, plugin_ident: "identifier.PluginIdentifier"):
         """Funkce přidává identifikátor pluginů, který bude použit pro
         vytipování potenciálních pluginů."""
