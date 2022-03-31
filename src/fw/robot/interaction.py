@@ -59,10 +59,10 @@ class Interaction(Identifiable, Named, Described):
         danou interakci a vrátit výsledek."""
 
 
-class InteractionHandler(ABC):
-    """Abstraktní třída InteractionHandler definuje obecný protokol pro
-    všechny handlery (zpracovatele) interakcí. To umožňuje dynamické použití
-    interakcí podle návrhového vzoru Command.
+class InteractionHandler:
+    """Třída InteractionHandler definuje obecný protokol pro všechny handlery
+    (zpracovatele) interakcí. To umožňuje dynamické použití interakcí podle
+    návrhového vzoru Command.
 
     Základním předpokladem je schopnost rozlišení jednotlivých interakcí,
     za jejichž zpracování je tento handler odpovědný, stejně jako existence
