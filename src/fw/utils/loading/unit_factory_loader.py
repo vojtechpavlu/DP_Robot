@@ -167,10 +167,15 @@ class UnitFactoryPlugin(plugin_module.Plugin):
 
 
 class DefaultUnitFactoryLoader(UnitFactoryLoader):
-    """"""
+    """Třída defaultního loaderu instancí továrních tříd jednotek, která
+    má za cíl rozšířit obecnějšího předka o výchozí hodnoty.
+
+    Konkrétně je tato opatřena výchozí cestou k adresáři k pluginům tohoto
+    kontextu, dále výchozími identifikátory a výchozími validátory."""
 
     def __init__(self):
-        """"""
+        """Bezparametrický initor, který je odpovědný za zavolání předka
+        s výchozími hodnotami."""
         UnitFactoryLoader.__init__(self, _ABSOLUTE_UNIT_PLUGINS_DIR_PATH,
                                    _DEFAULT_IDENTIFIERS, _DEFAULT_VALIDATORS)
 
