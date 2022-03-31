@@ -9,6 +9,10 @@ import re
 # Import lokálních knihoven
 from .error import PlatformError
 
+# Defaultní názvy významných adresářů projektu
+_SOURCE_FOLDER_NAME = "src"
+_PLUGIN_FOLDER_NAME = "plugins"
+
 
 def exists(path: "str") -> "bool":
     """Funkce vrací informaci o tom, zda-li je adresa platná pro existující
@@ -47,9 +51,17 @@ def root_directory_path() -> "str":
     return os.path.abspath(os.path.join(__file__, "..", "..", "..", ".."))
 
 
+def plugin_path() -> "str":
+    """Funkce vrací absolutní cestu k defaultnímu adresáři s pluginy."""
+    return join_paths(root_directory_path(),
+                      join_paths(_SOURCE_FOLDER_NAME,
+                                 _PLUGIN_FOLDER_NAME))
+
+
 def separator() -> str:
     """Funkce vrací znak, kterým je defaultně značen pohyb ve struktuře
     souborového systému.
+
     Zjednodušeně řečeno, MS Windows jde o tzv. zpětné lomítko (backslash) '\',
     u systému nad Unix se používá dopředné lomítko '/'.
     """
