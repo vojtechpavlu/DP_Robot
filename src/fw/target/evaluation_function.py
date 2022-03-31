@@ -94,11 +94,6 @@ class EvaluationFunctionJunction(EvaluationFunction):
         do této instance."""
         self._eval_funcs.append(fun)
 
-    @abstractmethod
-    def eval(self) -> bool:
-        """Jádrem evaluační funkce je právě tato metoda, která umožňuje
-        vyhodnocení splnění stanoveného úkolu."""
-
 
 class Conjunction(EvaluationFunctionJunction):
     """Instance třídy 'Conjunction' slouží k zpracovávání více evaluačních
