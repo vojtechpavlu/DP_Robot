@@ -2,6 +2,8 @@
 dynamického načítání modulů s cílem upravovat funkcionalitu za běhu programu.
 """
 
+from __future__ import annotations
+
 # Import standardních knihoven
 from abc import ABC, abstractmethod
 from typing import Iterable

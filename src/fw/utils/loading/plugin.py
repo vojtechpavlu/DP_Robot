@@ -1,6 +1,8 @@
 """Modul 'plugin' je odpovědný za sdružení všech potřebných protokolů pro
 práci s pluginy."""
 
+from __future__ import annotations
+
 # Import standardních knihoven
 import importlib
 from abc import ABC, abstractmethod

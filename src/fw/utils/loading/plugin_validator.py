@@ -11,6 +11,8 @@ Cílem je vytřídit jen ty pluginy (moduly), které jsou zcela validní a kter�
 mají příslušný požadovaný protokol a lze s nimi bezpečně pracovat.
 """
 
+from __future__ import annotations
+
 # Import standardních knihoven
 from abc import ABC, abstractmethod
 from typing import Type
