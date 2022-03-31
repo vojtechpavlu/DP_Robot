@@ -20,12 +20,50 @@ import src.fw.utils.loading.plugin_validator as pl_validator
 import src.fw.utils.loading.plugin as plugin_module
 import src.fw.platform.runtime as runtime_module
 
+from src.fw.utils.filesystem import plugin_path, join_paths
 
 """Název přístupové funkce, která má být v modulu reprezentujícím plugin
 běhového prostředí zavolána. Její existence by měla být ověřena již na úrovni
 pravidla definovaného pomocí validátoru pluginu (instance PluginValidator).
 """
 _ACCESS_FUN = "get_runtime_factory"
+
+"""Název adresáře v rámci pluginů, který obsahuje všechna zadání"""
+_ASSIGNMENTS_DIR_NAME = "assignments"
+
+"""Absolutní cesta k adresáři se všemi zadáními"""
+_ABSOLUTE_ASSIGNMENT_PLUGINS_PATH = join_paths(plugin_path(),
+                                               _ASSIGNMENTS_DIR_NAME)
+
+
+"""Výchozí identifikátory pluginů, které jsou používány pro vytipování
+pluginů v kontextu běhových prostředí."""
+_DEFAULT_IDENTIFIERS = [
+
+    # Zdrojové soubory musí mít koncovku '.py'
+    pl_identifier.ExtensionPluginIdentifier(".py"),
+
+    # Zdrojové soubory musí začínat řetězcem 'unit_'
+    pl_identifier.PrefixPluginIdentifier("runtime_")
+]
+
+"""Výchozí validátory pluginů, které jsou používány pro ověření platnosti
+a správnosti pluginů v kontextu továren běhových prostředí."""
+_DEFAULT_VALIDATORS = [
+
+    # Modul musí být syntakticky validní
+    pl_validator.SyntaxValidator(),
+
+    # Modul musí být opatřen neprázdným dokumentačním komentářem
+    pl_validator.ModuleDocstringExistenceValidator(),
+
+    # Modul musí obsahovat funkci s definovaným názvem
+    pl_validator.FunctionExistenceValidator(_ACCESS_FUN),
+
+    # Modul musí obsahovat funkci vracející hodnotu konkrétního typu
+    pl_validator.FunctionReturnValueTypeValidator(
+        _ACCESS_FUN, runtime_module.AbstractRuntimeFactory)
+]
 
 
 class RuntimeFactoryLoader(loader_module.PluginLoader):
@@ -146,4 +184,5 @@ class RuntimeFactoryPlugin(plugin_module.Plugin):
 
         # Vrácení výstupu volání přístupové funkce
         return self.get_function(self._access_point_function)()
+
 
