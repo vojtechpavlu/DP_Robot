@@ -49,9 +49,10 @@ class EvaluationFunction(ABC, Named, Identifiable):
         je vyhozena příslušná výjimka.
         """
         if task is None:
-            raise Exception(f"Dodaný úkol nesmí být None")
+            raise EvaluationFunctionError(f"Dodaný úkol nesmí být None", self)
         elif self.task is not None:
-            raise Exception(f"Úkol nelze znovu přenastavovat")
+            raise EvaluationFunctionError(
+                f"Úkol nelze znovu přenastavovat", self)
         self._task = task
 
     @abstractmethod
