@@ -5,6 +5,8 @@ umožňují identifikaci a validaci pluginů továrních tříd jednotek a jejic
 dynamické načítání.
 """
 
+# Prevence cyklických importů
+from __future__ import annotations
 
 # Import standardních knihoven
 from typing import Iterable
