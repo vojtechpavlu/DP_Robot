@@ -19,7 +19,7 @@ import src.fw.target.task as task_module
 import src.fw.target.event_handling as event_module
 
 
-class EvaluationFunction(ABC, Named, Identifiable, event_module.EventHandler):
+class EvaluationFunction(Named, Identifiable, event_module.EventHandler):
     """Evaluační funkce slouží k vyhodnocení splnění daného úkolu.
     Tato abstraktní třída definuje obecný protokol pro takovou funkci.
 
