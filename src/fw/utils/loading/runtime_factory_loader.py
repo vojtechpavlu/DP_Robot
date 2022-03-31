@@ -186,3 +186,12 @@ class RuntimeFactoryPlugin(plugin_module.Plugin):
         return self.get_function(self._access_point_function)()
 
 
+class DefaultRuntimeFactoryLoader(RuntimeFactoryLoader):
+    """"""
+
+    def __init__(self, assignment_name: str):
+        RuntimeFactoryLoader.__init__(
+            self, join_paths(
+                _ABSOLUTE_ASSIGNMENT_PLUGINS_PATH, assignment_name),
+            _DEFAULT_IDENTIFIERS, _DEFAULT_VALIDATORS)
+
