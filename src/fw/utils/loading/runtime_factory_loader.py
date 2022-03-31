@@ -20,7 +20,8 @@ import src.fw.utils.loading.plugin_validator as pl_validator
 import src.fw.utils.loading.plugin as plugin_module
 import src.fw.platform.runtime as runtime_module
 
-from src.fw.utils.filesystem import plugin_path, join_paths
+from src.fw.utils.filesystem import (plugin_path, join_paths,
+                                     list_directories, file_basename)
 
 """Název přístupové funkce, která má být v modulu reprezentujícím plugin
 běhového prostředí zavolána. Její existence by měla být ověřena již na úrovni
@@ -211,4 +212,15 @@ class DefaultRuntimeFactoryLoader(RuntimeFactoryLoader):
             self, join_paths(
                 _ABSOLUTE_ASSIGNMENT_PLUGINS_PATH, assignment_name),
             _DEFAULT_IDENTIFIERS, _DEFAULT_VALIDATORS)
+
+
+def list_assignment_names() -> "list[str]":
+    """Funkce vrací názvy všech zadání na defaultní cestě. Tím je myšleno,
+    že funkce prohledá defaultní adresář se zadáními (viz horní část tohoto
+    modulu) a vypíše všechny názvy podadresářů. Tyto pak vrací v podobě
+    seznamu textových řetězců.
+    """
+    return list(map(lambda path: file_basename(path), list_directories(
+        _ABSOLUTE_ASSIGNMENT_PLUGINS_PATH)))
+
 
