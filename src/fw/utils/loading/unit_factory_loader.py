@@ -95,6 +95,20 @@ class UnitFactoryLoader(loader_module.PluginLoader):
         return tuple(map(lambda valid_plugin:
                          valid_plugin.unit_factory, self.load()))
 
+    @property
+    def not_valid_plugins(self) -> "tuple[UnitFactoryPlugin]":
+        """Vlastnost implementuje protokol předka. Tato funkce vrací ntici
+        všech pluginů, které sice prošly identifikací, ale nebyly validní.
+
+        Této vlastnosti lze využít ke zpětnému odhalování, co s nebylo s
+        těmito pluginy v pořádku."""
+        invalid_plugins = []
+        for path in self.potential_plugins:
+            plugin = UnitFactoryPlugin(path, self, _ACCESS_FUN)
+            if not plugin.is_valid_plugin:
+                invalid_plugins.append(plugin)
+        return tuple(invalid_plugins)
+
     def load(self) -> "tuple[UnitFactoryPlugin]":
         """Funkce se stará o načtení všech validních pluginů a ty dále vrací
         uspořádané v ntici.
