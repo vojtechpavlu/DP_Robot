@@ -16,19 +16,30 @@ from src.fw.utils.identifiable import Identifiable
 from src.fw.utils.named import Named
 
 import src.fw.target.task as task_module
+import src.fw.target.event_handling as event_module
 
 
-class EvaluationFunction(ABC, Named, Identifiable):
+class EvaluationFunction(ABC, Named, Identifiable, event_module.EventHandler):
     """Evaluační funkce slouží k vyhodnocení splnění daného úkolu.
-    Tato abstraktní třída definuje obecný protokol pro takovou funkci."""
+    Tato abstraktní třída definuje obecný protokol pro takovou funkci.
+
+    Kromě toho, že je tato abstraktní třída potomkem tříd Identifiable
+    a Named, je také potomkem třídy EventHandler, která umožňuje této
+    evaluační funkci naslouchat událostem ve sledovaných objektech."""
 
     def __init__(self, name: str):
         """Initor třídy, který přijímá člověku čitelný název evaluační
-        funkce."""
+        funkce. Tento initor je odpovědný za iniciaci předků, tedy tříd
+        Identifiable, Named a EventHandler.
 
-        # Volání předka
+        Kromě toho také deklaruje proměnnou pro úkol, kterému bude náležet.
+        Ten je ovšem v momentě zpracování initoru neznámý; nastavován je až
+        za běhu životního cyklu instance."""
+
+        # Volání předků
         Identifiable.__init__(self)
         Named.__init__(self, name)
+        event_module.EventHandler.__init__(self)
 
         """Úkol, ke kterému evaluační funkce náleží"""
         self._task: "task_module.Task" = None
