@@ -97,10 +97,12 @@ class AbstractRuntime(ABC, Identifiable):
         """Funkce připravující svět a úlohu ke spuštění. V podstatě si z
         dodaných továren nechá příslušné instance vygenerovat.
         """
+        # Tvorba světa
         self._world = self.world_factory.build()
-        self._target = self.target_factory.build()
-        # TODO - doplnění kompletní integrace úkolu a světa, handlery
-        # TODO - interakcí atp.
+
+        # Dodání reference světa pro přípravu úlohy; aby úloha mohla být
+        # provázána se světem a sledovat v něm plnění úkolů této úlohy
+        self._target = self.target_factory.build(self._world)
 
     @abstractmethod
     def run(self):

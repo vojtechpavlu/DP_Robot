@@ -12,7 +12,9 @@ from abc import ABC, abstractmethod
 # Import lokálních knihoven
 from src.fw.utils.described import Described
 from src.fw.utils.named import Named
+
 import src.fw.target.task as task_module
+import src.fw.world.world as world_module
 
 
 class Target(Named, Described):
@@ -26,7 +28,8 @@ class Target(Named, Described):
     dědí také tentokrát třídu Described.
     """
 
-    def __init__(self, target_name: str, target_description: str):
+    def __init__(self, target_name: str, target_description: str,
+                 world: "world_module.World"):
         """Initor třídy, který přijímá název úlohy a její popis. Obé je v
         podobě textového řetězce.
 
@@ -36,6 +39,10 @@ class Target(Named, Described):
         """
         Named.__init__(self, target_name)
         Described.__init__(self, target_description)
+
+        """Reference na svět, který má za úkol daná úloha sledovat. Díky tomu
+        je schopná úloha kontrolovat naplnění svého cíle testování."""
+        self._world = world
 
         """Příprava seznamu, který bude použit pro ukládání úkolů ke splnění.
         V úvodní fázi životního cyklu je pochopitelně tento seznam defaultně
@@ -59,6 +66,8 @@ class TargetFactory(ABC):
     instancí úloh, tedy instancí třídy 'Target'."""
 
     @abstractmethod
-    def build(self) -> "Target":
-        """Abstraktní metoda 'build' se zabývá tvorbou zadání úlohy."""
+    def build(self, world: "world_module.World") -> "Target":
+        """Abstraktní metoda 'build' se zabývá tvorbou zadání úlohy.
+        Funkce přijímá referenci na svět, který má za úkol úloha sledovat
+        co do jejího splnění."""
 
