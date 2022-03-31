@@ -42,7 +42,7 @@ Naopak vyřazenými pak jsou moduly s názvem:
 _MODULE_REGEX = "[a-z]([a-z0-9]|\\_)+\\.py"
 
 
-class PluginIdentifier(ABC, Named, Described):
+class PluginIdentifier(Named, Described):
     """Identifikátor pluginů, který je odpovědný za vytipování souborů, které
     jsou potenciálními pluginy."""
 

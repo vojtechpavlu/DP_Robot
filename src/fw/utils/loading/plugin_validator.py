@@ -22,7 +22,7 @@ from src.fw.utils.described import Described
 from src.fw.utils.named import Named
 
 
-class PluginValidator(ABC, Named, Described):
+class PluginValidator(Named, Described):
     """Validátor pluginů, který ověřuje, že dodané pluginy jsou skutečně
     dle dodaných pravidel validní a použitelné v daném kontextu."""
 
