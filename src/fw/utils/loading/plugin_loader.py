@@ -108,6 +108,16 @@ class PluginLoader(ABC):
                 not_potential_plugins.append(file)
         return tuple(not_potential_plugins)
 
+    @property
+    @abstractmethod
+    def not_valid_plugins(self) -> "tuple[pl.Plugin]":
+        """Signatura funkce definuje protokol, který musí potomci této třídy
+        implementovat.
+
+        Tyto implementace mají za cíl vrátit ntici všech pluginů, které sice
+        prošly testem identifikace (byly vytipovány jako potenciální pluginy),
+        ale neprošly již testem validace."""
+
     def add_identifier(self, plugin_ident: "identifier.PluginIdentifier"):
         """Funkce přidává identifikátor pluginů, který bude použit pro
         vytipování potenciálních pluginů."""
