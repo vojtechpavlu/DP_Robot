@@ -5,6 +5,10 @@ Rozhraní světa je přidanou vrstvou mezi svět a mezi robota tak, aby bylo mo�
 zabezpečit svět před nepovolenými interakcemi, pro zajištění jeho integrity a
 pro stanovení jednotného a snazšího rozhraní pro manipulaci se světem."""
 
+
+# Prevence cyklických importů
+from __future__ import annotations
+
 # Import standardních knihoven
 from abc import ABC, abstractmethod
 
@@ -12,10 +16,11 @@ from abc import ABC, abstractmethod
 # Import lokálních knihoven
 import src.fw.world.world as world_module
 import src.fw.robot.interaction as interaction_module
+import src.fw.world.interaction_handler_manager as ihm_module
 import src.fw.world.interaction_rules as inter_rls
 
 
-class WorldInterface(interaction_module.InteractionHandlerManager):
+class WorldInterface(ihm_module.InteractionHandlerManager):
     """Instance této třídy slouží jako jakási fasáda světa. Tato vrstva mezi
     světem a robotem (resp. jeho jednotkami) je navržena tak, aby zpracovávala
     interakce robota a propisovala je do světa, stejně jako o světě vracela
@@ -30,7 +35,7 @@ class WorldInterface(interaction_module.InteractionHandlerManager):
         'InteractionRuleManager', pomocí které bude ověřovat interakce.
         """
 
-        interaction_module.InteractionHandlerManager.__init__(self)
+        ihm_module.InteractionHandlerManager.__init__(self)
 
         self._world = world
         self._rules_manager = rules_manager_factory.build()

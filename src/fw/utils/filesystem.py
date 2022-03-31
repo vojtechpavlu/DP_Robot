@@ -44,7 +44,7 @@ def is_file(path: "str") -> "bool":
 def root_directory_path() -> "str":
     """Funkce vrací absolutní cestu ke kořenové složce projektu.
     """
-    return os.path.abspath(os.path.join(__file__, "..", "..", ".."))
+    return os.path.abspath(os.path.join(__file__, "..", "..", "..", ".."))
 
 
 def separator() -> str:
@@ -423,7 +423,7 @@ def module_path_from_abs(abs_path: str) -> str:
     """Funkce se pokusí převést absolutní cestu ke zdrojovému souboru na
     absolutní cestu v kontextu balíčků projektu.
     Konkrétně funkce převede absolutní cestu k souboru na relativní vůči
-    projektu, nahradí v něm defautlní separátory pohybu v souborovém systému
+    projektu, nahradí v něm defaultní separátory pohybu v souborovém systému
     (typicky zpětná a dopředná lomítka) na tečky a odstraní koncovku souboru.
     Této funkce lze použít pro dynamické importování modulů z absolutních cest
     prohledaného adresáře uvnitř projektu.

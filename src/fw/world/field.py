@@ -13,7 +13,7 @@ import src.fw.world.world as world_mod
 import src.fw.world.robot_container as rc_module
 
 
-class Field(ABC, rc_module.SingleRobotContainer):
+class Field(rc_module.SingleRobotContainer):
     """Abstraktní třída 'Field' je odpovědná za stanovení základního
     společného protokolu pro všechny své potomky.
 

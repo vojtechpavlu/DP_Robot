@@ -4,6 +4,10 @@ aplikovat interakci.
 Typickým zástupcem je třída LimitedCounter, která definuje, že pro každý běh
 je možné aplikovat jen shora omezený počet interakcí."""
 
+
+# Prevence cyklických importů
+from __future__ import annotations
+
 # Import standardních knihoven
 from abc import ABC, abstractmethod
 from typing import Iterable

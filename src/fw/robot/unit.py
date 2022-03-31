@@ -1,6 +1,10 @@
 """V modulu 'unit.py' jsou definovány všechny prostředky pro reprezentaci
 a manipulaci v kontextu jednotek robota."""
 
+
+# Prevence cyklických importů
+from __future__ import annotations
+
 # Import standardních knihoven
 from abc import ABC, abstractmethod
 
@@ -15,7 +19,7 @@ import src.fw.robot.robot as robot_module
 import src.fw.robot.interaction as interaction_module
 
 
-class AbstractUnit(ABC, Identifiable, Named, Described,
+class AbstractUnit(Identifiable, Named, Described,
                    interaction_module.InteractionFactory):
     """Abstraktní třída AbstractUnit definuje základní společný protokol
     pro všechny jednotky, kterými je možné robota osadit.
@@ -94,7 +98,7 @@ class AbstractUnit(ABC, Identifiable, Named, Described,
         self._robot = None
 
 
-class Actuator(ABC, AbstractUnit):
+class Actuator(AbstractUnit):
     """Actuator je abstraktní třída definující společný protokol pro všechny
     aktuátory. Především tedy definuje jednoduché pomocné funkce, které
     není dále nutné definovat ve všech potomcích.
@@ -123,7 +127,7 @@ class Actuator(ABC, AbstractUnit):
         return True
 
 
-class Sensor(ABC, AbstractUnit):
+class Sensor(AbstractUnit):
     """Sensor je abstraktní třída definující společný protokol pro všechny
     senzory. Především tedy definuje jednoduché pomocné funkce, které není
     dále nutné definovat ve všech potomcích.
@@ -151,7 +155,7 @@ class Sensor(ABC, AbstractUnit):
         return False
 
 
-class AbstractUnitFactory(ABC, Identifiable, Named,
+class AbstractUnitFactory(Identifiable, Named,
                           interaction_module.InteractionHandlerFactory):
     """Abstraktní třída 'UnitFactory' definuje obecný protokol pro své
     potomky, tedy již konkrétní tovární třídy jednotlivých jednotek.

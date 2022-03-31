@@ -11,6 +11,9 @@ Cílem je vytřídit jen ty pluginy (moduly), které jsou zcela validní a kter�
 mají příslušný požadovaný protokol a lze s nimi bezpečně pracovat.
 """
 
+# Prevence cyklických importů
+from __future__ import annotations
+
 # Import standardních knihoven
 from abc import ABC, abstractmethod
 from typing import Type
@@ -22,7 +25,7 @@ from src.fw.utils.described import Described
 from src.fw.utils.named import Named
 
 
-class PluginValidator(ABC, Named, Described):
+class PluginValidator(Named, Described):
     """Validátor pluginů, který ověřuje, že dodané pluginy jsou skutečně
     dle dodaných pravidel validní a použitelné v daném kontextu."""
 

@@ -6,6 +6,8 @@ jako se stará o poskytování registrovaných továren a dalších služeb s
 tím spojených.
 """
 
+# Prevence cyklických importů
+from __future__ import annotations
 
 # Import standardních knihoven
 from typing import Iterable
@@ -95,7 +97,7 @@ class UnitFactoryManager:
                     f"názvu '{unit_factory.unit_name=}'", self)
         self._registered.append(unit_factory)
 
-    def load(self):
+    def load(self) -> "tuple[unit_module.AbstractUnitFactory]":
         """Funkce odpovědná za registraci instancí továrních tříd jednotek.
         Funkce v první řadě vyčistí původní evidenci, pokusí se zaregistrovat
         všechny defaultní (explicitní; dodané v initoru) a dále se pokusí
@@ -112,6 +114,9 @@ class UnitFactoryManager:
         for loader in self.loaders:
             for unit_factory in loader.unit_factories:
                 self.register(unit_factory)
+
+        # Navrácení všech registrovaných
+        return self.registered_factories
 
     def factory_by_unit_name(self,
                              name: str) -> "unit_module.AbstractUnitFactory":

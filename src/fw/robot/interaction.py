@@ -6,6 +6,9 @@ interakcí a správce handlerů interakcí. Dále obsahuje definici tříd
 InteractionFactory a InteractionHandlerFactory."""
 
 
+# Prevence cyklických importů
+from __future__ import annotations
+
 # Import standardních knihoven
 from abc import ABC, abstractmethod
 from typing import Type
@@ -19,7 +22,7 @@ import src.fw.robot.unit as unit_module
 import src.fw.world.world_interface as wrld_interf_module
 
 
-class Interaction(ABC, Identifiable, Named, Described):
+class Interaction(Identifiable, Named, Described):
     """Abstraktní třída interakce, která definuje nejzákladnější protokol
     pro všechny interakce, se kterými je možné se v systému setkat.
 
@@ -56,10 +59,10 @@ class Interaction(ABC, Identifiable, Named, Described):
         danou interakci a vrátit výsledek."""
 
 
-class InteractionHandler(ABC):
-    """Abstraktní třída InteractionHandler definuje obecný protokol pro
-    všechny handlery (zpracovatele) interakcí. To umožňuje dynamické použití
-    interakcí podle návrhového vzoru Command.
+class InteractionHandler:
+    """Třída InteractionHandler definuje obecný protokol pro všechny handlery
+    (zpracovatele) interakcí. To umožňuje dynamické použití interakcí podle
+    návrhového vzoru Command.
 
     Základním předpokladem je schopnost rozlišení jednotlivých interakcí,
     za jejichž zpracování je tento handler odpovědný, stejně jako existence
@@ -152,65 +155,7 @@ class InteractionFactory(ABC):
             self.build_interaction())
 
 
-class InteractionHandlerManager(ABC):
-    """Instance této třídy jsou odpovědné za sdružování a správu handlerů pro
-    zpracování interakcí."""
 
-    def __init__(self):
-        """Initor třídy, který je odpovědný především za inicializaci
-        proměnných, tedy handlerů, které má správce evidovány. V úvodní
-        fázi je evidence prázdná, tyto jsou dodávány až za běhu životního
-        cyklu instance.
-        """
-        self._handlers: "list[InteractionHandler]" = []
-
-    @property
-    def interaction_handlers(self) -> "tuple[InteractionHandler]":
-        """Vlastnost vrací ntici všech handlerů, které má správce v evidenci.
-        """
-        return tuple(self._handlers)
-
-    def add_interaction_handler(self, handler: "InteractionHandler"):
-        """Funkce se pokusí přidat dodaný handler do evidence tohoto správce.
-        Pokud již existuje jeden handler pro zpracování interakcí stejného
-        typu je v evidenci obsažen, je vyhozena výjimka.
-        """
-        for i_h in self.interaction_handlers:
-            if i_h.interaction_type is handler.interaction_type:
-                # TODO - specifikace výjimky
-                raise Exception(
-                    f"Nelze mít evidovány dva handlery pro stejný typ "
-                    f"interakce: '{handler.interaction_type}'")
-        self._handlers.append(handler)
-
-    def has_interaction_handler(self, interaction: "Interaction") -> bool:
-        """Funkce se pokusí vyhledat handler odpovědný za zpracování interakcí
-        daného typu. Pokud-že takový není nalezen, je vráceno False, jinak
-        True."""
-        for handler in self.interaction_handlers:
-            if handler.is_mine(interaction):
-                return True
-        return False
-
-    def get_interaction_handler(
-            self, interaction: "Interaction") -> "InteractionHandler":
-        """Funkce se pokusí vrátit pro danou interakci handler, který je za
-        zpracování této interakce odpovědný.
-
-        Pokud takový není nalezen, je vyhozena výjimka. To typicky značí
-        pokus o podvod nebo chybně definované přidání požadovaných handlerů
-        do evidence.
-        """
-        for handler in self.interaction_handlers:
-            if handler.is_mine(interaction):
-                return handler
-        # TODO - specifikace výjimky
-        raise Exception(
-            f"Pro interakci '{type(interaction)}' není handler evidován")
-
-    @abstractmethod
-    def process_interaction(self, interaction: "Interaction") -> object:
-        """Abstraktní funkce se pokusí o zpracování dané interakce."""
 
 
 

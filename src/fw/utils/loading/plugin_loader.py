@@ -2,6 +2,9 @@
 dynamického načítání modulů s cílem upravovat funkcionalitu za běhu programu.
 """
 
+# Prevence cyklických importů
+from __future__ import annotations
+
 # Import standardních knihoven
 from abc import ABC, abstractmethod
 from typing import Iterable
@@ -15,7 +18,7 @@ from ..filesystem import exists, is_directory, deep_list_files
 
 
 class PluginLoader(ABC):
-    """Abstrakatní třída PluginLoader definuje obecný protokol pro práci s
+    """Abstraktní třída PluginLoader definuje obecný protokol pro práci s
     pluginy (instancemi třídy Plugin), tedy pro dynamické načítání zdrojových
     souborů.
     """
