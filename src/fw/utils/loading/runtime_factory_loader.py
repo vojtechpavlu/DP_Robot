@@ -187,9 +187,26 @@ class RuntimeFactoryPlugin(plugin_module.Plugin):
 
 
 class DefaultRuntimeFactoryLoader(RuntimeFactoryLoader):
-    """"""
+    """Třída rozšiřuje působnost obecné třídy 'RuntimeFactoryLoader' s
+    předpřipravenými defaultními hodnotami.
+
+    Konkrétně se instance této třídy starají o předpřipravení výchozího
+    loaderu s výchozími identifikátory a validátory pluginů.
+
+    Pro iniciaci této instance pak stačí pouze zadat název zadání, které
+    reprezentuje název adresáře, který se má číst pro získání továren
+    běhových prostředí."""
 
     def __init__(self, assignment_name: str):
+        """Initor třídy, který má za cíl předpřipravit předka dodáním
+        defaultních hodnot.
+
+        K tomu využívá název zadání, které reprezentuje název adresáře,
+        který obsahuje pluginy v kontextu továren běhových prostředí.
+
+        Postoupené identifikátory a validátory jsou přejaté z výchozí
+        sady, viz horní část tohoto modulu.
+        """
         RuntimeFactoryLoader.__init__(
             self, join_paths(
                 _ABSOLUTE_ASSIGNMENT_PLUGINS_PATH, assignment_name),
