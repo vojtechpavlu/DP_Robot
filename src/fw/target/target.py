@@ -71,3 +71,24 @@ class TargetFactory(ABC):
         Funkce přijímá referenci na svět, který má za úkol úloha sledovat
         co do jejího splnění."""
 
+
+class AlwaysCompletedTargetFactory(TargetFactory):
+    """Tovární třída, která vytváří automaticky splněnou úlohu. Její smysl
+    je spíše pro potřeby testování a debugging.
+
+    Úloha je naplněna pouze jediným úkolem, který je považován automaticky
+    za splněný, neboť má tak nastavenu i evaluační funkci vracející za všech
+    okolností hodnotu True."""
+
+    def build(self, world: "world_module.World") -> "Target":
+        """Funkce odpovědná za vytvoření úlohy, která je automaticky
+        považována za splněnou, neboť má jediný úkol, který je de facto
+        také automaticky splněn.
+        """
+        target = Target("Always successful target",
+                        "Úloha, která je automaticky splněna", world)
+        target.add_task(task_module.always_true_task())
+        return target
+
+
+
