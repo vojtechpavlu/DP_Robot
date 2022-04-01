@@ -22,7 +22,7 @@ import src.fw.platform.platform as platform_module
 import src.fw.platform.unit_factories_manager as uf_manager_module
 
 
-class AbstractRuntime(ABC, Identifiable):
+class AbstractRuntime(Identifiable):
     """Abstraktní třída reprezentující běhové prostředí. Cílem této třídy
     je stanovit obecný protokol, který je společný pro všechny své potomky.
 

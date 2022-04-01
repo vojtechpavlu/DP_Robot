@@ -19,7 +19,7 @@ import src.fw.target.task as task_module
 import src.fw.target.event_handling as event_module
 
 
-class EvaluationFunction(ABC, Named, Identifiable, event_module.EventHandler):
+class EvaluationFunction(Named, Identifiable, event_module.EventHandler):
     """Evaluační funkce slouží k vyhodnocení splnění daného úkolu.
     Tato abstraktní třída definuje obecný protokol pro takovou funkci.
 
@@ -183,4 +183,59 @@ class EvaluationFunctionError(PlatformError):
         """Vlastnost vrací referenci na evaluační funkci, v jejímž kontextu
         došlo k chybě."""
         return self._eval_fun
+
+
+class AlwaysTrueEvaluationFunction(EvaluationFunction):
+    """Tato třída reprezentuje vyhodnocovací funkci, která je za všech
+    okolností pravdivá. V praxi to znamená, že nic fakticky nevyhodnocuje,
+    na požádání o vyhodnocení automaticky vrací hodnotu True.
+
+    Instance této třídy se vlastně nemusí ani registrovat u žádné instance
+    třídy 'EventEmitter', neboť de facto nic nevyhodnocují a není tedy třeba
+    ani žádného ověřování."""
+
+    from src.fw.target.event_handling import EventEmitter
+
+    def __init__(self):
+        """Jednoduchý initor třídy, který pouze iniciuje předka s defaultním
+        názvem evaluační funkce."""
+        EvaluationFunction.__init__(self, "Always True")
+
+    def eval(self) -> bool:
+        """Funkce, jejímž cílem je vždy vrátit jen a pouze hodnotu True."""
+        return True
+
+    def update(self, emitter: "EventEmitter"):
+        """Elementární implementace funkce 'update' pro funkci vždy pravdu
+        vracející. De facto není třeba cokoliv vyhodnocovat a tedy ani
+        ověřovat."""
+        pass
+
+
+class AlwaysFalseEvaluationFunction(EvaluationFunction):
+    """Tato třída reprezentuje vyhodnocovací funkci, která je za všech
+    okolností nepravdivá. V praxi to znamená, že nic fakticky nevyhodnocuje,
+    na požádání o vyhodnocení automaticky vrací hodnotu False.
+
+    Instance této třídy se vlastně nemusí ani registrovat u žádné instance
+    třídy 'EventEmitter', neboť de facto nic nevyhodnocují a není tedy třeba
+    ani žádného ověřování."""
+
+    from src.fw.target.event_handling import EventEmitter
+
+    def __init__(self):
+        """Jednoduchý initor třídy, který pouze iniciuje předka s defaultním
+        názvem evaluační funkce."""
+        EvaluationFunction.__init__(self, "Always False")
+
+    def eval(self) -> bool:
+        """Funkce, jejímž cílem je vždy vrátit jen a pouze hodnotu False."""
+        return True
+
+    def update(self, emitter: "EventEmitter"):
+        """Elementární implementace funkce 'update' pro funkci vždy nepravdu
+        vracející. De facto není třeba cokoliv vyhodnocovat a tedy ani
+        ověřovat."""
+        pass
+
 

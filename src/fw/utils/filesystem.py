@@ -95,6 +95,16 @@ def list_files(path: "str", include_directories: bool = True) -> "list[str]":
         f"Zadaná adresa není platná: soubor '{path}' není adresář", [path])
 
 
+def list_directories(path: str) -> "list[str]":
+    """Funkce vrátí seznam absolutních cest k podadresářům, které jsou v rámci
+    dodaného adresáře reprezentovaného dodanou absolutní cestou.
+
+    Funkce vyhazuje výjimku, není-li na dané cestě existující adresář.
+    """
+    return list(filter(lambda file: is_directory(file),
+                       list_files(path, True)))
+
+
 def list_files_with_extension(path: "str", ext: "str") -> "list[str]":
     """Funkce vrací seznam souborů, které mají zadanou koncovku.
     Koncovku lze v parametru dodat s úvodní tečkou či bez ní.

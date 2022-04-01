@@ -102,3 +102,20 @@ class TaskError(PlatformError):
         return self._task
 
 
+def always_true_task() -> "Task":
+    """Funkce vrací instanci úkolu, který je vykonstruován tak, že je vždy
+    za všech okolností pravdivý, tedy splněný."""
+    return Task(
+        "Always True task", "Úkol, který je vždy zcela splněn.",
+        ef_module.AlwaysTrueEvaluationFunction())
+
+
+def always_false_task() -> "Task":
+    """Funkce vrací instanci úkolu, který je vykonstruován tak, že je vždy
+    za všech okolností nepravdivý, tedy nesplněný."""
+    return Task(
+        "Always False task", "Úkol, který není nikdy splněn.",
+        ef_module.AlwaysFalseEvaluationFunction())
+
+
+
