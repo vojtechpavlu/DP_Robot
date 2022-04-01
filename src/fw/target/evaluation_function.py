@@ -212,3 +212,30 @@ class AlwaysTrueEvaluationFunction(EvaluationFunction):
         pass
 
 
+class AlwaysFalseEvaluationFunction(EvaluationFunction):
+    """Tato třída reprezentuje vyhodnocovací funkci, která je za všech
+    okolností nepravdivá. V praxi to znamená, že nic fakticky nevyhodnocuje,
+    na požádání o vyhodnocení automaticky vrací hodnotu False.
+
+    Instance této třídy se vlastně nemusí ani registrovat u žádné instance
+    třídy 'EventEmitter', neboť de facto nic nevyhodnocují a není tedy třeba
+    ani žádného ověřování."""
+
+    from src.fw.target.event_handling import EventEmitter
+
+    def __init__(self):
+        """Jednoduchý initor třídy, který pouze iniciuje předka s defaultním
+        názvem evaluační funkce."""
+        EvaluationFunction.__init__(self, "Always False")
+
+    def eval(self) -> bool:
+        """Funkce, jejímž cílem je vždy vrátit jen a pouze hodnotu False."""
+        return True
+
+    def update(self, emitter: "EventEmitter"):
+        """Elementární implementace funkce 'update' pro funkci vždy nepravdu
+        vracející. De facto není třeba cokoliv vyhodnocovat a tedy ani
+        ověřovat."""
+        pass
+
+
