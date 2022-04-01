@@ -38,6 +38,7 @@ class AbstractRuntime(Identifiable):
                  target_factory: "target_module.TargetFactory",
                  unit_factories: "Iterable[unit_module.AbstractUnitFactory]",
                  program: "program_module.AbstractProgram",
+                 robot_factory: "robot_module.RobotFactory",
                  platform: "platform_module.Platform"):
         """Initor funkce, který přijímá tovární třídu světa, tovární třídu
         úlohy, množinu povolených továrních tříd jednotek a referenci na
@@ -49,6 +50,7 @@ class AbstractRuntime(Identifiable):
         self._world_factory = world_factory
         self._unit_factories = tuple(unit_factories)
         self._program = program
+        self._robot_factory = robot_factory
         self._platform = platform
 
         self._world = None
@@ -86,6 +88,11 @@ class AbstractRuntime(Identifiable):
         """Vlastnost vrací referenci na program, který má být spuštěn pro
         každého robota."""
         return self._program
+
+    @property
+    def robot_factory(self) -> "robot_module.RobotFactory":
+        """Vlastnost vrací referenci na dodanou instanci továrny robotů."""
+        return self._robot_factory
 
     @property
     def platform(self) -> "platform_module.Platform":
