@@ -70,6 +70,15 @@ class WorldInterface(ihm_module.InteractionHandlerManager):
         if len(violated) > 0:
             raise inter_rls.InteractionRulesError(
                 f"Byla porušena pravidla pro interakci", violated)
+
+        """Ověření, že je jednotka v konzistentním stavu a že tuto interakci
+        skutečně provedla"""
+        self.check_unit(interaction)
+
+        """Ověření, že je robot v konzistentním stavu, že je jeho podpis
+        v interakci zjistitelný a že interakce skutečně pochází z jeho
+        programu."""
+        self.check_robot(interaction)
         # TODO - Přidat kontrolu (příslušnost, roboti, jednotky, ...)
 
     def check_unit(self, interaction: "interaction_module.Interaction"):
@@ -104,6 +113,37 @@ class WorldInterface(ihm_module.InteractionHandlerManager):
                 f"Jednotka je odpovědná za tvorbu jiného typu interakcí: "
                 f"{interaction.interaction_type=} != {unit.interaction_type=}",
                 interaction)
+
+    def check_robot(self, interaction: "interaction_module.Interaction"):
+        """Funkce se pokouší ověřit, že je interakce platná a validní v
+        kontextu robota, který svými jednotkami inicioval vytvoření této
+        dodané interakce.
+
+        Robot musí být z interakce zjistitelný. To znamená, že robot je
+        osazen jednotkou, která je odpovědná za vytvoření této dodané
+        instance interakce.
+
+        Robot tedy musí být určen a musí být osazen tou konkrétní instancí
+        jednotky, která je za tuto interakci odpovědná.
+
+        Pokud některá z podmínek není naplněna, je vyhozena výjimka."""
+
+        # Získání reference na robota, který bude podroben zkouškám
+        robot = interaction.unit.robot
+
+        # Robot není znám
+        if robot is None:
+            raise interaction_module.InteractionError(
+                f"Interakce nemá referenci na robota, který ji inicioval",
+                interaction)
+
+        # Robot není osazen jednotkou odpovědnou za vytvoření této instance
+        elif not robot.is_mounted_with(interaction.unit):
+            raise interaction_module.InteractionError(
+                f"Robot není osazen jednotkou odpovědnou za vytvoření "
+                f"této interakce", interaction)
+
+        # TODO - kontrola v souladu s RobotStateContainer
 
     def process_interaction(
             self, interaction: "interaction_module.Interaction") -> object:
