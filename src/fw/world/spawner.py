@@ -1,5 +1,11 @@
-""""""
+"""Modul sdružuje funkcionalitu ve vztahu se spawnováním robotů ve světě.
 
+Samotný proces 'spawnování' lze chápat jako zasazení robota do světa a jeho
+celkové propojení s ním.
+
+Je zde především uvedena definice protokolu pro samotný Spawner a jeho
+továrnu. Dále lze v tomto modulu nalézt jednoduché vzorové a výchozí
+implementace obého."""
 
 # Import standardních knihoven
 from abc import ABC, abstractmethod
@@ -8,14 +14,13 @@ from abc import ABC, abstractmethod
 import src.fw.world.robot_state as rs_module
 import src.fw.world.world as world_module
 import src.fw.robot.robot as robot_module
-import src.fw.world.field as field_module
 
 from src.fw.utils.error import PlatformError
 from src.fw.utils.named import Named
 from src.fw.world.direction import Direction
 
 
-class Spawner(ABC, Named):
+class Spawner(Named):
     """Abstraktní třída definující způsob zasazení robota do světa. Tento
     protokol má za cíl definovat obecné zdroje pro přidávání robotů do světů.
     """
@@ -147,10 +152,9 @@ class CoordinatesSpawner(Spawner):
                 f"Na dodaných souřadnicích [{self.x};{self.y}] "
                 f"již je robot '{field.robot}'", self)
         else:
-            path: "field_module.Path" = field
-            path.robot = robot
+            field.robot = robot
             return rs_module.RobotState(robot, self.world,
-                                        self.default_direction, path)
+                                        self.default_direction, field)
 
 
 class CoordinatesSpawnerFactory(SpawnerFactory):

@@ -168,6 +168,7 @@ class SingleRobotRuntime(AbstractRuntime):
             self.world.world_interface.add_interaction_handler(
                 unit.unit_factory.interaction_handler)
         # TODO - kontrola osazení
+        self.world.robot_state_manager.register_robot(self.robot)
         try:
             self.program.run(self.robot)
         except Exception as e:
@@ -252,6 +253,33 @@ class AbstractRuntimeFactory(ABC):
         V parametru přijímá instanci platformy, které toto běhové prostředí
         náleží, vedle reference na program, který mají roboti mít a dle
         kterého se mají chovat."""
+
+    @staticmethod
+    def pick_unit_factories(platform: "platform_module.Platform",
+                            unit_names: "Iterable[str]"):
+        """Statická funkce se pokusí vybrat z dodané platformy všechny
+        tovární třídy jednotek tak, aby byl zjednodušen přenos z jejich
+        názvu na konkrétní instance.
+
+        K seznamu registrovaných a použitelných továren jednotek se přistupuje
+        přes správce továren jednotek a jeho funkci pro vyhledávání těchto
+        továren dle názvu ('factory_by_unit_name(str)'). Ta vyhazuje výjimku,
+        není-li taková jednotka k nalezení. V takovém případě není odchycena
+        a tato probublává výše.
+        """
+
+        # Seznam továrních jednotek
+        uf = []
+
+        # Pro každý název jednotky
+        for unit_name in unit_names:
+
+            # Přidej získanou továrnu
+            uf.append(platform.unit_factory_manager.factory_by_unit_name(
+                unit_name))
+
+        # Vrácení naplněného seznamu továrnami jednotek
+        return uf
 
 
 
