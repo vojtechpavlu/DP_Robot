@@ -61,9 +61,11 @@ class TemplateRuntimeFactory(AbstractRuntimeFactory):
 
     def build(self, platform: "Platform",
               program: "AbstractProgram") -> "AbstractRuntime":
+        """"""
         return SingleRobotRuntime(
             self.world_factory, self.target_factory,
-        )
+            self.pick_unit_factories(platform, self.available_units_names),
+            program, self.robot_factory, platform)
 
 
 
