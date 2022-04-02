@@ -14,6 +14,7 @@ from abc import ABC, abstractmethod
 from typing import Type
 
 # Import lokálních knihoven
+from src.fw.utils.error import PlatformError
 from src.fw.utils.named import Named
 from src.fw.utils.described import Described
 from src.fw.utils.identifiable import Identifiable
@@ -174,6 +175,18 @@ class InteractionFactory(ABC):
         instance interakce."""
 
 
+class InteractionFactoryError(PlatformError):
+    """"""
+
+    def __init__(self, message: str, factory: "InteractionFactory"):
+        """"""
+        PlatformError.__init__(self, message)
+        self._factory = factory
+
+    @property
+    def interaction_factory(self) -> "InteractionFactory":
+        """"""
+        return self._factory
 
 
 
