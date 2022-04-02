@@ -3,14 +3,14 @@ manipulaci políčky, ze kterých se sestává prostor herního světa.
 """
 
 # Import standardních knihoven
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 # Import lokálních knihoven
 from src.fw.utils.error import PlatformError
 from src.fw.world.coordinates import Coordinates
 
 import src.fw.world.world as world_mod
-import src.fw.world.robot_container as rc_module
+import src.fw.robot.robot_container as rc_module
 
 
 class Field(rc_module.SingleRobotContainer):

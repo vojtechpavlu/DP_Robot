@@ -18,6 +18,7 @@ import src.fw.robot.robot as robot_module
 import src.fw.target.target as target_module
 import src.fw.robot.program as program_module
 import src.fw.robot.unit as unit_module
+import src.fw.robot.robot_container as robot_cont_module
 import src.fw.platform.platform as platform_module
 import src.fw.platform.unit_factories_manager as uf_manager_module
 
@@ -38,6 +39,7 @@ class AbstractRuntime(Identifiable):
                  target_factory: "target_module.TargetFactory",
                  unit_factories: "Iterable[unit_module.AbstractUnitFactory]",
                  program: "program_module.AbstractProgram",
+                 robot_factory: "robot_module.RobotFactory",
                  platform: "platform_module.Platform"):
         """Initor funkce, který přijímá tovární třídu světa, tovární třídu
         úlohy, množinu povolených továrních tříd jednotek a referenci na
@@ -49,6 +51,7 @@ class AbstractRuntime(Identifiable):
         self._world_factory = world_factory
         self._unit_factories = tuple(unit_factories)
         self._program = program
+        self._robot_factory = robot_factory
         self._platform = platform
 
         self._world = None
@@ -88,10 +91,21 @@ class AbstractRuntime(Identifiable):
         return self._program
 
     @property
+    def robot_factory(self) -> "robot_module.RobotFactory":
+        """Vlastnost vrací referenci na dodanou instanci továrny robotů."""
+        return self._robot_factory
+
+    @property
     def platform(self) -> "platform_module.Platform":
         """Vlastnost vrací platformu, které tato instance běhového prostředí
         náleží."""
         return self._platform
+
+    @property
+    def units(self) -> "tuple[unit_module.AbstractUnit]":
+        """Vlastnost vrací zcela nově vytvořené jednotky z uložených továren
+        jednotek."""
+        return tuple(uf.build() for uf in self.unit_factories)
 
     def prepare(self):
         """Funkce připravující svět a úlohu ke spuštění. V podstatě si z
@@ -108,6 +122,54 @@ class AbstractRuntime(Identifiable):
     def run(self):
         """Abstraktní funkce odpovědná za běh a řízení běhu daného prostředí.
         """
+
+
+class SingleRobotRuntime(AbstractRuntime):
+    """Třída definuje speciální typ svého předka, tedy běhové prostředí, ve
+    kterém je pouze jediný robot.
+
+    Toto běhové prostředí se liší především implementací instanční metody
+    'run', která operuje jen a pouze na úrovni jediného robota."""
+
+    def __init__(self, world_factory: "world_fact_module.WorldFactory",
+                 target_factory: "target_module.TargetFactory",
+                 unit_factories: "Iterable[unit_module.AbstractUnitFactory]",
+                 program: "program_module.AbstractProgram",
+                 robot_factory: "robot_module.RobotFactory",
+                 platform: "platform_module.Platform"):
+        """Initor třídy, který přijímá tovární třídy (továrnu světa, úlohy,
+        robotů a továrny jednotek) a referenci na program, který má být pro
+        jediného robota spuštěn. Dále přijímá referenci na platformu, pod
+        kterou je toto běhové prostředí spuštěno.
+        """
+        # Volání předka
+        AbstractRuntime.__init__(
+            self, world_factory, target_factory, unit_factories, program,
+            robot_factory, platform)
+
+        # Příprava kontejneru robota
+        self.__robot_container = robot_cont_module.SingleRobotContainer()
+        self.__robot_container.robot = self.robot_factory.build()
+
+    @property
+    def robot(self) -> "robot_module.Robot":
+        """Vlastnost vrací jediného robota, kterého toto prostředí má. Ten
+        je uložen v privátním kontejneru typu 'SingleRobotContainer', který
+        co nejvíce znesnadňuje jakoukoliv nepravou manipulaci."""
+        return self.__robot_container.robot
+
+    def run(self):
+        """Hlavní funkce třídy, která se stará o řízení běhu jediného robota.
+        """
+        self.prepare()
+        self.program.mount(self.robot, self.units)
+        # TODO - kontrola osazení
+        try:
+            self.program.run(self.robot)
+        except Exception as e:
+            for unit in self.robot.units:
+                unit.deactivate()
+        # TODO - kontrola Targetu a jeho vyhodnocení
 
 
 class AbstractRuntimeFactory(ABC):
@@ -151,11 +213,6 @@ class AbstractRuntimeFactory(ABC):
         self._world_factory = world_factory
         self._target_factory = target_factory
 
-        """Seznam všech továrních tříd jednotek, kterými je možné v tomto
-        běhovém prostředí robota osadit. Jejich seznam je na počátku životního 
-        cyklu pochopitelně prázdný."""
-        self._unit_factories: "list[unit_module.AbstractUnitFactory]" = []
-
     @property
     def available_units_names(self) -> "tuple[str]":
         """Funkce vrací názvy všech jednotek, které by měly být robotům k
@@ -180,20 +237,6 @@ class AbstractRuntimeFactory(ABC):
         """Vlastnost vrací továrnu úlohy, které bude použito pro tvorbu úlohy.
         """
         return self._target_factory
-
-    def prepare_unit_factories(
-            self,
-            unit_factory_manager: "uf_manager_module.UnitFactoryManager"):
-        """Funkce je odpovědná za načtení všech továrních tříd jednotek z
-        předepsaného seznamu.
-
-        Všechny zadané tovární jednotky (dle jejich názvů definovaných v
-        initoru této třídy) musí být v rámci daného správce továren jednotek
-        dostupné. Pokud-že některá chybí je vyhozena výjimka.
-        """
-        for unit_name in self.available_units_names:
-            self._unit_factories.append(
-                unit_factory_manager.factory_by_unit_name(unit_name))
 
     @abstractmethod
     def build(self, platform: "platform_module.Platform",
