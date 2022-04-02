@@ -223,5 +223,27 @@ class InteractionFactoryError(PlatformError):
         return self._factory
 
 
+class InteractionError(PlatformError):
+    """Instance této třídy reprezentují upozornění na chybu v kontextu
+    interakcí. Svého předka rozšiřuje o udržení reference na interakci,
+    v jejímž kontextu došlo k chybě."""
+
+    def __init__(self, message: str, interaction: "Interaction"):
+        """Initor třídy, který jednak volá předka s postoupením dodané
+        zprávy reprezentující popis chyby, ale také ukládá referenci na
+        dodanou interakci, v jejímž kontextu došlo k chybě.
+        """
+        # Volání předka
+        PlatformError.__init__(self, message)
+
+        # Uložení interakce, v jejímž kontextu došlo k chybě
+        self._interaction = interaction
+
+    @property
+    def interaction(self) -> "Interaction":
+        """Vlastnost vrací interakci, v jejímž kontextu došlo k chybě."""
+        return self._interaction
+
+
 
 
