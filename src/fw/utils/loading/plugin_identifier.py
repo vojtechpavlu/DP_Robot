@@ -11,9 +11,9 @@ býti pluginy.
 # Import standardních knihoven
 from abc import ABC, abstractmethod
 
-
 # Import lokálních knihoven
 import src.fw.utils.filesystem as fs
+
 from src.fw.utils.described import Described
 from src.fw.utils.named import Named
 
@@ -202,6 +202,29 @@ class NotStartingWithPluginIdentifier(PluginIdentifier):
         modul za validní (True)"""
         return not fs.file_basename(filepath, False).startswith(
             self.forbidden_prefix)
+
+
+class MaxFilesizePluginIdentifier(PluginIdentifier):
+    """"""
+
+    def __init__(self, max_size: int):
+        """"""
+        PluginIdentifier.__init__(
+            self, "Max Filesize in Bytes",
+            f"Identifikátor pluginů, který je odpovědný za kontrolu, že "
+            f"soubor reprezentující plugin není větší, než {max_size} bytů.")
+        self._max_size = max_size
+
+    @property
+    def max_size(self) -> int:
+        """"""
+        return self._max_size
+
+    def is_plugin(self, abs_path: str) -> bool:
+        """"""
+        return self._max_size <= fs.filesize(abs_path)
+
+
 
 
 
