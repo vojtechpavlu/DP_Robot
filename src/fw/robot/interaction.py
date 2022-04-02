@@ -111,6 +111,7 @@ class InteractionHandlerFactory(ABC):
         """Vlastnost vrací typ interakce, za jehož typ je daný handler co do
         zpracování odpovědný."""
 
+    @property
     @abstractmethod
     def interaction_handler(self) -> "InteractionHandler":
         """Abstraktní funkce vrací handler, který je odpovědný za zpracování
