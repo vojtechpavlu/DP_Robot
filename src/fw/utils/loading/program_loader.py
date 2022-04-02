@@ -19,6 +19,7 @@ import src.fw.utils.loading.plugin_identifier as pl_identifier
 import src.fw.utils.loading.plugin_validator as pl_validator
 import src.fw.utils.loading.plugin as plugin_module
 import src.fw.robot.program as program_module
+from src.fw.utils.filesystem import assignment
 
 """Název funkce, která bude volána coby klíčový přístupový bod pro obdržení
 instance programu robota"""
@@ -186,10 +187,18 @@ class DefaultProgramLoader(ProgramLoader):
     specifikovány v horní části tohoto modulu.
 
     Konkrétně jsou instance vybaveny výchozí sadou doporučených identifikátorů
-    a validátorů pluginů."""
+    a validátorů pluginů.
 
-    def __init__(self):
-        """"""
-        # TODO - specifikace cesty
-        ProgramLoader.__init__(self, "", _DEFAULT_IDENTIFIERS,
-                               _DEFAULT_VALIDATORS)
+    Předpokladem je, že programy jsou uloženy v adresáři všech zadání.
+    Výchozí cesta je tedy (relativně vůči kořeni projektu) následující:
+
+    'src/plugins/assignments/[název zadání]'"""
+
+    def __init__(self, assignment_name: str):
+        """Initor třídy, který přijímá název zadání, které je reprezentováno
+        adresářem v rámci adresáře všech zadání.
+
+        Předpokladem je, že všechny programy k otestování jsou v rámci tohoto
+        adresáře."""
+        ProgramLoader.__init__(self, assignment(assignment_name),
+                               _DEFAULT_IDENTIFIERS, _DEFAULT_VALIDATORS)
