@@ -38,7 +38,7 @@ class InteractionHandlerManager(ABC):
             if i_h.interaction_type is handler.interaction_type:
                 raise InteractionHandlerManagerError(
                     f"Nelze mít evidovány dva handlery pro stejný typ "
-                    f"interakce: '{handler.interaction_type}'")
+                    f"interakce: '{handler.interaction_type}'", self)
         self._handlers.append(handler)
 
     def has_interaction_handler(self, interaction: "inter_module.Interaction") -> bool:
@@ -63,7 +63,7 @@ class InteractionHandlerManager(ABC):
             if handler.is_mine(interaction):
                 return handler
         raise InteractionHandlerManagerError(
-            f"Pro interakci '{type(interaction)}' není handler evidován")
+            f"Pro interakci '{type(interaction)}' není handler evidován", self)
 
     @abstractmethod
     def process_interaction(self,

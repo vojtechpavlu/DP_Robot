@@ -54,10 +54,10 @@ class World:
         políčka mají stejné souřadnice, je vyhozena výjimka."""
         for index, field in enumerate(self._fields):
             for next_field in self._fields[index + 1:]:
-                if field.x == next_field.x or field.y == next_field.y:
+                if field.x == next_field.x and field.y == next_field.y:
                     raise WorldError(
                         f"Nelze evidovat dvě políčka se "
-                        f"stejnými souřadnicemi", self)
+                        f"stejnými souřadnicemi: {field.x}, {field.y}", self)
 
         """Připravení rozhraní světa z dodané továrny"""
         self._world_interface = world_if_fact.build(self)
