@@ -191,7 +191,12 @@ class DefaultRuntimeFactoryLoader(RuntimeFactoryLoader):
 
     Pro iniciaci této instance pak stačí pouze zadat název zadání, které
     reprezentuje název adresáře, který se má číst pro získání továren
-    běhových prostředí."""
+    běhových prostředí.
+
+    Předpokladem je, že všechny továrny jsou uloženy v adresáři všech zadání.
+    Výchozí cesta je tedy (relativně vůči kořeni projektu) následující:
+
+    'src/plugins/assignments/[název zadání]'"""
 
     def __init__(self, assignment_name: str):
         """Initor třídy, který má za cíl předpřipravit předka dodáním
