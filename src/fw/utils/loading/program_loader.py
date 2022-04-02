@@ -182,7 +182,11 @@ class ProgramPlugin(plugin_module.Plugin):
 
 
 class DefaultProgramLoader(ProgramLoader):
-    """"""
+    """Třída rozšiřuje svého předka nastavením defaultních hodnot. Tyto jsou
+    specifikovány v horní části tohoto modulu.
+
+    Konkrétně jsou instance vybaveny výchozí sadou doporučených identifikátorů
+    a validátorů pluginů."""
 
     def __init__(self):
         """"""
