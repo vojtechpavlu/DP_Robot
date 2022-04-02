@@ -84,7 +84,7 @@ class TemplateRuntimeFactory(AbstractRuntimeFactory):  # TODO - DOPLNIT
             program, self.robot_factory, platform)
 
 
-def get_runtime() -> "AbstractRuntimeFactory":  # TODO - DOPLNIT
+def get_runtime_factory() -> "AbstractRuntimeFactory":  # TODO - DOPLNIT
     """Hlavní přístupová funkce, která vrací továrnu běhového prostředí.
     Tato funkce (co do existence, funkce a typu návratové hodnoty) je
     rozhodujícím faktorem pro validátory pluginů v kontextu dynamické
