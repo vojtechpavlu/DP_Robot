@@ -164,7 +164,11 @@ class SingleRobotRuntime(AbstractRuntime):
         self.prepare()
         self.program.mount(self.robot, self.units)
         # TODO - kontrola osazení
-        self.program.run(self.robot)
+        try:
+            self.program.run(self.robot)
+        except Exception as e:
+            for unit in self.robot.units:
+                unit.deactivate()
         # TODO - kontrola Targetu a jeho vyhodnocení
 
 
