@@ -66,8 +66,11 @@ class World:
         self._world_interface = world_if_fact.build(self)
 
         """Připravení správce stavů robotů. K tomu je potřeba spawner, který
-        řídí přidávání robotů do světa; resp. vytváří stavy robota."""
+        řídí přidávání robotů do světa; resp. vytváří stavy robota.
+        Dále je instance tohoto spawneru inicializována co do reference na
+        tuto instanci, tedy svět, do kterého budou zasazováni roboti."""
         self._robot_state_manager = rsm_module.RobotStateManager(spawner)
+        spawner.world = self
 
     @property
     def fields(self) -> "tuple[field_mod.Field]":
