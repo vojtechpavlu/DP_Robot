@@ -72,6 +72,39 @@ class WorldInterface(ihm_module.InteractionHandlerManager):
                 f"Byla porušena pravidla pro interakci", violated)
         # TODO - Přidat kontrolu (příslušnost, roboti, jednotky, ...)
 
+    def check_unit(self, interaction: "interaction_module.Interaction"):
+        """Funkce se pokusí ověřit, že je interakce platná a validní v
+        kontextu jednotky.
+
+        Kontrolována je především existence jednotky, která je za tvorbu
+        této interakce odpovědná. Stejně tak je ověřována aktivita jednotky;
+        v době vyhodnocování této funkce nesmí být deaktivována. Dále je
+        porovnáván typ interakce s typem, který garantuje jednotka.
+
+        Pokud cokoliv není v pořádku, je vyhozena výjimka.
+        """
+
+        # Získání reference na jednotku, která bude podrobena zkouškám
+        unit = interaction.unit
+
+        # Jednotka není určena
+        if unit is None:
+            raise interaction_module.InteractionError(
+                f"Interakce vznikla bez přičinění jednotky nebo na ni nemá "
+                f"referenci", interaction)
+
+        # Jednotka je deaktivována
+        elif unit.is_deactivated:
+            raise interaction_module.InteractionError(
+                f"Daná jednotka je deaktivována", interaction)
+
+        # Jednotka je odpovědná za tvorbu jiného typu interakcí
+        elif interaction.interaction_type != unit.interaction_type:
+            raise interaction_module.InteractionError(
+                f"Jednotka je odpovědná za tvorbu jiného typu interakcí: "
+                f"{interaction.interaction_type=} != {unit.interaction_type=}",
+                interaction)
+
     def process_interaction(
             self, interaction: "interaction_module.Interaction") -> object:
         """Funkce odpovědná za zprocesování požadované interakce na úrovni
