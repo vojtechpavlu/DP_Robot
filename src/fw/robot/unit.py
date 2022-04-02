@@ -134,6 +134,11 @@ class Actuator(AbstractUnit):
         """Funkce vrací informaci o tom, že tato jednotka je aktuátorem."""
         return True
 
+    def scan(self) -> object:
+        """"""
+        # TODO
+        raise Exception()
+
 
 class Sensor(AbstractUnit):
     """Sensor je abstraktní třída definující společný protokol pro všechny
@@ -161,6 +166,11 @@ class Sensor(AbstractUnit):
     def is_actuator(self) -> bool:
         """Funkce vrací informaci o tom, že tato jednotka není aktuátorem."""
         return False
+
+    def execute(self):
+        """"""
+        # TODO
+        raise Exception()
 
 
 class AbstractUnitFactory(Identifiable, Named,

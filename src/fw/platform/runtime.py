@@ -163,12 +163,17 @@ class SingleRobotRuntime(AbstractRuntime):
         """
         self.prepare()
         self.program.mount(self.robot, self.units)
+        for unit in self.robot.units:
+            unit.set_world_interface(self.world.world_interface)
+            self.world.world_interface.add_interaction_handler(
+                unit.unit_factory.interaction_handler)
         # TODO - kontrola osazení
         try:
             self.program.run(self.robot)
         except Exception as e:
             for unit in self.robot.units:
                 unit.deactivate()
+            raise e
         # TODO - kontrola Targetu a jeho vyhodnocení
 
 

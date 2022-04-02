@@ -17,6 +17,9 @@ import src.fw.platform.unit_factories_manager as uf_manager_module
 import src.fw.platform.program_manager as prg_manager_module
 import src.fw.platform.runtime_factory_manager as rtf_manager_module
 import src.fw.platform.runtime as runtime_module
+import src.fw.robot.program as program_module
+import src.fw.robot.unit as unit_module
+from src.fw.utils.error import PlatformError
 
 
 class Platform:
@@ -87,10 +90,118 @@ class Platform:
         return self._runtime_factory_manager
 
     @property
+    def runtime_factories(
+            self) -> "tuple[runtime_module.AbstractRuntimeFactory]":
+        """Vlastnost vrací ntici všech továrních jednotek, které byly v rámci
+        dynamického načítání pluginů získány."""
+        return self.runtime_factory_manager.registered_factories
+
+    @property
+    def programs(self) -> "tuple[program_module.AbstractProgram]":
+        """Vlastnost vrací ntici všech programů, které byly v rámci
+        dynamického načítání pluginů získány pro dané zadání."""
+        return self.program_manager.registered_programs
+
+    @property
     def all_runtimes(self) -> "tuple[runtime_module.AbstractRuntime]":
         """Vlastnost vrací ntici všech běhových prostředí, která byla spuštěna.
         """
         return tuple(self._runtimes)
 
+    @property
+    def unit_factories(self) -> "tuple[unit_module.AbstractUnitFactory]":
+        """Vlastnost vrací ntici továren jednotek, které byly dynamicky
+        načteny z příslušných pluginů."""
+        return self.unit_factory_manager.registered_factories
+
+    def load(self):
+        """Vlastnost je odpovědná za načtení všech pluginů. Jmenovitě se stará
+        o dynamické načítání pluginů továren jednotek, zadání (tedy továren
+        běhových prostředí a programů).
+
+        Funkce je také odpovědná za zkontrolování načtených zdrojů. Pokud
+        se nepovede některému z správců (pomocí svých příslušných loaderů)
+        načíst jediný zdroj, je vyhozena příslušná výjimka."""
+
+        self.unit_factory_manager.load()
+        self.runtime_factory_manager.load()
+        self.program_manager.load()
+
+        """Kontrola načtených zdrojů co do počtu. Pokud nebyl pro příslušného
+        správce načten jediný plugin, je vyhozena příslušná výjimka."""
+
+        # Kontrola načtení továren jednotek
+        if len(self.unit_factories) == 0:
+            raise PlatformLoadingError(
+                f"Nebyla načtena jediná továrna jednotek", self)
+
+        # Kontrola načtení továren běhových prostředí
+        elif len(self.runtime_factories) == 0:
+            raise PlatformLoadingError(
+                f"Nebyla načtena jediná továrna běhových prostředí", self)
+
+        # Kontrola načtení programů
+        elif len(self.programs) == 0:
+            raise PlatformLoadingError(
+                f"Nebyl načten jediný program ke spuštění", self)
+
+    def run(self):
+        """Funkce odpovědná za spuštění jednotlivých běhových prostředí.
+
+        V první fázi se funkce stará o načtení všech zdrojů, které jsou pro
+        běh nezbytně nutné. To provádí s pomocí funkce 'load()'. Teprve poté
+        je tato způsobilá jednotlivá běhová prostředí spouštět.
+
+        Schéma běhů je takové, že pro každou továrnu běhového prostředí je
+        pro každý získaný program vytvořeno a v rámci programu také spuštěno
+        běhové prostředí.
+        """
+        # Načtení důležitých zdrojů
+        self.load()
+
+        # Výmaz evidovaných běhových prostředí
+        self._runtimes: "list[runtime_module.AbstractRuntime]" = []
+
+        """Postupné spouštění všech běhových prostředí. Pro každou továrnu
+        běhového prostředí je získán program, pro který je spuštěna nově
+        vytvořená instance běhového prostředí."""
+
+        # Pro každou továrnu běhového prostředí
+        for runtime_factory in self.runtime_factories:
+
+            # Pro každý program
+            for program in self.programs:
+
+                # Vytvoření běhového prostředí
+                runtime = runtime_factory.build(self, program)
+
+                # Registrace běhového prostředí
+                self._runtimes.append(runtime)
+
+                # Spuštění běhového prostředí
+                runtime.run()
+            # TODO - evaluace výsledků
 
 
+class PlatformLoadingError(PlatformError):
+    """Výjimka symbolizující vznik problému při načítání platformy a jejích
+    potřebných zdrojů.
+
+    Svého předka obohacuje o referenci na instanci třídy Platform, v jejímž
+    kontextu došlo k chybě."""
+
+    def __init__(self, message: str, platform: "Platform"):
+        """Initor, který přijímá zprávu o chybě a referenci na instanci
+        třídy Platform, v jejímž kontextu došlo k chybě. Zpráva je postoupena
+        initoru předka.
+        """
+        # Volání předka
+        PlatformError.__init__(self, message)
+
+        # Uložení instance platformy, v jejímž kontextu došlo k chybě
+        self._platform = platform
+
+    @property
+    def platform(self) -> "Platform":
+        """Vlastnost vrací platformu, v jejímž kontextu došlo k chybě."""
+        return self._platform
