@@ -258,7 +258,7 @@ def filesize(path: "str") -> "int":
             return os.stat(path).st_size
         elif is_directory(path):
             size = 0
-            for file in deep_list_files(path, False):
+            for file in list_files(path, True):
                 size += filesize(file)
             return size
     raise FileSystemError(

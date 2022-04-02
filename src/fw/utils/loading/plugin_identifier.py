@@ -11,9 +11,9 @@ býti pluginy.
 # Import standardních knihoven
 from abc import ABC, abstractmethod
 
-
 # Import lokálních knihoven
 import src.fw.utils.filesystem as fs
+
 from src.fw.utils.described import Described
 from src.fw.utils.named import Named
 
@@ -202,6 +202,40 @@ class NotStartingWithPluginIdentifier(PluginIdentifier):
         modul za validní (True)"""
         return not fs.file_basename(filepath, False).startswith(
             self.forbidden_prefix)
+
+
+class MaxFilesizePluginIdentifier(PluginIdentifier):
+    """Instance této třídy jsou odpovědné za identifikaci pluginů podle
+    velikosti souborů, které je reprezentují.
+
+    Konkrétně instance této třídy přijímají maximální (limitní) hranici, jakou
+    mohou ještě soubory mít (co do velikosti v bytech), větší jsou již však
+    z přijetí vyňaty."""
+
+    def __init__(self, max_size: int):
+        """Initor, který přijímá povolenou hraniční velikost souboru v bytech.
+        Tato hodnota nesmí být menší, než 0. Pokudže by k tomu došlo, je
+        nastavena tato hraniční hodnota na nulu."""
+        PluginIdentifier.__init__(
+            self, "Max Filesize in Bytes",
+            f"Identifikátor pluginů, který je odpovědný za kontrolu, že "
+            f"soubor reprezentující plugin není větší, než {max_size} bytů.")
+        self._max_size = max_size if max_size >= 0 else 0
+
+    @property
+    def max_size(self) -> int:
+        """Vlastnost vrací povolenou hraniční velikost souborů v bytech,
+        která je ještě přípustná."""
+        return self._max_size
+
+    def is_plugin(self, abs_path: str) -> bool:
+        """Funkce vyhodnocuje, zda-li je velikost souboru (modulu)
+        reprezentujícího daný plugin menší nebo rovna hraniční velikosti.
+        Pokud ano, je vrácena hodnota True; pokud je soubor větší, je
+        vrácena hodnota False."""
+        return self._max_size >= fs.filesize(abs_path)
+
+
 
 
 
