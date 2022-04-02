@@ -17,6 +17,8 @@ import src.fw.platform.unit_factories_manager as uf_manager_module
 import src.fw.platform.program_manager as prg_manager_module
 import src.fw.platform.runtime_factory_manager as rtf_manager_module
 import src.fw.platform.runtime as runtime_module
+import src.fw.robot.program as program_module
+import src.fw.robot.robot as robot_module
 
 
 class Platform:
@@ -87,10 +89,37 @@ class Platform:
         return self._runtime_factory_manager
 
     @property
+    def runtime_factories(
+            self) -> "tuple[runtime_module.AbstractRuntimeFactory]":
+        """"""
+        return self.runtime_factory_manager.registered_factories
+
+    @property
+    def programs(self) -> "tuple[program_module.AbstractProgram]":
+        """"""
+        return self.program_manager.registered_programs
+
+    @property
     def all_runtimes(self) -> "tuple[runtime_module.AbstractRuntime]":
         """Vlastnost vrací ntici všech běhových prostředí, která byla spuštěna.
         """
         return tuple(self._runtimes)
+
+    def load(self):
+        """"""
+        self.unit_factory_manager.load()
+        self.runtime_factory_manager.load()
+        self.program_manager.load()
+
+    def run(self):
+        """"""
+        self.load()
+
+        for runtime_factory in self.runtime_factories:
+            for program in self.programs:
+                rt = runtime_factory.build(self, program)
+                self._runtimes.append(rt)
+                rt.run()
 
 
 
