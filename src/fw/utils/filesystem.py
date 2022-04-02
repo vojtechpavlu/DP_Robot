@@ -76,12 +76,23 @@ def assignment(assignment_name: str) -> str:
 
     Vychází zde z předpokladu, že je platný kontrakt funkce tohoto modulu
     'assignments_path()'."""
+
+    # Pokud je délka názvu zadání kratší, než jeden znak
     if len(assignment_name) < 1:
         raise FileSystemError(f"Nelze najít zadání s prázdným názvem "
                               f"'{assignment_name}'", [])
+
+    # Vytvoření cesty
     potential_path = join_paths(assignments_path(), assignment_name)
+
+    # Pokud taková cesta neexistuje
     if not exists(potential_path):
         raise FileSystemError(f"Zadání s dodaným názvem neexistuje",
+                              [potential_path])
+
+    # Pokud dané zadání není reprezentováno adresářem
+    elif not is_directory(potential_path):
+        raise FileSystemError(f"Zadání musí být reprezentováno adresářem",
                               [potential_path])
     return potential_path
 
