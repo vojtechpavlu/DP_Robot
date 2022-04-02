@@ -92,6 +92,12 @@ class World:
         """Vlastnost vrací rozhraní světa, které tomuto světu náleží."""
         return self._world_interface
 
+    @property
+    def robot_state_manager(self) -> "rsm_module.RobotStateManager":
+        """Vlastnost vrací referenci na správce stavů robota, kterého má
+        instance tohoto světa v sobě uložený."""
+        return self._robot_state_manager
+
     def has_field(self, x: int, y: int) -> bool:
         """Funkce vrací boolovskou informaci o tom, zda-li je v daném světě
         evidováno políčko se zadanými souřadnicemi.
