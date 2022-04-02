@@ -168,6 +168,7 @@ class SingleRobotRuntime(AbstractRuntime):
             self.world.world_interface.add_interaction_handler(
                 unit.unit_factory.interaction_handler)
         # TODO - kontrola osazení
+        self.world.robot_state_manager.register_robot(self.robot)
         try:
             self.program.run(self.robot)
         except Exception as e:
