@@ -12,6 +12,7 @@ from .error import PlatformError
 # Defaultní názvy významných adresářů projektu
 _SOURCE_FOLDER_NAME = "src"
 _PLUGIN_FOLDER_NAME = "plugins"
+_ASSIGNMENT_FOLDER_NAME = "assignments"
 
 
 def exists(path: "str") -> "bool":
@@ -56,6 +57,54 @@ def plugin_path() -> "str":
     return join_paths(root_directory_path(),
                       join_paths(_SOURCE_FOLDER_NAME,
                                  _PLUGIN_FOLDER_NAME))
+
+
+def assignments_path() -> "str":
+    """Funkce vrací absolutní cestu k adresáři, který má defaultně obsahovat
+    pluginy v kontextu zadání úloh a programů k nim.
+
+    Vychází zde z předpokladu, že daná zadání jsou uložena v podadresáři s
+    názvem uloženým v proměnné '_ASSIGNMENT_FOLDER_NAME', který je v rámci
+    adresáře pluginů."""
+    return join_paths(plugin_path(), _ASSIGNMENT_FOLDER_NAME)
+
+
+def assignment(assignment_name: str) -> str:
+    """Funkce se pokusí vrátit cestu k adresáři, který obsahuje všechny
+    požadované pluginy v kontextu zadání reprezentujících zadání daného
+    názvu.
+
+    Vychází zde z předpokladu, že je platný kontrakt funkce tohoto modulu
+    'assignments_path()'."""
+
+    # Pokud je délka názvu zadání kratší, než jeden znak
+    if len(assignment_name) < 1:
+        raise FileSystemError(f"Nelze najít zadání s prázdným názvem "
+                              f"'{assignment_name}'", [])
+
+    # Vytvoření cesty
+    potential_path = join_paths(assignments_path(), assignment_name)
+
+    # Pokud taková cesta neexistuje
+    if not exists(potential_path):
+        raise FileSystemError(f"Zadání s dodaným názvem neexistuje",
+                              [potential_path])
+
+    # Pokud dané zadání není reprezentováno adresářem
+    elif not is_directory(potential_path):
+        raise FileSystemError(f"Zadání musí být reprezentováno adresářem",
+                              [potential_path])
+    return potential_path
+
+
+def list_assignments() -> "tuple[str]":
+    """Funkce vrací seznam zadání v podobě ntice. Tato výstupní zadání jsou
+    reprezentována jako ntice názvů zadání.
+
+    Vychází zde z předpokladu, že je platný kontrakt funkce 'assignments_path'.
+    """
+    return tuple(map(lambda path: str(file_basename(path)), list_directories(
+        assignments_path())))
 
 
 def separator() -> str:

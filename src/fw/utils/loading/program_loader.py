@@ -19,10 +19,40 @@ import src.fw.utils.loading.plugin_identifier as pl_identifier
 import src.fw.utils.loading.plugin_validator as pl_validator
 import src.fw.utils.loading.plugin as plugin_module
 import src.fw.robot.program as program_module
+from src.fw.utils.filesystem import assignment
 
 """Název funkce, která bude volána coby klíčový přístupový bod pro obdržení
 instance programu robota"""
 _ACCESS_FUN = "get_program"
+
+"""Výchozí identifikátory pluginů, které jsou používány pro vytipování
+pluginů v kontextu programů."""
+_DEFAULT_IDENTIFIERS = [
+
+    # Zdrojové soubory musí mít koncovku '.py'
+    pl_identifier.ExtensionPluginIdentifier(".py"),
+
+    # Zdrojové soubory musí začínat řetězcem 'unit_'
+    pl_identifier.PrefixPluginIdentifier("program_")
+]
+
+"""Výchozí validátory pluginů, které jsou používány pro ověření platnosti
+a správnosti pluginů v kontextu programů."""
+_DEFAULT_VALIDATORS = [
+
+    # Modul musí být syntakticky validní
+    pl_validator.SyntaxValidator(),
+
+    # Modul musí být opatřen neprázdným dokumentačním komentářem
+    pl_validator.ModuleDocstringExistenceValidator(),
+
+    # Modul musí obsahovat funkci s definovaným názvem
+    pl_validator.FunctionExistenceValidator(_ACCESS_FUN),
+
+    # Modul musí obsahovat funkci vracející hodnotu konkrétního typu
+    pl_validator.FunctionReturnValueTypeValidator(
+        _ACCESS_FUN, program_module.AbstractProgram)
+]
 
 
 class ProgramLoader(loader_module.PluginLoader):
@@ -152,5 +182,23 @@ class ProgramPlugin(plugin_module.Plugin):
         return self.get_function(self._access_point_function)()
 
 
+class DefaultProgramLoader(ProgramLoader):
+    """Třída rozšiřuje svého předka nastavením defaultních hodnot. Tyto jsou
+    specifikovány v horní části tohoto modulu.
 
+    Konkrétně jsou instance vybaveny výchozí sadou doporučených identifikátorů
+    a validátorů pluginů.
 
+    Předpokladem je, že programy jsou uloženy v adresáři všech zadání.
+    Výchozí cesta je tedy (relativně vůči kořeni projektu) následující:
+
+    'src/plugins/assignments/[název zadání]'"""
+
+    def __init__(self, assignment_name: str):
+        """Initor třídy, který přijímá název zadání, které je reprezentováno
+        adresářem v rámci adresáře všech zadání.
+
+        Předpokladem je, že všechny programy k otestování jsou v rámci tohoto
+        adresáře."""
+        ProgramLoader.__init__(self, assignment(assignment_name),
+                               _DEFAULT_IDENTIFIERS, _DEFAULT_VALIDATORS)
