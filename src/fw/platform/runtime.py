@@ -101,6 +101,12 @@ class AbstractRuntime(Identifiable):
         náleží."""
         return self._platform
 
+    @property
+    def units(self) -> "tuple[unit_module.AbstractUnit]":
+        """Vlastnost vrací zcela nově vytvořené jednotky z uložených továren
+        jednotek."""
+        return tuple(uf.build() for uf in self.unit_factories)
+
     def prepare(self):
         """Funkce připravující svět a úlohu ke spuštění. V podstatě si z
         dodaných továren nechá příslušné instance vygenerovat.
@@ -142,6 +148,11 @@ class SingleRobotRuntime(AbstractRuntime):
 
     def run(self):
         """"""
+        self.prepare()
+        self.program.mount(self.robot, self.units)
+        # TODO - kontrola osazení
+        self.program.run(self.robot)
+        # TODO - kontrola Targetu
 
 
 class AbstractRuntimeFactory(ABC):
@@ -185,11 +196,6 @@ class AbstractRuntimeFactory(ABC):
         self._world_factory = world_factory
         self._target_factory = target_factory
 
-        """Seznam všech továrních tříd jednotek, kterými je možné v tomto
-        běhovém prostředí robota osadit. Jejich seznam je na počátku životního 
-        cyklu pochopitelně prázdný."""
-        self._unit_factories: "list[unit_module.AbstractUnitFactory]" = []
-
     @property
     def available_units_names(self) -> "tuple[str]":
         """Funkce vrací názvy všech jednotek, které by měly být robotům k
@@ -214,20 +220,6 @@ class AbstractRuntimeFactory(ABC):
         """Vlastnost vrací továrnu úlohy, které bude použito pro tvorbu úlohy.
         """
         return self._target_factory
-
-    def prepare_unit_factories(
-            self,
-            unit_factory_manager: "uf_manager_module.UnitFactoryManager"):
-        """Funkce je odpovědná za načtení všech továrních tříd jednotek z
-        předepsaného seznamu.
-
-        Všechny zadané tovární jednotky (dle jejich názvů definovaných v
-        initoru této třídy) musí být v rámci daného správce továren jednotek
-        dostupné. Pokud-že některá chybí je vyhozena výjimka.
-        """
-        for unit_name in self.available_units_names:
-            self._unit_factories.append(
-                unit_factory_manager.factory_by_unit_name(unit_name))
 
     @abstractmethod
     def build(self, platform: "platform_module.Platform",
