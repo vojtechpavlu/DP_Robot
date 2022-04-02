@@ -18,7 +18,6 @@ import src.fw.platform.program_manager as prg_manager_module
 import src.fw.platform.runtime_factory_manager as rtf_manager_module
 import src.fw.platform.runtime as runtime_module
 import src.fw.robot.program as program_module
-import src.fw.robot.robot as robot_module
 import src.fw.robot.unit as unit_module
 from src.fw.utils.error import PlatformError
 
@@ -163,7 +162,9 @@ class Platform:
         # Výmaz evidovaných běhových prostředí
         self._runtimes: "list[runtime_module.AbstractRuntime]" = []
 
-        """Postupné spouštění všech běhových prostředí"""
+        """Postupné spouštění všech běhových prostředí. Pro každou továrnu
+        běhového prostředí je získán program, pro který je spuštěna nově
+        vytvořená instance běhového prostředí."""
 
         # Pro každou továrnu běhového prostředí
         for runtime_factory in self.runtime_factories:
@@ -179,6 +180,7 @@ class Platform:
 
                 # Spuštění běhového prostředí
                 runtime.run()
+            # TODO - evaluace výsledků
 
 
 class PlatformLoadingError(PlatformError):
