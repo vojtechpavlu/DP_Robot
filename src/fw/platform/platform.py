@@ -124,25 +124,55 @@ class Platform:
         self.program_manager.load()
 
     def run(self):
-        """"""
+        """Funkce odpovědná za spuštění jednotlivých běhových prostředí.
+
+        V první fázi se funkce stará o načtení všech zdrojů, které jsou pro
+        běh nezbytně nutné. To provádí s pomocí funkce 'load()'. Teprve poté
+        je tato způsobilá jednotlivá běhová prostředí spouštět.
+
+        Schéma běhů je takové, že pro každou továrnu běhového prostředí je
+        pro každý získaný program vytvořeno a v rámci programu také spuštěno
+        běhové prostředí.
+        """
+        # Načtení důležitých zdrojů
         self.load()
 
+        # Výmaz evidovaných běhových prostředí
+        self._runtimes: "list[runtime_module.AbstractRuntime]" = []
+
+        """Postupné spouštění všech běhových prostředí"""
+
+        # Pro každou továrnu běhového prostředí
         for runtime_factory in self.runtime_factories:
+            # Pro každý program
             for program in self.programs:
-                rt = runtime_factory.build(self, program)
-                self._runtimes.append(rt)
-                rt.run()
+                # Vytvoření běhového prostředí
+                runtime = runtime_factory.build(self, program)
+                # Registrace běhového prostředí
+                self._runtimes.append(runtime)
+                # Spuštění běhového prostředí
+                runtime.run()
 
 
 class PlatformLoadingError(PlatformError):
-    """"""
+    """Výjimka symbolizující vznik problému při načítání platformy a jejích
+    potřebných zdrojů.
 
-    def __init__(self, message: str, loader: "PluginLoader"):
-        """"""
+    Svého předka obohacuje o referenci na instanci třídy Platform, v jejímž
+    kontextu došlo k chybě."""
+
+    def __init__(self, message: str, platform: "Platform"):
+        """Initor, který přijímá zprávu o chybě a referenci na instanci
+        třídy Platform, v jejímž kontextu došlo k chybě. Zpráva je postoupena
+        initoru předka.
+        """
+        # Volání předka
         PlatformError.__init__(self, message)
-        self._loader = loader
+
+        # Uložení instance platformy, v jejímž kontextu došlo k chybě
+        self._platform = platform
 
     @property
-    def loader(self) -> "PluginLoader":
-        """"""
-        return self._loader
+    def platform(self) -> "Platform":
+        """Vlastnost vrací platformu, v jejímž kontextu došlo k chybě."""
+        return self._platform
