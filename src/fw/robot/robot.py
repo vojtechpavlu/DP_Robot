@@ -51,6 +51,13 @@ class Robot(Identifiable, Named):
         unikátní identifikátory jednotlivých jednotek."""
         return tuple(map(lambda unit: str(unit.hex_id), self.units))
 
+    def is_mounted_with(self, unit: "unit_module.AbstractUnit") -> bool:
+        """Vlastnost vrací, je-li robot osazen dodanou jednotkou."""
+        for mounted_unit in self.units:
+            if unit.int_id == mounted_unit.int_id:
+                return True
+        return False
+
     def mount(self, unit: "unit_module.AbstractUnit"):
         """Funkce se pokusí osadit robota dodanou jednotkou."""
         # TODO - kontrola, zda-li je jednotka validní
