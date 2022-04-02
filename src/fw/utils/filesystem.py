@@ -12,6 +12,7 @@ from .error import PlatformError
 # Defaultní názvy významných adresářů projektu
 _SOURCE_FOLDER_NAME = "src"
 _PLUGIN_FOLDER_NAME = "plugins"
+_ASSIGNMENT_FOLDER_NAME = "assignments"
 
 
 def exists(path: "str") -> "bool":
@@ -56,6 +57,16 @@ def plugin_path() -> "str":
     return join_paths(root_directory_path(),
                       join_paths(_SOURCE_FOLDER_NAME,
                                  _PLUGIN_FOLDER_NAME))
+
+
+def assignments_path() -> "str":
+    """Funkce vrací absolutní cestu k adresáři, který má defaultně obsahovat
+    pluginy v kontextu zadání úloh a programů k nim.
+
+    Vychází zde z předpokladu, že daná zadání jsou uložena v podadresáři s
+    názvem uloženým v proměnné '_ASSIGNMENT_FOLDER_NAME', který je v rámci
+    adresáře pluginů."""
+    return join_paths(plugin_path(), _ASSIGNMENT_FOLDER_NAME)
 
 
 def separator() -> str:
