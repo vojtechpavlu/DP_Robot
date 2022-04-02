@@ -143,7 +143,11 @@ class WorldInterface(ihm_module.InteractionHandlerManager):
                 f"Robot není osazen jednotkou odpovědnou za vytvoření "
                 f"této interakce", interaction)
 
-        # TODO - kontrola v souladu s RobotStateContainer
+        # Robot není evidován ve správci stavů robota
+        elif not self.world.robot_state_manager.has_robot(robot):
+            raise interaction_module.InteractionError(
+                f"Tento robot není ve správci stavů robotů evidován",
+                interaction)
 
     def process_interaction(
             self, interaction: "interaction_module.Interaction") -> object:
