@@ -69,6 +69,23 @@ def assignments_path() -> "str":
     return join_paths(plugin_path(), _ASSIGNMENT_FOLDER_NAME)
 
 
+def assignment(assignment_name: str) -> str:
+    """Funkce se pokusí vrátit název adresáře, který obsahuje všechny
+    požadované pluginy v kontextu zadání reprezentujících zadání daného
+    názvu.
+
+    Vychází zde z předpokladu, že je platný kontrakt funkce tohoto modulu
+    'assignments_path()'."""
+    if len(assignment_name) < 1:
+        raise FileSystemError(f"Nelze najít zadání s prázdným názvem "
+                              f"'{assignment_name}'", [])
+    potential_path = join_paths(assignments_path(), assignment_name)
+    if not exists(potential_path):
+        raise FileSystemError(f"Zadání s dodaným názvem neexistuje",
+                              [potential_path])
+    return potential_path
+
+
 def separator() -> str:
     """Funkce vrací znak, kterým je defaultně značen pohyb ve struktuře
     souborového systému.
