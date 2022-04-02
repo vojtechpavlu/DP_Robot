@@ -70,7 +70,7 @@ def assignments_path() -> "str":
 
 
 def assignment(assignment_name: str) -> str:
-    """Funkce se pokusí vrátit název adresáře, který obsahuje všechny
+    """Funkce se pokusí vrátit cestu k adresáři, který obsahuje všechny
     požadované pluginy v kontextu zadání reprezentujících zadání daného
     názvu.
 
@@ -84,6 +84,16 @@ def assignment(assignment_name: str) -> str:
         raise FileSystemError(f"Zadání s dodaným názvem neexistuje",
                               [potential_path])
     return potential_path
+
+
+def list_assignments() -> "tuple[str]":
+    """Funkce vrací seznam zadání v podobě ntice. Tato výstupní zadání jsou
+    reprezentována jako ntice názvů zadání.
+
+    Vychází zde z předpokladu, že je platný kontrakt funkce 'assignments_path'.
+    """
+    return tuple(map(lambda path: str(file_basename(path)), list_directories(
+        assignments_path())))
 
 
 def separator() -> str:
