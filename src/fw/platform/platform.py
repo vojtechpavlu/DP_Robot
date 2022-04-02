@@ -19,6 +19,8 @@ import src.fw.platform.runtime_factory_manager as rtf_manager_module
 import src.fw.platform.runtime as runtime_module
 import src.fw.robot.program as program_module
 import src.fw.robot.robot as robot_module
+import src.fw.robot.unit as unit_module
+from src.fw.utils.error import PlatformError
 
 
 class Platform:
@@ -91,12 +93,14 @@ class Platform:
     @property
     def runtime_factories(
             self) -> "tuple[runtime_module.AbstractRuntimeFactory]":
-        """"""
+        """Vlastnost vrací ntici všech továrních jednotek, které byly v rámci
+        dynamického načítání pluginů získány."""
         return self.runtime_factory_manager.registered_factories
 
     @property
     def programs(self) -> "tuple[program_module.AbstractProgram]":
-        """"""
+        """Vlastnost vrací ntici všech programů, které byly v rámci
+        dynamického načítání pluginů získány pro dané zadání."""
         return self.program_manager.registered_programs
 
     @property
@@ -105,8 +109,16 @@ class Platform:
         """
         return tuple(self._runtimes)
 
+    @property
+    def unit_factories(self) -> "tuple[unit_module.AbstractUnitFactory]":
+        """Vlastnost vrací ntici továren jednotek, které byly dynamicky
+        načteny z příslušných pluginů."""
+        return self.unit_factory_manager.registered_factories
+
     def load(self):
-        """"""
+        """Vlastnost je odpovědná za načtení všech pluginů. Jmenovitě se stará
+        o dynamické načítání pluginů továren jednotek, zadání (tedy továren
+        běhových prostředí a programů)."""
         self.unit_factory_manager.load()
         self.runtime_factory_manager.load()
         self.program_manager.load()
@@ -122,4 +134,15 @@ class Platform:
                 rt.run()
 
 
+class PlatformLoadingError(PlatformError):
+    """"""
 
+    def __init__(self, message: str, loader: "PluginLoader"):
+        """"""
+        PlatformError.__init__(self, message)
+        self._loader = loader
+
+    @property
+    def loader(self) -> "PluginLoader":
+        """"""
+        return self._loader
