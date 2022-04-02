@@ -20,21 +20,14 @@ import src.fw.utils.loading.plugin_validator as pl_validator
 import src.fw.utils.loading.plugin as plugin_module
 import src.fw.platform.runtime as runtime_module
 
-from src.fw.utils.filesystem import (plugin_path, join_paths,
-                                     list_directories, file_basename)
+from src.fw.utils.filesystem import (assignment, list_directories,
+                                     file_basename)
 
 """Název přístupové funkce, která má být v modulu reprezentujícím plugin
 běhového prostředí zavolána. Její existence by měla být ověřena již na úrovni
 pravidla definovaného pomocí validátoru pluginu (instance PluginValidator).
 """
 _ACCESS_FUN = "get_runtime_factory"
-
-"""Název adresáře v rámci pluginů, který obsahuje všechna zadání"""
-_ASSIGNMENTS_DIR_NAME = "assignments"
-
-"""Absolutní cesta k adresáři se všemi zadáními"""
-_ABSOLUTE_ASSIGNMENT_PLUGINS_PATH = join_paths(plugin_path(),
-                                               _ASSIGNMENTS_DIR_NAME)
 
 
 """Výchozí identifikátory pluginů, které jsou používány pro vytipování
@@ -83,8 +76,10 @@ class RuntimeFactoryLoader(loader_module.PluginLoader):
         načítaných pluginů.
         """
 
+        # Volání předka
         loader_module.PluginLoader.__init__(self, dest_dir),
 
+        # Přidání všech identifikátorů a validátorů
         self.add_all_identifiers(identifiers)
         self.add_all_validators(validators)
 
@@ -209,18 +204,8 @@ class DefaultRuntimeFactoryLoader(RuntimeFactoryLoader):
         sady, viz horní část tohoto modulu.
         """
         RuntimeFactoryLoader.__init__(
-            self, join_paths(
-                _ABSOLUTE_ASSIGNMENT_PLUGINS_PATH, assignment_name),
+            self, assignment(assignment_name),
             _DEFAULT_IDENTIFIERS, _DEFAULT_VALIDATORS)
 
-
-def list_assignment_names() -> "list[str]":
-    """Funkce vrací názvy všech zadání na defaultní cestě. Tím je myšleno,
-    že funkce prohledá defaultní adresář se zadáními (viz horní část tohoto
-    modulu) a vypíše všechny názvy podadresářů. Tyto pak vrací v podobě
-    seznamu textových řetězců.
-    """
-    return list(map(lambda path: file_basename(path), list_directories(
-        _ABSOLUTE_ASSIGNMENT_PLUGINS_PATH)))
 
 
