@@ -125,7 +125,11 @@ class AbstractRuntime(Identifiable):
 
 
 class SingleRobotRuntime(AbstractRuntime):
-    """"""
+    """Třída definuje speciální typ svého předka, tedy běhové prostředí, ve
+    kterém je pouze jediný robot.
+
+    Toto běhové prostředí se liší především implementací instanční metody
+    'run', která operuje jen a pouze na úrovni jediného robota."""
 
     def __init__(self, world_factory: "world_fact_module.WorldFactory",
                  target_factory: "target_module.TargetFactory",
@@ -133,26 +137,35 @@ class SingleRobotRuntime(AbstractRuntime):
                  program: "program_module.AbstractProgram",
                  robot_factory: "robot_module.RobotFactory",
                  platform: "platform_module.Platform"):
-        """"""
+        """Initor třídy, který přijímá tovární třídy (továrnu světa, úlohy,
+        robotů a továrny jednotek) a referenci na program, který má být pro
+        jediného robota spuštěn. Dále přijímá referenci na platformu, pod
+        kterou je toto běhové prostředí spuštěno.
+        """
+        # Volání předka
         AbstractRuntime.__init__(
             self, world_factory, target_factory, unit_factories, program,
             robot_factory, platform)
 
-        self._robot_container = robot_cont_module.SingleRobotContainer()
-        self._robot_container.robot = self.robot_factory.build()
+        # Příprava kontejneru robota
+        self.__robot_container = robot_cont_module.SingleRobotContainer()
+        self.__robot_container.robot = self.robot_factory.build()
 
     @property
     def robot(self) -> "robot_module.Robot":
-        """"""
-        return self._robot_container.robot
+        """Vlastnost vrací jediného robota, kterého toto prostředí má. Ten
+        je uložen v privátním kontejneru typu 'SingleRobotContainer', který
+        co nejvíce znesnadňuje jakoukoliv nepravou manipulaci."""
+        return self.__robot_container.robot
 
     def run(self):
-        """"""
+        """Hlavní funkce třídy, která se stará o řízení běhu jediného robota.
+        """
         self.prepare()
         self.program.mount(self.robot, self.units)
         # TODO - kontrola osazení
         self.program.run(self.robot)
-        # TODO - kontrola Targetu
+        # TODO - kontrola Targetu a jeho vyhodnocení
 
 
 class AbstractRuntimeFactory(ABC):
