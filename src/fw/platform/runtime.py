@@ -253,6 +253,33 @@ class AbstractRuntimeFactory(ABC):
         náleží, vedle reference na program, který mají roboti mít a dle
         kterého se mají chovat."""
 
+    @staticmethod
+    def pick_unit_factories(platform: "platform_module.Platform",
+                            unit_names: "Iterable[str]"):
+        """Statická funkce se pokusí vybrat z dodané platformy všechny
+        tovární třídy jednotek tak, aby byl zjednodušen přenos z jejich
+        názvu na konkrétní instance.
+
+        K seznamu registrovaných a použitelných továren jednotek se přistupuje
+        přes správce továren jednotek a jeho funkci pro vyhledávání těchto
+        továren dle názvu ('factory_by_unit_name(str)'). Ta vyhazuje výjimku,
+        není-li taková jednotka k nalezení. V takovém případě není odchycena
+        a tato probublává výše.
+        """
+
+        # Seznam továrních jednotek
+        uf = []
+
+        # Pro každý název jednotky
+        for unit_name in unit_names:
+
+            # Přidej získanou továrnu
+            uf.append(platform.unit_factory_manager.factory_by_unit_name(
+                unit_name))
+
+        # Vrácení naplněného seznamu továrnami jednotek
+        return uf
+
 
 
 
