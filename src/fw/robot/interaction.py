@@ -14,6 +14,7 @@ from abc import ABC, abstractmethod
 from typing import Type
 
 # Import lokálních knihoven
+from src.fw.utils.error import PlatformError
 from src.fw.utils.named import Named
 from src.fw.utils.described import Described
 from src.fw.utils.identifiable import Identifiable
@@ -118,14 +119,33 @@ class InteractionHandlerFactory(ABC):
 
 class InteractionFactory(ABC):
     """Abstraktní třída InteractionFactory definuje způsob, jakým mají být
-    vytvářeny a postupovány interakce se světem, resp. jeho rozhraním."""
+    vytvářeny a postupovány interakce se světem, resp. jeho rozhraním.
+
+    Kromě rozhraní světa v sobě instance této třídy uchovávají i informaci
+    o svém stavu co do deaktivace. Deaktivace této továrny interakcí má za
+    následek totální zneschopnění provádění jakýchkoliv interakcí s rozhraním
+    světa, přichází o odkaz na něj a sama se převádí do stavu mimo provoz."""
 
     def __init__(self):
         """Initor třídy, který je odpovědná především za připravení prázdných
         polí. Konkrétně o privátní uložení reference na rozhraní světa; tak,
         aby byl co nejvíce znepříjemněn pokus o její získání.
+
+        Kromě rozhraní světa tato továrna definuje ve svém initoru i pole pro
+        informaci o své deaktivaci. Pokud je tato továrna deaktivována, ztrácí
+        svoji schopnost interakce s rozhraním světa.
         """
+        # Nastavení rozhraní světa
         self.__world_interface: "wrld_interf_module.WorldInterface" = None
+
+        # Nastavení defaultní hodnoty deaktivace
+        self.__is_deactivated = False
+
+    @property
+    def is_deactivated(self) -> bool:
+        """Vlastnost vrací informaci o tom, zda-li byla tato továrna interakcí
+        deaktivována. Její deaktivace je pro tuto instanci nevratný proces."""
+        return self.__is_deactivated
 
     def set_world_interface(
             self, world_interface: "wrld_interf_module.WorldInterface"):
@@ -134,28 +154,72 @@ class InteractionFactory(ABC):
         vyhozena výjimka; stejně tak v případě, že by zde byl pokus o
         znovunastavení již existujícího rozhraní.
         """
-        # TODO - Specifikace výjimky
-        if world_interface is None:
-            raise Exception("Nelze nastavit prázdné rozhraní světa")
+        if self.is_deactivated:
+            # Pokud je továrna interakcí deaktivována
+            raise InteractionFactoryError(
+                "Nelze měnit rozhraní světa deaktivované továrně interakcí",
+                self)
+
+        elif world_interface is None:
+            # Pokud je dodané rozhraní světa None
+            raise InteractionFactoryError(
+                "Nelze nastavit prázdné rozhraní světa", self)
+
         elif self.__world_interface is not None:
-            raise Exception("Rozhraní světa již jednou nastaveno bylo")
+            # Pokud již jednou rozhraní světa bylo nastaveno
+            raise InteractionFactoryError(
+                "Rozhraní světa již jednou nastaveno bylo", self)
+
+        # Jinak nastav nové rozhraní světa
         self.__world_interface = world_interface
+
+    def interact(self) -> object:
+        """Funkce odpovědná za provedení interakce, resp. její iniciace.
+        Ta je odeslána na objekt rozhraní světa, které je z titulu
+        'InteractionHandlerManager' odpovědné za její zprocesování.
+
+        Pokud je v době volání této funkce továrna interakcí nevratně
+        deaktivována, ztratila v ten moment schopnost provádění interakcí a
+        tato funkce vyhazuje výjimku.
+        """
+        if self.is_deactivated:
+            raise InteractionFactoryError(
+                "Nelze interagovat po deaktivaci", self)
+        return self.__world_interface.process_interaction(
+            self.build_interaction())
+
+    def deactivate(self):
+        """Funkce nastaví továrnu interakcí jako neaktivní. Tato továrna po
+        zavolání této funkce ztrácí jakoukoliv schopnost interakce s rozhraním
+        světa."""
+        self.__world_interface = None
+        self.__is_deactivated = True
 
     @abstractmethod
     def build_interaction(self) -> "Interaction":
         """Abstraktní funkce, která definuje protokol způsobu získávání
         instance interakce."""
 
-    def interact(self) -> object:
-        """Funkce odpovědná za provedení interakce, resp. její iniciace.
-        Ta je odeslána na objekt rozhraní světa, které je z titulu
-        'InteractionHandlerManager' odpovědné za její zprocesování.
+
+class InteractionFactoryError(PlatformError):
+    """Instance této třídy reprezentují upozornění na chybu v kontextu
+    továrny interakcí. Svého předka tyto obohacují o udržení reference na
+    továrnu interakcí, v jejímž kontextu došlo k chybě."""
+
+    def __init__(self, message: str, factory: "InteractionFactory"):
+        """Initor, který přijímá zprávu o chybě, kterou postupuje svému
+        předkovi, a továrnu interakcí, v jejímž kontextu došlo k chybě."""
+        # Volání předka
+        PlatformError.__init__(self, message)
+
+        # Uložení reference na továrnu interakcí
+        self._factory = factory
+
+    @property
+    def interaction_factory(self) -> "InteractionFactory":
+        """Vlastnost vrací továrnu interakcí, v jejímž kontextu došlo k chybě.
         """
-        return self.__world_interface.process_interaction(
-            self.build_interaction())
-
-
-
+        return self._factory
 
 
 

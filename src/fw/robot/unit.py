@@ -82,6 +82,14 @@ class AbstractUnit(Identifiable, Named, Described,
         """Abstraktní funkce odpovědná za stanovení protokolu provedení
         interakce se světem."""
 
+    @abstractmethod
+    def scan(self) -> object:
+        """Abstraktní funkce odpovědná za stanovení protokolu pro provedení
+        interakce se světem a navrácení informace o něm.
+
+        Ta může být různé podoby; v závislosti na konkrétní implementaci
+        jednotky."""
+
     def mount(self, robot: "robot_module.Robot"):
         """Vlastnost nastavuje robota, kterému je tato jednotka nastavena.
         Nelze však již připojenou jednotku přiřazovat znovu. Při pokusu o
@@ -185,11 +193,6 @@ class AbstractUnitFactory(Identifiable, Named,
     def unit_name(self) -> str:
         """Vlastnost vrací název, který je jednotkám stanoven."""
         return self._unit_name
-
-    @property
-    def unit_description(self) -> str:
-        """Vlastnost vrací popis, který je jednotkám stanoven."""
-        return self._unit_desc
 
     @abstractmethod
     def build(self) -> "AbstractUnit":
