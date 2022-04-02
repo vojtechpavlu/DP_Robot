@@ -9,6 +9,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 
 # Import lokálních knihoven
+from typing import Type
+
 from src.fw.robot.mounting_error import MountingError
 from src.fw.utils.error import PlatformError
 from src.fw.utils.identifiable import Identifiable
@@ -66,6 +68,11 @@ class AbstractUnit(Identifiable, Named, Described,
         """Vlastnost vrací referenci na instanci tovární třídy jednotek,
         která je za vznik této instance odpovědná."""
         return self._unit_factory
+
+    @property
+    def interaction_type(self) -> "Type":
+        """Vlastnost vrací typ, kterého tvoří interakce."""
+        return self.unit_factory.interaction_type
 
     @property
     @abstractmethod
