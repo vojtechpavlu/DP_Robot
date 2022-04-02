@@ -8,6 +8,8 @@ import src.fw.world.world_interface as world_inter_module
 
 from src.fw.utils.error import PlatformError
 from src.fw.world.direction import Direction
+import src.fw.world.spawner as spawner_module
+import src.fw.world.robot_state_manager as rsm_module
 
 
 class World:
@@ -20,7 +22,8 @@ class World:
     """
 
     def __init__(self, fields: "list[field_mod.Field]",
-                 world_if_fact: "world_inter_module.WorldInterfaceFactory"):
+                 world_if_fact: "world_inter_module.WorldInterfaceFactory",
+                 spawner: "spawner_module.Spawner"):
         """Initor třídy je odpovědný za přijetí všech parametrů a jejich
         uložení.
 
@@ -61,6 +64,10 @@ class World:
 
         """Připravení rozhraní světa z dodané továrny"""
         self._world_interface = world_if_fact.build(self)
+
+        """Připravení správce stavů robotů. K tomu je potřeba spawner, který
+        řídí přidávání robotů do světa; resp. vytváří stavy robota."""
+        self._robot_state_manager = rsm_module.RobotStateManager(spawner)
 
     @property
     def fields(self) -> "tuple[field_mod.Field]":
