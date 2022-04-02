@@ -125,7 +125,17 @@ class InteractionFactory(ABC):
         polí. Konkrétně o privátní uložení reference na rozhraní světa; tak,
         aby byl co nejvíce znepříjemněn pokus o její získání.
         """
+        # Nastavení rozhraní světa
         self.__world_interface: "wrld_interf_module.WorldInterface" = None
+
+        # Nastavení defaultní hodnoty deaktivace
+        self.__is_deactivated = False
+
+    @property
+    def is_deactivated(self) -> bool:
+        """Vlastnost vrací informaci o tom, zda-li byla tato továrna interakcí
+        deaktivována. Její deaktivace je pro tuto instanci nevratný proces."""
+        return self.__is_deactivated
 
     def set_world_interface(
             self, world_interface: "wrld_interf_module.WorldInterface"):
@@ -141,19 +151,27 @@ class InteractionFactory(ABC):
             raise Exception("Rozhraní světa již jednou nastaveno bylo")
         self.__world_interface = world_interface
 
-    @abstractmethod
-    def build_interaction(self) -> "Interaction":
-        """Abstraktní funkce, která definuje protokol způsobu získávání
-        instance interakce."""
-
     def interact(self) -> object:
         """Funkce odpovědná za provedení interakce, resp. její iniciace.
         Ta je odeslána na objekt rozhraní světa, které je z titulu
         'InteractionHandlerManager' odpovědné za její zprocesování.
         """
+        if self.is_deactivated:
+            raise Exception("Nelze interagovat po deaktivaci")
         return self.__world_interface.process_interaction(
             self.build_interaction())
 
+    def deactivate(self):
+        """Funkce nastaví továrnu interakcí jako neaktivní. Tato továrna po
+        zavolání této funkce ztrácí jakoukoliv schopnost interakce s rozhraním
+        světa."""
+        self.__world_interface = None
+        self.__is_deactivated = True
+
+    @abstractmethod
+    def build_interaction(self) -> "Interaction":
+        """Abstraktní funkce, která definuje protokol způsobu získávání
+        instance interakce."""
 
 
 
