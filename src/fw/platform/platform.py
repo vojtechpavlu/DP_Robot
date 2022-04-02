@@ -118,10 +118,33 @@ class Platform:
     def load(self):
         """Vlastnost je odpovědná za načtení všech pluginů. Jmenovitě se stará
         o dynamické načítání pluginů továren jednotek, zadání (tedy továren
-        běhových prostředí a programů)."""
+        běhových prostředí a programů).
+
+        Funkce je také odpovědná za zkontrolování načtených zdrojů. Pokud
+        se nepovede některému z správců (pomocí svých příslušných loaderů)
+        načíst jediný zdroj, je vyhozena příslušná výjimka."""
+
         self.unit_factory_manager.load()
         self.runtime_factory_manager.load()
         self.program_manager.load()
+
+        """Kontrola načtených zdrojů co do počtu. Pokud nebyl pro příslušného
+        správce načten jediný plugin, je vyhozena příslušná výjimka."""
+
+        # Kontrola načtení továren jednotek
+        if len(self.unit_factories) == 0:
+            raise PlatformLoadingError(
+                f"Nebyla načtena jediná továrna jednotek", self)
+
+        # Kontrola načtení továren běhových prostředí
+        elif len(self.runtime_factories) == 0:
+            raise PlatformLoadingError(
+                f"Nebyla načtena jediná továrna běhových prostředí", self)
+
+        # Kontrola načtení programů
+        elif len(self.programs) == 0:
+            raise PlatformLoadingError(
+                f"Nebyl načten jediný program ke spuštění", self)
 
     def run(self):
         """Funkce odpovědná za spuštění jednotlivých běhových prostředí.
@@ -144,12 +167,16 @@ class Platform:
 
         # Pro každou továrnu běhového prostředí
         for runtime_factory in self.runtime_factories:
+
             # Pro každý program
             for program in self.programs:
+
                 # Vytvoření běhového prostředí
                 runtime = runtime_factory.build(self, program)
+
                 # Registrace běhového prostředí
                 self._runtimes.append(runtime)
+
                 # Spuštění běhového prostředí
                 runtime.run()
 
