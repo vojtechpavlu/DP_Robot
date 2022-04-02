@@ -18,6 +18,7 @@ import src.fw.robot.robot as robot_module
 import src.fw.target.target as target_module
 import src.fw.robot.program as program_module
 import src.fw.robot.unit as unit_module
+import src.fw.robot.robot_container as robot_cont_module
 import src.fw.platform.platform as platform_module
 import src.fw.platform.unit_factories_manager as uf_manager_module
 
@@ -115,6 +116,32 @@ class AbstractRuntime(Identifiable):
     def run(self):
         """Abstraktní funkce odpovědná za běh a řízení běhu daného prostředí.
         """
+
+
+class SingleRobotRuntime(AbstractRuntime):
+    """"""
+
+    def __init__(self, world_factory: "world_fact_module.WorldFactory",
+                 target_factory: "target_module.TargetFactory",
+                 unit_factories: "Iterable[unit_module.AbstractUnitFactory]",
+                 program: "program_module.AbstractProgram",
+                 robot_factory: "robot_module.RobotFactory",
+                 platform: "platform_module.Platform"):
+        """"""
+        AbstractRuntime.__init__(
+            self, world_factory, target_factory, unit_factories, program,
+            robot_factory, platform)
+
+        self._robot_container = robot_cont_module.SingleRobotContainer()
+        self._robot_container.robot = self.robot_factory.build()
+
+    @property
+    def robot(self) -> "robot_module.Robot":
+        """"""
+        return self._robot_container.robot
+
+    def run(self):
+        """"""
 
 
 class AbstractRuntimeFactory(ABC):
