@@ -1,5 +1,11 @@
-""""""
+"""Modul sdružuje funkcionalitu ve vztahu se spawnováním robotů ve světě.
 
+Samotný proces 'spawnování' lze chápat jako zasazení robota do světa a jeho
+celkové propojení s ním.
+
+Je zde především uvedena definice protokolu pro samotný Spawner a jeho
+továrnu. Dále lze v tomto modulu nalézt jednoduché vzorové a výchozí
+implementace obého."""
 
 # Import standardních knihoven
 from abc import ABC, abstractmethod
@@ -15,7 +21,7 @@ from src.fw.utils.named import Named
 from src.fw.world.direction import Direction
 
 
-class Spawner(ABC, Named):
+class Spawner(Named):
     """Abstraktní třída definující způsob zasazení robota do světa. Tento
     protokol má za cíl definovat obecné zdroje pro přidávání robotů do světů.
     """
