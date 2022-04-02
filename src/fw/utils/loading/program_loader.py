@@ -24,6 +24,35 @@ import src.fw.robot.program as program_module
 instance programu robota"""
 _ACCESS_FUN = "get_program"
 
+"""Výchozí identifikátory pluginů, které jsou používány pro vytipování
+pluginů v kontextu programů."""
+_DEFAULT_IDENTIFIERS = [
+
+    # Zdrojové soubory musí mít koncovku '.py'
+    pl_identifier.ExtensionPluginIdentifier(".py"),
+
+    # Zdrojové soubory musí začínat řetězcem 'unit_'
+    pl_identifier.PrefixPluginIdentifier("program_")
+]
+
+"""Výchozí validátory pluginů, které jsou používány pro ověření platnosti
+a správnosti pluginů v kontextu programů."""
+_DEFAULT_VALIDATORS = [
+
+    # Modul musí být syntakticky validní
+    pl_validator.SyntaxValidator(),
+
+    # Modul musí být opatřen neprázdným dokumentačním komentářem
+    pl_validator.ModuleDocstringExistenceValidator(),
+
+    # Modul musí obsahovat funkci s definovaným názvem
+    pl_validator.FunctionExistenceValidator(_ACCESS_FUN),
+
+    # Modul musí obsahovat funkci vracející hodnotu konkrétního typu
+    pl_validator.FunctionReturnValueTypeValidator(
+        _ACCESS_FUN, program_module.AbstractProgram)
+]
+
 
 class ProgramLoader(loader_module.PluginLoader):
     """Instance třídy ProgramLoader jsou odpovědné za dynamické načítání
@@ -152,5 +181,11 @@ class ProgramPlugin(plugin_module.Plugin):
         return self.get_function(self._access_point_function)()
 
 
+class DefaultProgramLoader(ProgramLoader):
+    """"""
 
-
+    def __init__(self):
+        """"""
+        # TODO - specifikace cesty
+        ProgramLoader.__init__(self, "", _DEFAULT_IDENTIFIERS,
+                               _DEFAULT_VALIDATORS)
