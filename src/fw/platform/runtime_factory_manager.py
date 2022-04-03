@@ -12,6 +12,7 @@ from typing import Iterable
 # Import lokálních knihoven
 import src.fw.platform.runtime as runtime_module
 import src.fw.utils.loading.runtime_factory_loader as loader_module
+from src.fw.utils.error import PlatformError
 
 
 class RuntimeFactoryManager:
@@ -81,4 +82,17 @@ class RuntimeFactoryManager:
             # TODO - specifikace výjimky
             raise Exception(
                 "Nebyla načtena jediná továrna běhových prostředí.")
+
+
+class RuntimeFactoryManagerError(PlatformError):
+    """"""
+
+    def __init__(self, message: str, rfm: "RuntimeFactoryManager"):
+        PlatformError.__init__(self, message)
+        self._rfm = rfm
+
+    @property
+    def runtime_factory_manager(self) -> "RuntimeFactoryManager":
+        """"""
+        return self._rfm
 
