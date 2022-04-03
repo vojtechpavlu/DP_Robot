@@ -12,6 +12,7 @@ from typing import Iterable
 # Import lokálních knihoven
 import src.fw.platform.runtime as runtime_module
 import src.fw.utils.loading.runtime_factory_loader as loader_module
+from src.fw.utils.error import PlatformError
 
 
 class RuntimeFactoryManager:
@@ -61,7 +62,10 @@ class RuntimeFactoryManager:
         """
         if rt_factory not in self.registered_factories:
             self._registered.append(rt_factory)
-        # TODO - LOG již evidované továrny běhových prostředí
+        else:
+            raise RuntimeFactoryManagerError(
+                f"Nelze přidat dvakrát tu samou továrnu běhových prostředí: " 
+                f"'{rt_factory}'", self)
 
     def load(self):
         """Funkce se pokusí zaregistrovat všechny továrny běhových prostředí.
@@ -78,7 +82,30 @@ class RuntimeFactoryManager:
             self.register(runtime_factory)
 
         if self.num_of_registered == 0:
-            # TODO - specifikace výjimky
-            raise Exception(
-                "Nebyla načtena jediná továrna běhových prostředí.")
+            raise RuntimeFactoryManagerError(
+                "Nebyla načtena jediná továrna běhových prostředí.", self)
+
+
+class RuntimeFactoryManagerError(PlatformError):
+    """Výjimky tohoto typu rozšiřují svého předka o referenci na správce
+    továren běhových prostředí. Cílem této třídy je symbolizace chyby, která
+    vznikla, a její reprezentace v systému."""
+
+    def __init__(self, message: str, rfm: "RuntimeFactoryManager"):
+        """Initor třídy, který postupuje textovou zprávu o chybě svému
+        předkovi a ukládá referenci na instanci správce, v jehož kontextu
+        došlo k chybě.
+        """
+
+        # Volání předka
+        PlatformError.__init__(self, message)
+
+        # Uložení správce, v jehož kontextu došlo k chybě
+        self._rfm = rfm
+
+    @property
+    def runtime_factory_manager(self) -> "RuntimeFactoryManager":
+        """Vlastnost vrací správce továren běhových prostředí, v jehož
+        kontextu došlo k chybě."""
+        return self._rfm
 
