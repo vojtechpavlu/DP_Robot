@@ -21,6 +21,7 @@ from src.fw.utils.described import Described
 from src.fw.utils.identifiable import Identifiable
 
 import src.fw.robot.unit as unit_module
+import src.fw.robot.robot as robot_module
 import src.fw.world.world_interface as wrld_interf_module
 
 
@@ -72,7 +73,7 @@ class Interaction(Identifiable, Named, Described):
                                    self)
 
         # 'error_function' musí být volatelná funkce
-        elif (self.__ef is None) or (type(self.__ef) != Callable):
+        elif not isinstance(self.__ef, Callable):
             raise InteractionError(f"Dodaná funkce pro reakci na chybu musí "
                                    f"být volatelná", self)
 
@@ -88,6 +89,12 @@ class Interaction(Identifiable, Named, Described):
         ze svého programu inicioval.
         """
         return self._unit
+
+    @property
+    def robot(self) -> "robot_module.Robot":
+        """Vlastnost vrací robota, který je osazen jednotkou odpovědnou za
+        vznik této interakce."""
+        return self.unit.robot
 
     def call_error_function(self):
         """Funkce zavolá dodanou funkci odpovědnou za reakci na chybu.
