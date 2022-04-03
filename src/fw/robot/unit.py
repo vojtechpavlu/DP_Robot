@@ -164,6 +164,15 @@ class Actuator(AbstractUnit):
             f"Aktuátor '{self.name}' neumí dodávat informace o světě."
             f"Použijte funkci 'execute'.", self)
 
+    @abstractmethod
+    def execute(self):
+        """Abstraktní funkce odpovědná za stanovení protokolu provedení
+        interakce se světem.
+
+        Novou implementací této funkce se dosáhne opatření jednotky danou
+        funkcionalitou. Právě tato metoda je volána pro provedení kýžené
+        akce."""
+
 
 class Sensor(AbstractUnit):
     """Sensor je abstraktní třída definující společný protokol pro všechny
@@ -200,6 +209,15 @@ class Sensor(AbstractUnit):
         raise UnitError(
             f"Senzor '{self.name}' nemůže provádět změny ve světě. Použijte "
             f"funkci 'scan'.", self)
+
+    @abstractmethod
+    def scan(self) -> object:
+        """Abstraktní funkce odpovědná za stanovení protokolu pro provedení
+        interakce se světem a navrácení informace o něm.
+
+        Novou implementací této funkce se dosáhne opatření jednotky danou
+        funkcionalitou. Právě tato metoda je volána pro provedení snímání
+        světa."""
 
 
 class AbstractUnitFactory(Identifiable, Named,
