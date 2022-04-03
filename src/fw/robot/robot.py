@@ -12,6 +12,7 @@ from src.fw.utils.named import Named
 
 import src.fw.robot.unit as unit_module
 import src.fw.robot.robot_name_generator as name_gnrtr_module
+import src.fw.robot.program as program_module
 
 
 class Robot(Identifiable, Named):
@@ -29,6 +30,11 @@ class Robot(Identifiable, Named):
         """Seznam jednotek, kterými je robot osazen. Na začátku jeho 
         životního cyklu je pochopitelně seznam prázdný."""
         self._units: "list[unit_module.AbstractUnit]" = []
+
+        """Připravení proměnné, která je odpovědná za udržení reference
+        na program, který byl robotovi přiřazen. V úvodní části životního
+        cyklu robota je tato proměnná nenaplněna."""
+        self._program: "program_module.AbstractProgram" = None
 
     @property
     def units(self) -> "tuple[unit_module.AbstractUnit]":
@@ -50,6 +56,23 @@ class Robot(Identifiable, Named):
         """Vlastnost vrací ntici textových řetězců, které reprezentují
         unikátní identifikátory jednotlivých jednotek."""
         return tuple(map(lambda unit: str(unit.hex_id), self.units))
+
+    @property
+    def program(self) -> "program_module.AbstractProgram":
+        """Vlastnost vrací program, který byl tomuto roboti přiřazen."""
+        return self._program
+
+    @program.setter
+    def program(self, program: "program_module.AbstractProgram"):
+        """Vlastnost nastavuje program, který má být robotovi přiřazen.
+        Tento program lze nastavit pouze jednou. Nesmí být tedy None a
+        nesmí být již jednou nastaven na neprázdnou hodnotu."""
+        # TODO - specifikace výjimky
+        if program is None:
+            raise Exception(f"Dodaný program nesmí být None")
+        elif self.program is not None:
+            raise Exception(f"Dodaný program nelze přenastavovat")
+        self._program = program
 
     def is_mounted_with(self, unit: "unit_module.AbstractUnit") -> bool:
         """Vlastnost vrací, je-li robot osazen dodanou jednotkou."""
@@ -79,6 +102,7 @@ class Robot(Identifiable, Named):
         nevratně nefunkční."""
         for unit in self.units:
             unit.deactivate()
+        # TODO - ukončení programu
 
 
 class RobotFactory(ABC):
