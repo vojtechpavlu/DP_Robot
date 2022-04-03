@@ -87,15 +87,30 @@ class AbstractUnit(Identifiable, Named, Described,
     @abstractmethod
     def execute(self):
         """Abstraktní funkce odpovědná za stanovení protokolu provedení
-        interakce se světem."""
+        interakce se světem.
+
+        Tato je svými potomky překryta. Potomci mohou být buďto třídy
+        'Sensor' nebo 'Actuator', přičemž Sensor nemá schopnost provádět
+        změny ve světě a Actuator zase nemá schopnost snímat svět.
+
+        Tato funkce musí v potomkovi 'Sensor' v těle vyhazovat výjimku.
+
+        Samotný způsob použití a funkcionalita jednotky je upravena v těle
+        implementace této funkce potomků této třídy."""
 
     @abstractmethod
     def scan(self) -> object:
         """Abstraktní funkce odpovědná za stanovení protokolu pro provedení
         interakce se světem a navrácení informace o něm.
 
-        Ta může být různé podoby; v závislosti na konkrétní implementaci
-        jednotky."""
+        Tato je svými potomky překryta. Potomci mohou být buďto třídy
+        'Sensor' nebo 'Actuator', přičemž Sensor nemá schopnost provádět
+        změny ve světě a Actuator zase nemá schopnost snímat svět.
+
+        Tato funkce musí v potomkovi 'Actuator' v těle vyhazovat výjimku.
+
+        Samotný způsob použití a funkcionalita jednotky je upravena v těle
+        implementace této funkce potomků této třídy"""
 
     def mount(self, robot: "robot_module.Robot"):
         """Vlastnost nastavuje robota, kterému je tato jednotka nastavena.
