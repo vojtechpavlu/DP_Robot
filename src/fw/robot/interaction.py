@@ -60,7 +60,7 @@ class Interaction(Identifiable, Named, Described):
         self._unit = unit
 
         # Funkce, která má být zavolána v případě chyby
-        self._ef = error_function
+        self.__ef = error_function
 
         # Jednotka musí být zjistitelná
         if self.unit is None:
@@ -72,7 +72,7 @@ class Interaction(Identifiable, Named, Described):
                                    self)
 
         # 'error_function' musí být volatelná funkce
-        elif (self._ef is None) or (type(self._ef) != Callable):
+        elif (self.__ef is None) or (type(self.__ef) != Callable):
             raise InteractionError(f"Dodaná funkce pro reakci na chybu musí "
                                    f"být volatelná", self)
 
@@ -95,7 +95,7 @@ class Interaction(Identifiable, Named, Described):
         pro zajištění integrity systému.
 
         Předpokládá se, že je tato funkce bezparametrická."""
-        self._ef()
+        self.__ef()
 
     @abstractmethod
     def execute_interaction(
