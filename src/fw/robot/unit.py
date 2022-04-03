@@ -1,5 +1,20 @@
 """V modulu 'unit.py' jsou definovány všechny prostředky pro reprezentaci
-a manipulaci v kontextu jednotek robota."""
+a manipulaci v kontextu jednotek robota.
+
+V rámci tohoto modulu jsou především definovány protokoly pro obecné jednotky
+a jejich vzájemná struktura a hierarchie.
+
+Konkrétně je zde definována nejobecnější jednotka 'AbstractUnit', která
+stanovuje abstraktní, nejobecnější a společný protokol pro všechny své
+potomky. Kromě toho jsou zde uvedeny předpisy tříd 'Actuator' a 'Sensor',
+které jsou potomky obecné abstraktní jednotky a drobně specifikují svoji
+podstatu. Další významnou definicí je třída 'AbstractUnitFactory', která
+umožňuje dynamicky poskytovat instance jednotky, pro kterou je továrnou.
+
+Samotné konkrétní implementace jsou načítány dynamicky, pomocí továrny
+jednotek, příslušného potomka 'Plugin' (tedy 'UnitFactoryPlugin) a třídy
+'UnitFactoryLoader'. Plugin a loader jsou však uvedeny ve vlastním modulu.
+"""
 
 
 # Prevence cyklických importů
@@ -87,15 +102,30 @@ class AbstractUnit(Identifiable, Named, Described,
     @abstractmethod
     def execute(self):
         """Abstraktní funkce odpovědná za stanovení protokolu provedení
-        interakce se světem."""
+        interakce se světem.
+
+        Tato je svými potomky překryta. Potomci mohou být buďto třídy
+        'Sensor' nebo 'Actuator', přičemž Sensor nemá schopnost provádět
+        změny ve světě a Actuator zase nemá schopnost snímat svět.
+
+        Tato funkce musí v potomkovi 'Sensor' v těle vyhazovat výjimku.
+
+        Samotný způsob použití a funkcionalita jednotky je upravena v těle
+        implementace této funkce potomků této třídy."""
 
     @abstractmethod
     def scan(self) -> object:
         """Abstraktní funkce odpovědná za stanovení protokolu pro provedení
         interakce se světem a navrácení informace o něm.
 
-        Ta může být různé podoby; v závislosti na konkrétní implementaci
-        jednotky."""
+        Tato je svými potomky překryta. Potomci mohou být buďto třídy
+        'Sensor' nebo 'Actuator', přičemž Sensor nemá schopnost provádět
+        změny ve světě a Actuator zase nemá schopnost snímat svět.
+
+        Tato funkce musí v potomkovi 'Actuator' v těle vyhazovat výjimku.
+
+        Samotný způsob použití a funkcionalita jednotky je upravena v těle
+        implementace této funkce potomků této třídy"""
 
     def mount(self, robot: "robot_module.Robot"):
         """Vlastnost nastavuje robota, kterému je tato jednotka nastavena.
@@ -142,9 +172,21 @@ class Actuator(AbstractUnit):
         return True
 
     def scan(self) -> object:
-        """"""
-        # TODO
-        raise Exception()
+        """Funkce implementující protokol předka. Tato funkce jen vyhazuje
+        výjimku, protože aktuátory nejsou vybaveny schopností scanování
+        světa."""
+        raise UnitError(
+            f"Aktuátor '{self.name}' neumí dodávat informace o světě."
+            f"Použijte funkci 'execute'.", self)
+
+    @abstractmethod
+    def execute(self):
+        """Abstraktní funkce odpovědná za stanovení protokolu provedení
+        interakce se světem.
+
+        Novou implementací této funkce se dosáhne opatření jednotky danou
+        funkcionalitou. Právě tato metoda je volána pro provedení kýžené
+        akce."""
 
 
 class Sensor(AbstractUnit):
@@ -175,9 +217,22 @@ class Sensor(AbstractUnit):
         return False
 
     def execute(self):
-        """"""
-        # TODO
-        raise Exception()
+        """Funkce implementující protokol předka. Tato funkce v rámci senzorů
+        pouze vyhazuje výjimku, neboť senzory jsou odpovědné za scanování,
+        nikoliv za provádění změn ve světě.
+        """
+        raise UnitError(
+            f"Senzor '{self.name}' nemůže provádět změny ve světě. Použijte "
+            f"funkci 'scan'.", self)
+
+    @abstractmethod
+    def scan(self) -> object:
+        """Abstraktní funkce odpovědná za stanovení protokolu pro provedení
+        interakce se světem a navrácení informace o něm.
+
+        Novou implementací této funkce se dosáhne opatření jednotky danou
+        funkcionalitou. Právě tato metoda je volána pro provedení snímání
+        světa."""
 
 
 class AbstractUnitFactory(Identifiable, Named,
