@@ -62,7 +62,10 @@ class RuntimeFactoryManager:
         """
         if rt_factory not in self.registered_factories:
             self._registered.append(rt_factory)
-        # TODO - LOG již evidované továrny běhových prostředí
+        else:
+            raise RuntimeFactoryManagerError(
+                f"Nelze přidat dvakrát tu samou továrnu běhových prostředí: " 
+                f"'{rt_factory}'", self)
 
     def load(self):
         """Funkce se pokusí zaregistrovat všechny továrny běhových prostředí.
@@ -79,9 +82,8 @@ class RuntimeFactoryManager:
             self.register(runtime_factory)
 
         if self.num_of_registered == 0:
-            # TODO - specifikace výjimky
-            raise Exception(
-                "Nebyla načtena jediná továrna běhových prostředí.")
+            raise RuntimeFactoryManagerError(
+                "Nebyla načtena jediná továrna běhových prostředí.", self)
 
 
 class RuntimeFactoryManagerError(PlatformError):
