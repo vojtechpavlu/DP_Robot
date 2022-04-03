@@ -142,9 +142,12 @@ class Actuator(AbstractUnit):
         return True
 
     def scan(self) -> object:
-        """"""
-        # TODO
-        raise Exception()
+        """Funkce implementující protokol předka. Tato funkce jen vyhazuje
+        výjimku, protože aktuátory nejsou vybaveny schopností scanování
+        světa."""
+        raise UnitError(
+            f"Aktuátor '{self.name}' neumí dodávat informace o světě."
+            f"Použijte funkci 'execute'.", self)
 
 
 class Sensor(AbstractUnit):
