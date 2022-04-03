@@ -74,6 +74,12 @@ class Robot(Identifiable, Named):
                 f"Robot, ke kterému je napojena jednotka {unit} není "
                 f"tento: {unit.robot=}, {self}")
 
+    def deactivate(self):
+        """Funkce deaktivuje všechny jednotky. To znamená, že je robot již
+        nevratně nefunkční."""
+        for unit in self.units:
+            unit.deactivate()
+
 
 class RobotFactory(ABC):
     """Abstraktní třída RobotFactory je odpovědná za poskytování instancí
