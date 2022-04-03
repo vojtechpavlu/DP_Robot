@@ -85,14 +85,25 @@ class RuntimeFactoryManager:
 
 
 class RuntimeFactoryManagerError(PlatformError):
-    """"""
+    """Výjimky tohoto typu rozšiřují svého předka o referenci na správce
+    továren běhových prostředí. Cílem této třídy je symbolizace chyby, která
+    vznikla, a její reprezentace v systému."""
 
     def __init__(self, message: str, rfm: "RuntimeFactoryManager"):
+        """Initor třídy, který postupuje textovou zprávu o chybě svému
+        předkovi a ukládá referenci na instanci správce, v jehož kontextu
+        došlo k chybě.
+        """
+
+        # Volání předka
         PlatformError.__init__(self, message)
+
+        # Uložení správce, v jehož kontextu došlo k chybě
         self._rfm = rfm
 
     @property
     def runtime_factory_manager(self) -> "RuntimeFactoryManager":
-        """"""
+        """Vlastnost vrací správce továren běhových prostředí, v jehož
+        kontextu došlo k chybě."""
         return self._rfm
 
