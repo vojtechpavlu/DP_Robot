@@ -175,9 +175,13 @@ class Sensor(AbstractUnit):
         return False
 
     def execute(self):
-        """"""
-        # TODO
-        raise Exception()
+        """Funkce implementující protokol předka. Tato funkce v rámci senzorů
+        pouze vyhazuje výjimku, neboť senzory jsou odpovědné za scanování,
+        nikoliv za provádění změn ve světě.
+        """
+        raise UnitError(
+            f"Senzor '{self.name}' nemůže provádět změny ve světě. Použijte "
+            f"funkci 'scan'.", self)
 
 
 class AbstractUnitFactory(Identifiable, Named,
