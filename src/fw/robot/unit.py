@@ -1,5 +1,20 @@
 """V modulu 'unit.py' jsou definovány všechny prostředky pro reprezentaci
-a manipulaci v kontextu jednotek robota."""
+a manipulaci v kontextu jednotek robota.
+
+V rámci tohoto modulu jsou především definovány protokoly pro obecné jednotky
+a jejich vzájemná struktura a hierarchie.
+
+Konkrétně je zde definována nejobecnější jednotka 'AbstractUnit', která
+stanovuje abstraktní, nejobecnější a společný protokol pro všechny své
+potomky. Kromě toho jsou zde uvedeny předpisy tříd 'Actuator' a 'Sensor',
+které jsou potomky obecné abstraktní jednotky a drobně specifikují svoji
+podstatu. Další významnou definicí je třída 'AbstractUnitFactory', která
+umožňuje dynamicky poskytovat instance jednotky, pro kterou je továrnou.
+
+Samotné konkrétní implementace jsou načítány dynamicky, pomocí továrny
+jednotek, příslušného potomka 'Plugin' (tedy 'UnitFactoryPlugin) a třídy
+'UnitFactoryLoader'. Plugin a loader jsou však uvedeny ve vlastním modulu.
+"""
 
 
 # Prevence cyklických importů
