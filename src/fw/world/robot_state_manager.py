@@ -78,6 +78,16 @@ class RobotStateManager:
         raise RobotStateManagerError(
             f"Neexistuje stav robota pro robota '{robot}'", self)
 
+    def robot_state_by_coords(
+            self, x: int, y: int) -> "rs_module.RobotState":
+        """Funkce se pokusí vrátit stav robota, který je na daných
+        souřadnicích. Pokud takového robota není, je vráceno None, jinak
+        je vrácena instance stavu robota ('RobotState')"""
+        for robot_state in self.robot_states:
+            field = robot_state.field
+            if (field.x == x) and (field.y == y):
+                return robot_state
+
 
 class RobotStateManagerError(PlatformError):
     """Výjimka RobotStateManager je odpovědná za symbolizaci chyby, ke
