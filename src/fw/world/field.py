@@ -8,6 +8,7 @@ from abc import abstractmethod
 # Import lokálních knihoven
 from src.fw.utils.error import PlatformError
 from src.fw.world.coordinates import Coordinates
+from src.fw.world.direction import Direction
 
 import src.fw.world.world as world_mod
 import src.fw.robot.robot_container as rc_module
@@ -110,6 +111,20 @@ class Field(rc_module.SingleRobotContainer):
             raise FieldError(
                 f"Nelze zjistit sousedy, když není nastaven svět", self)
         return self.world.neighbours(self.x, self.y)
+
+    def neighbour(self, direction: "Direction") -> "Field":
+        """Funkce vrací referenci na políčko, které s tímto sousedí v daném
+        směru."""
+        if self.world is None:
+            raise FieldError(
+                f"Nelze zjistit souseda, když není nastaven svět", self)
+        elif direction is None:
+            raise FieldError(
+                f"Dodaný směr nesmí být None", self)
+        # Vyhledání sousedního políčka dle dodaných sousedních souřadnic
+        return self.world.field(
+            *self.coordinates.move_in_direction(direction).xy)
+
 
 
 class Wall(Field):
