@@ -24,44 +24,57 @@ from src.fw.platform.runtime import (AbstractRuntime, AbstractRuntimeFactory,
 
 def _get_unit_names() -> "list[str]":
     """Funkce vrací seznam názvů jednotek, které jsou pro danou úlohu
-    povoleny."""
-    return ["*"]  # TODO - DOPLNIT
+    povoleny.
 
+    V tomto případě mají roboti možnost být osazeni všemi jednotkami, které
+    jsou v rámci načtených pluginů dostupné."""
+    return ["*"]
 
 def _get_robot_factory() -> "RobotFactory":
     """Funkce vrací novou instanci továrny robotů, která bude použita
-    pro tvorbu robotů v dané úloze."""
-    return EmptyRobotFactory()  # TODO - DOPLNIT
+    pro tvorbu robotů v dané úloze.
+
+    Roboti zde nemají žádnou speciální osazovací proceduru, ani nejsou nijak
+    zvlášť pojmenováváni.
+    """
+    return EmptyRobotFactory()
 
 
 def _get_spawner_factory() -> "SpawnerFactory":
     """Funkce vrací novou instanci továrny spawnerů, kterých bude použito
-    pro zasazování robotů do světa."""
-    return CoordinatesSpawnerFactory(1, 1)  # TODO - DOPLNIT
+    pro zasazování robotů do světa.
+
+    Robot je vždy usazen pevně na pozici [1; 1]."""
+    return CoordinatesSpawnerFactory(1, 1)
 
 
 def _get_target_factory() -> "TargetFactory":
-    """Funkce vrací novou instanci továrny úlohy."""
-    return AlwaysCompletedTargetFactory()  # TODO - DOPLNIT
+    """Funkce vrací novou instanci továrny úlohy.
+
+    Úloha je v tomto podání vždy per definitionem splněna."""
+    return AlwaysCompletedTargetFactory()
 
 
 def _get_world_interface_factory() -> "WorldInterfaceFactory":
-    """Funkce vrací zcela novou instanci továrny rozhraní světa."""
-    return DefaultWorldInterfaceFactory()  # TODO - DOPLNIT
+    """Funkce vrací zcela novou instanci továrny rozhraní světa.
+    """
+    return DefaultWorldInterfaceFactory()
 
 
-def _get_world_factory() -> "WorldFactory":  # TODO - DOPLNIT
-    """Funkce vrací novou instanci továrny světa."""
+def _get_world_factory() -> "WorldFactory":
+    """Funkce vrací novou instanci továrny světa.
+
+    Na hřišti je vždy rozhraní světa 10x10 políček (resp. otevřený prostor
+    8x8 cest a tento čtverec obehnaný zdí.
+    """
     return OpenSpaceWorldFactory(10, 10, _get_world_interface_factory(),
                                  _get_spawner_factory().build())
 
 
-class TemplateRuntimeFactory(AbstractRuntimeFactory):  # TODO - DOPLNIT
-    """Tato třída slouží k zpřístupnění tvorby co nejjednoduššího běhového
-    prostředí. Chování této třídy je silně ovlivněno definicí přístupových
-    funkcí v horní části tohoto modulu.
-
-    Samotná implementace slouží spíše k šablonovým účelům."""
+class PlaygroundRuntimeFactory(AbstractRuntimeFactory):
+    """Třída definující továrnu běhového prostředí sloužícího jako hřiště.
+    Běhová prostředí tohoto typu jsou zcela výchozí, velmi jednoduchá a co
+    do funkcionality a pestrosti značně omezená."""
 
     def __init__(self):
         """Initor třídy, který má za cíl jen připravit svého předka."""
@@ -84,12 +97,12 @@ class TemplateRuntimeFactory(AbstractRuntimeFactory):  # TODO - DOPLNIT
             program, self.robot_factory, platform)
 
 
-def get_runtime_factory() -> "AbstractRuntimeFactory":  # TODO - DOPLNIT
+def get_runtime_factory() -> "AbstractRuntimeFactory":
     """Hlavní přístupová funkce, která vrací továrnu běhového prostředí.
     Tato funkce (co do existence, funkce a typu návratové hodnoty) je
     rozhodujícím faktorem pro validátory pluginů v kontextu dynamické
     tvorby běhových prostředí.
     """
-    return TemplateRuntimeFactory()
+    return PlaygroundRuntimeFactory()
 
 
