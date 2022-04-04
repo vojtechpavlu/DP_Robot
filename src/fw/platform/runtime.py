@@ -270,20 +270,31 @@ class AbstractRuntimeFactory(ABC):
         továren dle názvu ('factory_by_unit_name(str)'). Ta vyhazuje výjimku,
         není-li taková jednotka k nalezení. V takovém případě není odchycena
         a tato probublává výše.
+
+        Speciálním případem použití je, bude-li mezi názvy továrních jednotek
+        uveden řetězec sestávající se z pouze hvězdičky ('*'). Pak budou
+        vráceny všechny továrny jednotek
         """
 
-        # Seznam továrních jednotek
-        uf = []
+        # Pokud je mezi předepsanými názvy požadovaných továren jednotek
+        # hvězdička, budou vráceny všechny dostupné továrny jednotek
+        if "*" in unit_names:
+            return platform.unit_factories
 
-        # Pro každý název jednotky
-        for unit_name in unit_names:
+        # V opačném případě bude provedena selekce dle požadovaných názvů
+        else:
 
-            # Přidej získanou továrnu
-            uf.append(platform.unit_factory_manager.factory_by_unit_name(
-                unit_name))
+            # Seznam továrních jednotek
+            uf = []
+            # Pro každý název jednotky
+            for unit_name in unit_names:
 
-        # Vrácení naplněného seznamu továrnami jednotek
-        return uf
+                # Přidej získanou továrnu
+                uf.append(platform.unit_factory_manager.factory_by_unit_name(
+                    unit_name))
+
+            # Vrácení naplněného seznamu továrnami jednotek
+            return uf
 
 
 
