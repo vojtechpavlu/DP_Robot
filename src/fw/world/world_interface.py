@@ -161,7 +161,11 @@ class WorldInterface(ihm_module.InteractionHandlerManager):
             return self.get_interaction_handler(interaction).execute(
                 interaction, self)
         except inter_rls.InteractionRulesError as irlse:
+            # Provedení stanovené funkce jako reakce na chybu
             interaction.call_error_function()
+            # Ukončení programu
+            interaction.robot.program.terminate(
+                f"Robot porušil pravidla světa: '{irlse.interaction_rules}'")
             raise WorldInterfaceError(
                 f"Při zpracovávání interakce došlo k chybě: '{irlse}'", self)
 

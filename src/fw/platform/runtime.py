@@ -171,6 +171,10 @@ class SingleRobotRuntime(AbstractRuntime):
         self.world.robot_state_manager.register_robot(self.robot)
         try:
             self.program.run(self.robot)
+        except program_module.ProgramTermination as pt:
+            # TODO - doplnit
+            print(f"Program byl se stavem '{pt.abort_type}' "
+                  f"ukončen: {pt.message}")
         except Exception as e:
             for unit in self.robot.units:
                 unit.deactivate()
