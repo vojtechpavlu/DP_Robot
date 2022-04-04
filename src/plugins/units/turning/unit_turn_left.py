@@ -1,11 +1,12 @@
-"""Defaultní šablona pluginu pro továrny jednotek.
+"""Jednotka, pro kterou je vytvořen tento plugin, se stará o poskytnutí
+možnosti otočit robota doleva o 90°, tedy ortogonálně o jeden díl proti směru
+hodinových ručiček.
 
-V tomto dokumentačním komentáři musí být uveden účel jednotky, způsob jejího
-chování a doporučený způsob nakládání s ní.
+Příkladně, je-li robot před použitím této funkce otočen na východ, po aplikaci
+bude tento otočen na sever.
 
-U aktuátorů je vhodné, aby zde byl uveden výsledek po aplikování, stejně jako
-možné chyby, k jakým může dojít. U senzorů zase uvedení alespoň typu návratové
-hodnoty a nějaký ilustrační příklad."""
+Jelikož jde o funkci, která čistě jen provádí konkrétní operaci, ale nevrací
+žádnou informaci o světě, je tato jednotka realizována jako aktuátor."""
 
 # Import standardních knihoven
 from typing import Type
@@ -36,14 +37,15 @@ _INTERACTION_DESCRIPTION = ("Otočení robota doleva "
 
 
 class LeftTurner(Actuator):
-    """Šablona aktuátoru, která definuje ukázkovou implementaci, jak by měla
-    jednotka vypadat co do definice třídy."""
+    """Třída definuje jednotku, která otáčí robota o 90° proti směru
+    hodinových ručiček.
+    """
 
     def __init__(self, factory: "AbstractUnitFactory"):
         """Initor aktuátoru, který z úsporných důvodů používá skromnou
         implementaci. De facto jen iniciuje svého předka názvem jednotky,
-        popisem účelu jednotky (nezapomenout doplnit) a referencí na továrnu,
-        která je za vytvoření této jednotky odpovědná.
+        popisem účelu jednotky a referencí na továrnu, která je za vytvoření
+        této jednotky odpovědná.
         """
         Actuator.__init__(self, factory.unit_name,
                           _UNIT_DESCRIPTION, factory)
@@ -59,7 +61,10 @@ class TurnLeftInteraction(Interaction):
     """Instance této třídy obsahují definici procedury, která má být
     provedena coby reprezentace samotného aktu interagování se světem.
     Tato nejdůležitější část je reprezentována implementací metody
-    'execute_interaction' (doplnit).
+    'execute_interaction'.
+
+    Tato interakce má za cíl samotné provedení změny ve světě ve vztahu k
+    robotovi, který tuto interakci iniciuje.
     """
 
     def __init__(self, unit: "Actuator"):
@@ -75,7 +80,10 @@ class TurnLeftInteraction(Interaction):
         rozhraním. V této šablonové implementaci pouze vyhazuje výjimku, aby
         se nezapomnělo tuto implementovat.
         """
+        # Získání stavu robota z rozhraní světa
         rs = interface.world.robot_state_manager.robot_state(self.robot)
+
+        # Samotné otočení doleva
         rs.direction = rs.direction.turn_left()
 
 
@@ -83,7 +91,10 @@ class LeftTurnerFactory(AbstractUnitFactory):
     """Továrna jednotek, která definuje způsob dynamického obdržení instance
     konkrétní jednotky. Kromě vlastního poskytování těchto instancí je také
     odpovědná za poskytování informací o interakcích, které lze od jednotek
-    této továrny čekat."""
+    této továrny čekat.
+
+    Tato továrna je odpovědná za tvorbu jednotek, které jsou schopny otočit
+    robota o 90° doleva."""
 
     def __init__(self):
         """Bezparametrický initor třídy, který iniciuje svého předka s
@@ -100,7 +111,7 @@ class LeftTurnerFactory(AbstractUnitFactory):
     @property
     def interaction_type(self) -> "Type":
         """Vlastnost vrací typ interakce, který může být od jednotek tvořených
-        touto třídou očekáván."""
+        touto třídou očekáván. Konkrétně zde třídu 'TurnLeftInteraction'."""
         return TurnLeftInteraction
 
 
