@@ -38,7 +38,7 @@ class TemplateActuator(Sensor):
     jednotka vypadat co do definice třídy."""
 
     def __init__(self, factory: "AbstractUnitFactory"):
-        """Initor aktuátoru, který z úsporných důvodů používá skromnou
+        """Initor senzoru, který z úsporných důvodů používá skromnou
         implementaci. De facto jen iniciuje svého předka názvem jednotky,
         popisem účelu jednotky (nezapomenout doplnit) a referencí na továrnu,
         která je za vytvoření této jednotky odpovědná.
@@ -91,7 +91,7 @@ class TemplateActuatorFactory(AbstractUnitFactory):
             self, _UNIT_FACTORY_NAME, _UNIT_NAME)
 
     def build(self) -> "Sensor":
-        """Funkce odpovědná za vytvoření nové instance příslušného aktuátoru.
+        """Funkce odpovědná za vytvoření nové instance příslušného senzoru.
         Tato funkce umožňuje dynamicky získávat instance jednotek."""
         return TemplateActuator(self)
 
