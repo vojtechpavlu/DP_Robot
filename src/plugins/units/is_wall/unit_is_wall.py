@@ -74,8 +74,9 @@ class IsWallInteraction(Interaction):
         rozhraním. V této šablonové implementaci pouze vyhazuje výjimku, aby
         se nezapomnělo tuto implementovat.
         """
-        raise InteractionError(
-            f"«NO INTERACTION SPECIFIED: '{type(self)}'»", self)
+        rs = interface.world.robot_state_manager.robot_state(self.robot)
+        field = rs.field.neighbour(rs.direction)
+        return None if not field else field.is_wall
 
 
 class IsWallSensorFactory(AbstractUnitFactory):
