@@ -163,10 +163,12 @@ class Actuator(AbstractUnit):
         """Jednoduchý initor odpovědný za volání předka."""
         AbstractUnit.__init__(self, unit_name, unit_desc, unit_factory)
 
+    @property
     def is_sensor(self) -> bool:
         """Funkce vrací informaci o tom, že tato jednotka není senzorem."""
         return False
 
+    @property
     def is_actuator(self) -> bool:
         """Funkce vrací informaci o tom, že tato jednotka je aktuátorem."""
         return True
@@ -211,10 +213,12 @@ class Sensor(AbstractUnit):
         """Jednoduchý initor odpovědný za volání předka."""
         AbstractUnit.__init__(self, unit_name, unit_desc, unit_factory)
 
+    @property
     def is_sensor(self) -> bool:
         """Funkce vrací informaci o tom, že tato jednotka je senzorem."""
         return True
 
+    @property
     def is_actuator(self) -> bool:
         """Funkce vrací informaci o tom, že tato jednotka není aktuátorem."""
         return False
