@@ -1,11 +1,8 @@
-"""Defaultní šablona pluginu pro továrny jednotek.
+"""Plugin, který definuje jednotku pro otáčení robota čelem vzad,
+tedy o 180°.
 
-V tomto dokumentačním komentáři musí být uveden účel jednotky, způsob jejího
-chování a doporučený způsob nakládání s ní.
-
-U aktuátorů je vhodné, aby zde byl uveden výsledek po aplikování, stejně jako
-možné chyby, k jakým může dojít. U senzorů zase uvedení alespoň typu návratové
-hodnoty a nějaký ilustrační příklad."""
+Je-li tedy například robot otočen před aplikací na sever, po aplikaci je
+nově natočen směrem na jih."""
 
 # Import standardních knihoven
 from typing import Type
@@ -34,8 +31,10 @@ _INTERACTION_DESCRIPTION = "Otočení robota o 180° stupňů"
 
 
 class AboutFaceTurner(Actuator):
-    """Šablona aktuátoru, která definuje ukázkovou implementaci, jak by měla
-    jednotka vypadat co do definice třídy."""
+    """Třída aktuátoru pro otočení robota čelem vzad, tedy o 180°.
+
+    Instancemi této třídy je možné robota osadit a poskytnout mu tak funkce
+    otáčení se zpět."""
 
     def __init__(self, factory: "AbstractUnitFactory"):
         """Initor aktuátoru, který z úsporných důvodů používá skromnou
@@ -48,7 +47,8 @@ class AboutFaceTurner(Actuator):
 
     def build_interaction(self) -> "Interaction":
         """Metoda, která vrací zcela novou instanci interakce, pomocí které
-        jednotka bude interagovat se světem.
+        jednotka bude interagovat se světem. V tomto případě vrací zcela novou
+        instanci třídy 'AboutFaceInteraction'.
         """
         return AboutFaceInteraction(self)
 
@@ -57,7 +57,10 @@ class AboutFaceInteraction(Interaction):
     """Instance této třídy obsahují definici procedury, která má být
     provedena coby reprezentace samotného aktu interagování se světem.
     Tato nejdůležitější část je reprezentována implementací metody
-    'execute_interaction' (doplnit).
+    'execute_interaction'.
+
+    Instance této třídy se starají o samotný proces otočení robota o 180°,
+    tedy čelem vzad.
     """
 
     def __init__(self, unit: "Actuator"):
@@ -73,7 +76,10 @@ class AboutFaceInteraction(Interaction):
         rozhraním. V této šablonové implementaci pouze vyhazuje výjimku, aby
         se nezapomnělo tuto implementovat.
         """
+        # Získání stavu robota
         rs = interface.world.robot_state_manager.robot_state(self.robot)
+
+        # Nastavení nového směru robota
         rs.direction = rs.direction.about_face()
 
 
@@ -81,7 +87,10 @@ class AboutFaceTurnerFactory(AbstractUnitFactory):
     """Továrna jednotek, která definuje způsob dynamického obdržení instance
     konkrétní jednotky. Kromě vlastního poskytování těchto instancí je také
     odpovědná za poskytování informací o interakcích, které lze od jednotek
-    této továrny čekat."""
+    této továrny čekat.
+
+    Tato továrna je odpovědná za poskytování instancí třídy 'AboutFaceTurner'.
+    """
 
     def __init__(self):
         """Bezparametrický initor třídy, který iniciuje svého předka s
@@ -98,7 +107,8 @@ class AboutFaceTurnerFactory(AbstractUnitFactory):
     @property
     def interaction_type(self) -> "Type":
         """Vlastnost vrací typ interakce, který může být od jednotek tvořených
-        touto třídou očekáván."""
+        touto třídou očekáván. V tomto konkrétním případě vrací typ
+        'AboutFaceInteraction'."""
         return AboutFaceInteraction
 
 
