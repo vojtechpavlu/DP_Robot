@@ -8,11 +8,20 @@ a proceduru, která má být v rámci běhu programu spuštěna (tedy metoda
 Dále je třeba, aby v tomto modulu byla definována přístupová tovární funkce,
 která na zavolání bude vracet instanci tohoto programu. V defaultním pojetí
 je tato pojmenována 'get_program' a její název je takto důsledně vyžadován.
+
+Kromě toho je ve výchozím nastavení definováno, že dokumentační komentář
+tohoto modulu musí být neprázdný; tedy obsahovat alespoň jeden znak, který
+není mezerou či jemu podobný. Podobným pravidlem je, že tento soubor, který
+reprezentuje modul v jazyce Python musí mít jen omezenou velikost (v bytech).
 """
 
 # Import potřebných zdrojů a nástrojů
 from src.fw.robot.program import AbstractProgram
 from src.fw.robot.robot import Robot
+
+# Import zdrojů, které jsou vyžadovány jen v případě vlastní definice osazení
+# from src.fw.robot.unit import AbstractUnit
+# from typing import Iterable
 
 # Jméno autora, který je odpovědný za daný program
 _AUTHOR_NAME = ""
@@ -20,7 +29,24 @@ _AUTHOR_NAME = ""
 
 class Program(AbstractProgram):
     """Šablonová třída implementující svého předka ('AbstractProgram'),
-    co do jeho abstraktní funkce 'run(Robot)'."""
+    co do jeho abstraktní funkce 'run(Robot)'.
+
+    Kromě této metody je však možné upravit implementaci procedury pro
+    osazování robota. To je vhodné, když je třeba změnit strategii osazení.
+    Například jsou-li poskytnuty jednotky, které nejsou třeba. V defaultním
+    nastavení totiž je tato procedura nastavena na osazení robota všemi
+    dostupnými jednotkami.
+
+    Tuto proceduru lze upravit přidáním následujícího kusu kódu jako metodu
+    tohoto programu; automaticky bude zavolána v přípravné fázi robota:
+
+    def mount(self, robot: "robot_module.Robot",
+              available_units: "Iterable[unit_module.AbstractUnit]"):
+        # kód pro osazení robota jednotkami
+
+    K tomu je důležité taky odstranit křížky ('#', komentáře) před importem
+    potřebných knihoven (v horní části tohoto modulu).
+    """
 
     def run(self, robot: "Robot"):
         """Šablona metody, která se stará o definici sekvence akcí, které
