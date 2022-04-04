@@ -42,21 +42,23 @@ _INTERACTION_DESCRIPTION = "Zjišťování, v jakém směru je právě robot nat
 
 
 class CompassSensor(Sensor):
-    """Šablona senzoru, která definuje ukázkovou implementaci, jak by měla
-    jednotka vypadat co do definice třídy."""
+    """Senzory typu CompassSensor jsou odpovědné za poskytování informací
+    o tom, v jakém směru je robot právě natočen.
+
+    Tuto hodnotu vrací v podobě textového řetězce."""
 
     def __init__(self, factory: "AbstractUnitFactory"):
-        """Initor aktuátoru, který z úsporných důvodů používá skromnou
+        """Initor senzoru, který z úsporných důvodů používá skromnou
         implementaci. De facto jen iniciuje svého předka názvem jednotky,
-        popisem účelu jednotky (nezapomenout doplnit) a referencí na továrnu,
-        která je za vytvoření této jednotky odpovědná.
+        popisem účelu jednotky a referencí na továrnu, která je za vytvoření
+        této jednotky odpovědná.
         """
         Sensor.__init__(self, factory.unit_name,
                         _UNIT_DESCRIPTION, factory)
 
     def build_interaction(self) -> "Interaction":
-        """Metoda, která vrací zcela novou instanci interakce, pomocí které
-        jednotka bude interagovat se světem.
+        """Metoda, která vrací zcela novou instanci interakce kompasu,
+        pomocí které jednotka bude interagovat se světem.
         """
         return CompassInteraction(self)
 
@@ -64,16 +66,16 @@ class CompassSensor(Sensor):
 class CompassInteraction(Interaction):
     """Instance této třídy obsahují definici procedury, která má být
     provedena coby reprezentace samotného aktu interagování se světem.
-    Tato nejdůležitější část je reprezentována implementací metody
-    'execute_interaction' (doplnit).
+
+    Konkrétně je tato definována jako navrácení aktuálního směru natočení
+    robota.
     """
 
     def __init__(self, unit: "Sensor"):
         """Initor interakce, který přijímá v parametru jednotku, která
         interakci provedla."""
-        Interaction.__init__(self, _INTERACTION_NAME,
-                             _INTERACTION_DESCRIPTION, unit,
-                             unit.robot.deactivate)
+        Interaction.__init__(self, _INTERACTION_NAME, _INTERACTION_DESCRIPTION,
+                             unit, unit.robot.deactivate)
 
     def execute_interaction(
             self, interface: "WorldInterface") -> object:
@@ -89,7 +91,10 @@ class CompassSensorFactory(AbstractUnitFactory):
     """Továrna jednotek, která definuje způsob dynamického obdržení instance
     konkrétní jednotky. Kromě vlastního poskytování těchto instancí je také
     odpovědná za poskytování informací o interakcích, které lze od jednotek
-    této továrny čekat."""
+    této továrny čekat.
+
+    Instance této třídy poskytují službu tvorby instancí třídy CompassSensor,
+    které zjišťují natočení robota ve světě."""
 
     def __init__(self):
         """Bezparametrický initor třídy, který iniciuje svého předka s
@@ -99,8 +104,10 @@ class CompassSensorFactory(AbstractUnitFactory):
             self, _UNIT_FACTORY_NAME, _UNIT_NAME)
 
     def build(self) -> "Sensor":
-        """Funkce odpovědná za vytvoření nové instance příslušného aktuátoru.
-        Tato funkce umožňuje dynamicky získávat instance jednotek."""
+        """Funkce odpovědná za vytvoření nové instance příslušného senzoru.
+        Tato funkce umožňuje dynamicky získávat instance jednotek.
+
+        Konkrétně poskytuje instance třídy 'CompassSensor'."""
         return CompassSensor(self)
 
     @property
