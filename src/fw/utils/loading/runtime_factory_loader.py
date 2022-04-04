@@ -37,7 +37,7 @@ _DEFAULT_IDENTIFIERS = [
     # Zdrojové soubory musí mít koncovku '.py'
     pl_identifier.ExtensionPluginIdentifier(".py"),
 
-    # Zdrojové soubory musí začínat řetězcem 'unit_'
+    # Zdrojové soubory musí začínat řetězcem 'runtime_'
     pl_identifier.PrefixPluginIdentifier("runtime_")
 ]
 
@@ -151,8 +151,10 @@ class RuntimeFactoryPlugin(plugin_module.Plugin):
         instanci tvoří (konkrétně instanci třídy RuntimeFactoryLoader), a také
         název přístupové funkce, která vrací instanci tovární třídy jednotky.
         """
+        # Volání předka
         plugin_module.Plugin.__init__(self, abs_path, plugin_loader)
 
+        # Uložení názvu přístupové funkce
         self._access_point_function = access_point_fun
 
     @property
