@@ -179,14 +179,17 @@ class Actuator(AbstractUnit):
             f"Aktuátor '{self.name}' neumí dodávat informace o světě."
             f"Použijte funkci 'execute'.", self)
 
-    @abstractmethod
     def execute(self):
-        """Abstraktní funkce odpovědná za stanovení protokolu provedení
-        interakce se světem.
+        """Tato funkce 'execute()' je odpovědná za stanovení protokolu
+        provedení akce (rozuměj změny) ve světě.
+
+        Její implementace je základní, pouze iniciuje interakci a vrací
+        hodnotu. Tuto lze samozřejmě v potomkovi interakce upravit.
 
         Novou implementací této funkce se dosáhne opatření jednotky danou
         funkcionalitou. Právě tato metoda je volána pro provedení kýžené
         akce."""
+        self.interact()
 
 
 class Sensor(AbstractUnit):
@@ -225,14 +228,17 @@ class Sensor(AbstractUnit):
             f"Senzor '{self.name}' nemůže provádět změny ve světě. Použijte "
             f"funkci 'scan'.", self)
 
-    @abstractmethod
     def scan(self) -> object:
-        """Abstraktní funkce odpovědná za stanovení protokolu pro provedení
-        interakce se světem a navrácení informace o něm.
+        """Funkce 'scan() -> object' odpovědná za stanovení protokolu pro
+        provedení interakce se světem a navrácení informace o něm.
+
+        Její implementace je základní, pouze iniciuje interakci a vrací
+        hodnotu. Tuto lze samozřejmě v potomkovi interakce upravit.
 
         Novou implementací této funkce se dosáhne opatření jednotky danou
         funkcionalitou. Právě tato metoda je volána pro provedení snímání
         světa."""
+        return self.interact()
 
 
 class AbstractUnitFactory(Identifiable, Named,
