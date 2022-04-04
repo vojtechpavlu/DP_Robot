@@ -13,6 +13,12 @@ Kromě toho je ve výchozím nastavení definováno, že dokumentační komentá
 tohoto modulu musí být neprázdný; tedy obsahovat alespoň jeden znak, který
 není mezerou či jemu podobný. Podobným pravidlem je, že tento soubor, který
 reprezentuje modul v jazyce Python musí mít jen omezenou velikost (v bytech).
+
+V neposlední řadě podléhá celý tento modul striktním pravidlům co do názvu.
+V defaultním pojetí musí modul nést název počínající řetězcem 'program_' a
+dále končící koncovkou '.py'. Příkladně tedy 'program_franta_voprsalek.py'
+je validní název, ale třeba 'franta_voprsalek.py' již považován jako validní
+plugin nebude a tedy nebude ani načten.
 """
 
 # Import potřebných zdrojů a nástrojů
