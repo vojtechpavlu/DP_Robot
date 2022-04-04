@@ -74,9 +74,15 @@ class IsWallInteraction(Interaction):
         rozhraním. V této šablonové implementaci pouze vyhazuje výjimku, aby
         se nezapomnělo tuto implementovat.
         """
+        # Získání stavu robota z dodaného rozhraní světa
         rs = interface.world.robot_state_manager.robot_state(self.robot)
+
+        # Získání políčka ve směru robota
         field = rs.field.neighbour(rs.direction)
-        return None if not field else field.is_wall
+
+        # Pokud políčko není známo, vrátit False, jinak jestli je
+        # nebo není stěna
+        return False if not field else field.is_wall
 
 
 class IsWallSensorFactory(AbstractUnitFactory):
