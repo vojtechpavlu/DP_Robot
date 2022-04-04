@@ -79,7 +79,6 @@ class AbstractProgram(ABC):
         metody slouží k obsluze celého robota při interakci se světem.
         """
 
-    @abstractmethod
     def terminate(self, message: str = "",
                   abort_type: "AbortType" = AbortType.ERROR):
         """Metoda slouží k předčasnému ukončení robota. Přesněji tím
