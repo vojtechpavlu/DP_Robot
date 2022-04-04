@@ -18,6 +18,7 @@ import src.fw.world.world as world_module
 import src.fw.robot.interaction as interaction_module
 import src.fw.world.interaction_handler_manager as ihm_module
 import src.fw.world.interaction_rules as inter_rls
+from src.fw.utils.error import PlatformError
 
 
 class WorldInterface(ihm_module.InteractionHandlerManager):
@@ -69,7 +70,7 @@ class WorldInterface(ihm_module.InteractionHandlerManager):
         violated = self.violated_rules(interaction)
         if len(violated) > 0:
             raise inter_rls.InteractionRulesError(
-                f"Byla porušena pravidla pro interakci", violated)
+                f"Byla porušena pravidla pro interakci: {violated}", violated)
 
         """Ověření, že je jednotka v konzistentním stavu a že tuto interakci
         skutečně provedla"""
@@ -155,9 +156,19 @@ class WorldInterface(ihm_module.InteractionHandlerManager):
         světa, resp. jeho rozhraní. Před zpracováním dané interakce je však
         tato podrobena zkouškám ověřujícím její platnost.
         """
-        self.check_interaction(interaction)
-        return self.get_interaction_handler(interaction).execute(
-            interaction, self)
+        try:
+            self.check_interaction(interaction)
+            return self.get_interaction_handler(interaction).execute(
+                interaction, self)
+        except inter_rls.InteractionRulesError as irlse:
+            # Provedení stanovené funkce jako reakce na chybu
+            interaction.call_error_function()
+            # Ukončení programu
+            interaction.robot.program.terminate(
+                f"Robot porušil pravidla světa: '{irlse.interaction_rules}'")
+            raise WorldInterfaceError(
+                f"Při zpracovávání interakce došlo k chybě: '{irlse}'", self)
+
 
 
 class WorldInterfaceFactory(ABC):
@@ -202,3 +213,19 @@ class DefaultWorldInterfaceFactory(WorldInterfaceFactory):
         # Vrácení nově vytvořené instance rozhraní světa
         return WorldInterface(world, ir_manager_factory)
 
+
+class WorldInterfaceError(PlatformError):
+    """Výjimka specifikuje, že došlo k chybě v kontextu rozhraní světa.
+    Proto svého předka pracující pouze se zprávou o chybě rozšiřuje ještě
+    o referenci na rozhraní světa, ve kterém došlo k problému."""
+
+    def __init__(self, message: str, world_interface: "WorldInterface"):
+        """Initor, který přijímá jednak textovou zprávu o chybě, ale také
+        referenci na rozhraní světa, ve kterém došlo k chybě."""
+        PlatformError.__init__(self, message)
+        self._world_interface = world_interface
+
+    @property
+    def world_interface(self) -> "WorldInterface":
+        """Vlastnost vrací rozhraní světa, v jehož kontextu došlo k chybě."""
+        return self._world_interface

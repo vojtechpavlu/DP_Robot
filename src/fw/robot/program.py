@@ -60,11 +60,18 @@ class AbstractProgram(ABC):
         """Funkce vrací jméno autora tohoto programu."""
         return self._author_name
 
-    @abstractmethod
     def mount(self, robot: "robot_module.Robot",
               available_units: "Iterable[unit_module.AbstractUnit]"):
-        """Abstraktní metoda reprezentující proceduru nastavení osazení
-        robota požadovanými jednotkami."""
+        """Metoda reprezentující proceduru nastavení osazení robota
+        požadovanými jednotkami.
+
+        Ve výchozí (zde uvedené) implementaci program prostě osadí robota
+        všemi jednotkami, které jsou k osazení dostupné. Pro upřesnění
+        osazení je třeba v potomkovi této instance proceduru osazení
+        předefinovat vlastní implementací této signatury.
+        """
+        for unit in available_units:
+            robot.mount(unit)
 
     @abstractmethod
     def run(self, robot: "robot_module.Robot"):
@@ -72,7 +79,6 @@ class AbstractProgram(ABC):
         metody slouží k obsluze celého robota při interakci se světem.
         """
 
-    @abstractmethod
     def terminate(self, message: str = "",
                   abort_type: "AbortType" = AbortType.ERROR):
         """Metoda slouží k předčasnému ukončení robota. Přesněji tím

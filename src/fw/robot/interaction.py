@@ -12,6 +12,7 @@ from __future__ import annotations
 # Import standardních knihoven
 from abc import ABC, abstractmethod
 from typing import Type
+from typing import Callable
 
 # Import lokálních knihoven
 from src.fw.utils.error import PlatformError
@@ -20,6 +21,7 @@ from src.fw.utils.described import Described
 from src.fw.utils.identifiable import Identifiable
 
 import src.fw.robot.unit as unit_module
+import src.fw.robot.robot as robot_module
 import src.fw.world.world_interface as wrld_interf_module
 
 
@@ -32,13 +34,48 @@ class Interaction(Identifiable, Named, Described):
     stará (podle návrhového vzoru Command) o samotné provedení akce v
     souvislosti se světem, resp. jeho rozhraním."""
 
-    def __init__(self, name: str, desc: str, unit: "unit_module.AbstractUnit"):
-        """"""
+    def __init__(self, name: str, desc: str, unit: "unit_module.AbstractUnit",
+                 error_function: "Callable"):
+        """Initor přijímá v parametru název a popis interakce. Oba tyto
+        popisné údaje slouží k lidské identifikaci, musí být tedy v přirozeném
+        jazyce a dostatečně dobře popisovat podstatu.
+
+        Dále initor přijímá referenci na jednotku, která je odpovědná za
+        vytvoření této interakce. S tím souvisí i parametr 'error_function',
+        pomocí kterého interakce přijímá funkci, která má být zavolána v
+        případě porušení některých pravidel.
+
+        Kromě uložení těchto proměnných je dále initor odpovědný za
+        elementární ověření správnosti těchto hodnot. Typicky prověřuje
+        vstupní jednotku (nesmí být None) a robota (musí být z jednotky
+        zjistitelný). Dále ověřuje třeba to, že dodaná funkce není None
+        a je volatelná ('Callable').
+        """
+
+        # Iniciace předků
         Identifiable.__init__(self)
         Named.__init__(self, name)
         Described.__init__(self, desc)
 
+        # Jednotka, která je odpovědná za tuto interakci
         self._unit = unit
+
+        # Funkce, která má být zavolána v případě chyby
+        self.__ef = error_function
+
+        # Jednotka musí být zjistitelná
+        if self.unit is None:
+            raise InteractionError(f"Jednotka musí být nastavena", self)
+
+        # Robot musí být zjistitelný
+        elif self.unit.robot is None:
+            raise InteractionError(f"Žádný robot není osazen touto jednotkou",
+                                   self)
+
+        # 'error_function' musí být volatelná funkce
+        elif not isinstance(self.__ef, Callable):
+            raise InteractionError(f"Dodaná funkce pro reakci na chybu musí "
+                                   f"být volatelná", self)
 
     @property
     def interaction_type(self) -> "Type":
@@ -52,6 +89,20 @@ class Interaction(Identifiable, Named, Described):
         ze svého programu inicioval.
         """
         return self._unit
+
+    @property
+    def robot(self) -> "robot_module.Robot":
+        """Vlastnost vrací robota, který je osazen jednotkou odpovědnou za
+        vznik této interakce."""
+        return self.unit.robot
+
+    def call_error_function(self):
+        """Funkce zavolá dodanou funkci odpovědnou za reakci na chybu.
+        Typicky jde o ukončení programu a provedení dalších drobných úkonů
+        pro zajištění integrity systému.
+
+        Předpokládá se, že je tato funkce bezparametrická."""
+        self.__ef()
 
     @abstractmethod
     def execute_interaction(
