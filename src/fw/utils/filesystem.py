@@ -87,8 +87,8 @@ def assignment(assignment_name: str) -> str:
 
     # Pokud taková cesta neexistuje
     if not exists(potential_path):
-        raise FileSystemError(f"Zadání s dodaným názvem neexistuje",
-                              [potential_path])
+        raise FileSystemError(f"Zadání s dodaným názvem '{assignment_name}' "
+                              f"neexistuje", [potential_path])
 
     # Pokud dané zadání není reprezentováno adresářem
     elif not is_directory(potential_path):
