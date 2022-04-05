@@ -1,4 +1,6 @@
-""""""
+"""Modul definuje způsob logování, tedy zaznamenávání textových zpráv
+o běhu programu. To pro potřeby debuggingu, stejně jako pro potřeby
+běžného pozorování průběhu systému."""
 
 # Import standardních knihoven
 from datetime import datetime
@@ -9,7 +11,6 @@ import src.fw.utils.logging.logging_output as output_module
 import src.fw.utils.logging.logger_pipeline as pipeline_module
 
 from src.fw.utils.identifiable import Identifiable
-
 
 
 class Log(Identifiable):
@@ -87,7 +88,8 @@ class Logger:
 
         Pomocí tohoto prostředníka tak dokáže logger ukrýt svoji implementaci
         a stanovit použití konkrétního kontextu pro dané části programu, které
-        danou funkcionalitu vyžadují."""
+        danou funkcionalitu vyžadují.
+        """
         return pipeline_module.LoggerPipeline(self, context)
 
     def add_output(self, output: "output_module.LoggingOutput"):
