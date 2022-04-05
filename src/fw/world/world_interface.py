@@ -39,7 +39,9 @@ class WorldInterface(ihm_module.InteractionHandlerManager,
         'InteractionRuleManager', pomocí které bude ověřovat interakce.
         """
 
+        # Volání initorů předků
         ihm_module.InteractionHandlerManager.__init__(self)
+        event_module.EventEmitter.__init__(self)
 
         self._world = world
         self._rules_manager = rules_manager_factory.build()
