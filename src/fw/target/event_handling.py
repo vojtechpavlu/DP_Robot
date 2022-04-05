@@ -81,11 +81,13 @@ class EventEmitter(ABC):
             handler.update(self)
 
 
-class Event(Identifiable, Named):
-    """"""
+class AbstractEvent(Identifiable, Named):
+    """Tato abstraktní třída reprezentuje událost, ke které došlo v rámci
+    emitoru událostí. Tato je pak postoupena handleru, který je odpovědný
+    za zareagování na takovou událost."""
 
     def __init__(self, event_name: str):
-        """"""
+        """Initor, který přijímá název události."""
         Identifiable.__init__(self)
         Named.__init__(self, event_name)
 
