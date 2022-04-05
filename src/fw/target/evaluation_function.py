@@ -21,6 +21,7 @@ from src.fw.target.event_handling import EventEmitter, Event
 import src.fw.target.task as task_module
 import src.fw.target.event_handling as event_module
 import src.fw.world.world_events as world_events
+import src.fw.robot.robot_events as robot_events
 
 
 class EvaluationFunction(Named, Identifiable, event_module.EventHandler):
@@ -441,6 +442,113 @@ class VisitSpecificFieldEvaluationFunction(Conjunction):
             # Registrace u možných instancí EventEmitter
             world.world_interface.register_event_handler(ef)
             world.robot_state_manager.register_event_handler(ef)
+
+
+class UsedInteraction(EvaluationFunction):
+    """Tato evaluační funkce čeká na události z kontextu aplikace interakcí.
+    Evaluační funkce vrací svůj stav, tedy byla-li interakce zadaného názvu
+    aplikována či nikoliv. Svůj stav pak mění v závislosti na událostech,
+    které nastaly. Pokud """
+
+    def __init__(self, interaction_name: str):
+        """Initor třídy, který přijímá v parametru název interakce, na který
+        má tato evaluační funkce reagovat.
+
+        Pokud v tato funkce v rámci reakce na příslušnou událost (v metodě
+        'update') rozpozná aplikaci interakce s tímto názvem, změní tato
+        instance stav a bude na zavolání metody 'eval' vracet True.
+        """
+        # Volání předka
+        EvaluationFunction.__init__(
+            self, f"UsedInteraction '{interaction_name}'")
+
+        # Uložení očekávaného názvu interakce
+        self._interaction_name = interaction_name
+
+        # Iniciace negativního stavu; potvrzení použití interakce se
+        # ověřuje teprve v metodě 'update'
+        self._used_interaction: bool = False
+
+    @property
+    def interaction_name(self) -> str:
+        """Vlastnost vrací název interakce, na jejíž aplikaci se čeká."""
+        return self._interaction_name
+
+    def eval(self) -> bool:
+        """Jednoduchá evaluace, zda bylo či nebylo evidováno použití interakce
+        daného názvu."""
+        return self._used_interaction
+
+    def configure(self):
+        """Konfigurace je v případě této evaluační funkce irelevantní."""
+        pass
+
+    def update(self, emitter: "EventEmitter", event: "Event"):
+        """Tato funkce je odpovědná za kontrolu dodané události, zda-li je
+        či není tou ze sledovaného kontextu. Pokud je, je dále zpracovávána.
+
+        Pokud jde o událost pro tuto třídu relevantní (instanci typu
+        'InteractionUsageEvent', je dále kontrolována interakce, zda svým
+        názvem odpovídá té očekávané.
+        """
+        # Pokud jde o událost z tohoto kontextu
+        if isinstance(event, robot_events.InteractionUsageEvent):
+
+            # Pokud je název interakce tím očekávaným
+            if event.interaction.name == self.interaction_name:
+
+                # Změna stavu a odregistrování se; úkol je splněn
+                self._used_interaction = True
+                emitter.unregister_event_handler(self)
+
+
+class UsedAllInteractions(Conjunction):
+    """Tato evaluační funkce je konjunkčním agregátem, který přijímá názvy
+    interakcí, přičemž cílem je zkontrolovat, že budou použity všechny. Tato
+    třída (resp. její instance) pak mají schopnost toto kontrolovat.
+    """
+
+    def __init__(self, interaction_names: "Iterable[str]"):
+        """Initor, který přijímá názvy interakcí, které mají být ověřeny co
+        do jejich použití.
+
+        Ty jsou přijaty v jakékoliv iterovatelné kolekci, typicky ntice.
+        """
+
+        # Iniciace předka
+        Conjunction.__init__(self, "UsedAllInteractions")
+
+        # Uložení všech požadovaných názvů
+        self._names = interaction_names
+
+    @property
+    def interaction_names(self) -> "tuple[str]":
+        """Vlastnost vrací množinu názvů interakcí, které mají být
+        kontrolovány co do jejich použití."""
+        return tuple(self._names)
+
+    def configure(self):
+        """Konfigurační metoda, která je odpovědná za připravení svých
+        sub-evaluačních funkcí; pro každý dodaný název jedna.
+        """
+
+        # Získání reference na svět
+        world = self.task.target.world
+
+        # Pro každý název interakce
+        for inter_name in self.interaction_names:
+
+            # Vytvoření evaluační funkce a přidání do evidence
+            ef = UsedInteraction(inter_name)
+            self.add_eval_func(ef)
+
+            # Registrace evaluační funkce u rozhraní světa
+            world.world_interface.register_event_handler(ef)
+
+
+
+
+
 
 
 
