@@ -332,9 +332,14 @@ class Visited(EvaluationFunction):
 
 
 class VisitAllEvaluationFunction(Conjunction):
-    """"""
+    """Evaluační funkce tohoto typu je odpovědná za naslouchání navštívení
+    všech navštivitelných políček v dodaném světě.
+
+    Tedy jde o konjunkci evaluačních funkcí, které čekají na událost
+    navštívení jimi sledovaného políčka."""
 
     def __init__(self):
+        """Jednoduchý bezparametrický initor, který pouze iniciuje předka."""
         Conjunction.__init__(self, "VisitAllEvaluationFunction")
 
     def configure(self):
@@ -365,17 +370,38 @@ class VisitAllEvaluationFunction(Conjunction):
 
 
 class VisitSpecificFieldEvaluationFunction(Conjunction):
-    """"""
+    """Evaluační funkce tohoto typu je konjunkcí evaluačních funkcí, které
+    čekají na navštívení políčka na konkrétních souřadnicích."""
 
-    def __init__(self, to_visit: "Iterable[tuple[int, int]]"):
-        """"""
+    def __init__(self, to_visit: "Iterable[Iterable[int, int]]"):
+        """Initor, který přijímá iterovatelnou množinu souřadnic políček,
+        ke kterým má být nasloucháno co do navštívení. robotem.
+
+        Tato množina má požadovaný tvar Iterable[Iterable[int, int]]. Pokud
+        nebude tento dodržen, je vyhozena výjimka.
+        """
+        # Volání předka
         Conjunction.__init__(self, "VisitSpecificFieldEvaluationFunction")
-        self._to_visit = list(to_visit)
+
+        # Pokud není Iterable
+        if not isinstance(to_visit, Iterable):
+            raise EvaluationFunctionError(
+                f"Dodaná množina políček není v definovaném formátu", self)
+
+        # Pokud je Iterable[Iterable]
+        elif all(isinstance(subtuple, Iterable) for subtuple in to_visit):
+            self._to_visit: "tuple[tuple[int, int]]" = tuple(
+                map(lambda subtuple: tuple(subtuple), to_visit))
+
+        # Je Iterable, ale není Iterable[Iterable]
+        else:
+            raise EvaluationFunctionError(
+                f"Dodaná políčka nejsou v požadovaném formátu", self)
 
     @property
     def to_visit(self) -> "tuple[tuple[int, int]]":
-        """"""
-        return tuple(self._to_visit)
+        """Vlastnost vrací ntici dvojic souřadnic uspořádaných do ntice."""
+        return self._to_visit
 
     def configure(self):
         """Funkce se stará o konfiguraci, tedy doplnění této instance o
