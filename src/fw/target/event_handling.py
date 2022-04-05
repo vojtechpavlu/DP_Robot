@@ -88,10 +88,10 @@ class Event:
     """Instance této Dataclass jsou odpovědné za stanovení základního
     společného předka pro všechny události.
 
-    Základem je pojmenování takového objektu. To umožňuje člověku v případě
-    potřeby rozpoznat, co se v rámci systému dělo."""
-    event_name: str
+    Tím pravým cílem této třídy je sdružit společnou funkcionalitu; v tomto
+    případě navrácení názvu události, který je reprezentován názvem třídy."""
 
-
+    def event_name(self) -> str:
+        return type(self).__name__
 
 
