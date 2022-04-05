@@ -55,6 +55,11 @@ class Target(Named, Described):
         testovány."""
         return tuple(self._tasks)
 
+    @property
+    def world(self) -> "world_module.World":
+        """Vlastnost vrací svět, pro který je tato úloha definována."""
+        return self._world
+
     def add_task(self, task: "task_module.Task"):
         """Metoda přidává úkol ke splnění do této úlohy."""
         self._tasks.append(task)
