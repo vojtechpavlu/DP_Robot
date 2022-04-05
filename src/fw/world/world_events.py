@@ -1,4 +1,8 @@
-""""""
+"""Tento modul obsahuje definici událostí, které mohou vzniknout v kontextu
+manipulace se světem.
+
+Těchto událostí je používáno v kontextu práce se sledováním světa co do
+plnění úkolů."""
 
 
 # Import standardních knihoven
