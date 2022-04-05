@@ -9,9 +9,8 @@ Realizace je podle návrhového vzoru Observer."""
 
 # Import standardních knihoven
 from abc import ABC, abstractmethod
-
-from src.fw.utils.identifiable import Identifiable
-from src.fw.utils.named import Named
+from dataclasses import dataclass
+from datetime import datetime
 
 
 class EventHandler(ABC):
@@ -31,7 +30,7 @@ class EventHandler(ABC):
         emitter.unregister_event_handler(self)
 
     @abstractmethod
-    def update(self, emitter: "EventEmitter", event: "AbstractEvent"):
+    def update(self, emitter: "EventEmitter", event: "Event"):
         """Abstraktní funkce stanovující protokol pro zpracování událostí.
         Funkce přijímá referenci na emitor událostí, který je původcem,
         například pro potřeby odregistrování se u něj, nebude-li naslouchání
@@ -77,21 +76,22 @@ class EventEmitter(ABC):
         if self.has_event_handler(handler):
             self._event_handlers.remove(handler)
 
-    def notify_all_event_handlers(self, event: "AbstractEvent"):
+    def notify_all_event_handlers(self, event: "Event"):
         """Funkce, která obvolá všechny své posluchače a upozorní je na vznik
         situace."""
         for handler in self._event_handlers:
             handler.update(self, event)
 
 
-class AbstractEvent(Identifiable, Named):
-    """Tato abstraktní třída reprezentuje událost, ke které došlo v rámci
-    emitoru událostí. Tato je pak postoupena handleru, který je odpovědný
-    za zareagování na takovou událost."""
+@dataclass(frozen=True)
+class Event:
+    """Instance této Dataclass jsou odpovědné za stanovení základního
+    společného předka pro všechny události.
 
-    def __init__(self, event_name: str):
-        """Initor, který přijímá název události."""
-        Identifiable.__init__(self)
-        Named.__init__(self, event_name)
+    Základem je pojmenování takového objektu. To umožňuje člověku v případě
+    potřeby rozpoznat, co se v rámci systému dělo."""
+    event_name: str = "«event_not_named»"
+
+
 
 
