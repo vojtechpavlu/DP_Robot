@@ -11,6 +11,8 @@ funkcí zároveň, a konečně negaci - pro snazší použití evaluačních fun
 from abc import ABC, abstractmethod
 
 # Import lokálních knihoven
+from typing import Iterable
+
 from src.fw.utils.error import PlatformError
 from src.fw.utils.identifiable import Identifiable
 from src.fw.utils.named import Named
@@ -330,9 +332,14 @@ class Visited(EvaluationFunction):
 
 
 class VisitAllEvaluationFunction(Conjunction):
-    """"""
+    """Evaluační funkce tohoto typu je odpovědná za naslouchání navštívení
+    všech navštivitelných políček v dodaném světě.
+
+    Tedy jde o konjunkci evaluačních funkcí, které čekají na událost
+    navštívení jimi sledovaného políčka."""
 
     def __init__(self):
+        """Jednoduchý bezparametrický initor, který pouze iniciuje předka."""
         Conjunction.__init__(self, "VisitAllEvaluationFunction")
 
     def configure(self):
@@ -360,3 +367,80 @@ class VisitAllEvaluationFunction(Conjunction):
             # emitorů událostí
             world.world_interface.register_event_handler(ef)
             world.robot_state_manager.register_event_handler(ef)
+
+
+class VisitSpecificFieldEvaluationFunction(Conjunction):
+    """Evaluační funkce tohoto typu je konjunkcí evaluačních funkcí, které
+    čekají na navštívení políčka na konkrétních souřadnicích."""
+
+    def __init__(self, to_visit: "Iterable[Iterable[int, int]]"):
+        """Initor, který přijímá iterovatelnou množinu souřadnic políček,
+        ke kterým má být nasloucháno co do navštívení. robotem.
+
+        Tato množina má požadovaný tvar Iterable[Iterable[int, int]]. Pokud
+        nebude tento dodržen, je vyhozena výjimka.
+        """
+        # Volání předka
+        Conjunction.__init__(self, "VisitSpecificFieldEvaluationFunction")
+
+        # Pokud není Iterable
+        if not isinstance(to_visit, Iterable):
+            raise EvaluationFunctionError(
+                f"Dodaná množina políček není v definovaném formátu", self)
+
+        # Pokud je Iterable[Iterable]
+        elif all(isinstance(subtuple, Iterable) for subtuple in to_visit):
+            self._to_visit: "tuple[tuple[int, int]]" = tuple(
+                map(lambda subtuple: tuple(subtuple), to_visit))
+
+        # Je Iterable, ale není Iterable[Iterable]
+        else:
+            raise EvaluationFunctionError(
+                f"Dodaná políčka nejsou v požadovaném formátu", self)
+
+    @property
+    def to_visit(self) -> "tuple[tuple[int, int]]":
+        """Vlastnost vrací ntici dvojic souřadnic uspořádaných do ntice."""
+        return self._to_visit
+
+    def configure(self):
+        """Funkce se stará o konfiguraci, tedy doplnění této instance o
+        jednotlivé evaluační funkce odpovědné za kontrolu navštívění daného
+        políčka."""
+
+        # Získání reference na svět, který má být vrácen
+        world = self.task.target.world
+
+        # Pro každou dodanou kombinaci souřadnic
+        for coords in self.to_visit:
+
+            # Kontrola, že jsou dodané souřadnice ve správném formátu
+            if len(coords) != 2:
+                raise EvaluationFunctionError(
+                    f"Dodané souřadnice nejsou platné: '{coords}'", self)
+
+            # Kontrola, že políčko existuje
+            elif not world.has_field(coords[0], coords[1]):
+                raise EvaluationFunctionError(
+                    f"Dodané souřadnice neukazují na "
+                    f"platné políčko: {coords}", self)
+
+            # Uložení existující políčka světa
+            field = world.field(*coords)
+
+            # Kontrola, že je políčko cestou (tedy navštivitelné políčko)
+            if not field.is_path:
+                raise EvaluationFunctionError(
+                    f"Políčko na souřadnicích '{coords}' není cesta a nejde "
+                    f"tedy navštívit", self)
+
+            # Evidence nové evaluační funkce
+            ef = Visited(*coords)
+            self.add_eval_func(ef)
+
+            # Registrace u možných instancí EventEmitter
+            world.world_interface.register_event_handler(ef)
+            world.robot_state_manager.register_event_handler(ef)
+
+
+
