@@ -18,10 +18,13 @@ import src.fw.world.world as world_module
 import src.fw.robot.interaction as interaction_module
 import src.fw.world.interaction_handler_manager as ihm_module
 import src.fw.world.interaction_rules as inter_rls
+import src.fw.target.event_handling as event_module
+
 from src.fw.utils.error import PlatformError
 
 
-class WorldInterface(ihm_module.InteractionHandlerManager):
+class WorldInterface(ihm_module.InteractionHandlerManager,
+                     event_module.EventEmitter):
     """Instance této třídy slouží jako jakási fasáda světa. Tato vrstva mezi
     světem a robotem (resp. jeho jednotkami) je navržena tak, aby zpracovávala
     interakce robota a propisovala je do světa, stejně jako o světě vracela
@@ -168,7 +171,6 @@ class WorldInterface(ihm_module.InteractionHandlerManager):
                 f"Robot porušil pravidla světa: '{irlse.interaction_rules}'")
             raise WorldInterfaceError(
                 f"Při zpracovávání interakce došlo k chybě: '{irlse}'", self)
-
 
 
 class WorldInterfaceFactory(ABC):
