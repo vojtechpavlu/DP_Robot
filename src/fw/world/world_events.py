@@ -19,6 +19,9 @@ class FieldChangeEvent(event_module.Event):
     """Datová třída umožňuje zachytit požadované atributy, které jsou v
     kontextu změny políčka důležité.
 
+    Příklad použití:
+        >>> FieldChangeEvent(x, y, robot)
+
     Tato si uchovává pro snazší manipulaci celočíselné souřadnice 'x' a 'y', a
     dále referenci na robota, kterému se změnilo políčko.
 
@@ -31,8 +34,17 @@ class FieldChangeEvent(event_module.Event):
     # Reference na robota, který se přesunul
     robot: "robot_module.Robot"
 
-    # Název události
-    event_name: str = "FieldChange"
 
+@dataclass(frozen=True)
+class SpawnRobotEvent(event_module.Event):
+    """Datová třída reprezentující událost zasazení robota do světa.
+
+    Příklad použití:
+        >>> SpawnRobotEvent(x, y, robot)
+    """
+    x: int
+    y: int
+
+    robot: "robot_module.Robot"
 
 
