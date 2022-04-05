@@ -62,6 +62,7 @@ class Task(Identifiable, Named, Described):
         elif self.target is not None:
             raise TaskError(f"Nelze přenastavovat úlohu", self)
         self._target = target
+        self.evaluation_function.configure()
 
     @property
     def evaluation_function(self) -> "ef_module.EvaluationFunction":
@@ -100,6 +101,22 @@ class TaskError(PlatformError):
         """Vlastnost vrací referenci na úkol, v jehož kontextu došlo k chybě.
         """
         return self._task
+
+
+class VisitAllTask(Task):
+    """Třída definuje samostatnou tvorbu úkolu, který ověřuje navštívení
+    všech navštivitelných políček, které v daném světě jsou. Typicky tedy
+    všechny cesty.
+
+    Za tímto účelem si vytváří instanci třídy 'VisitAllEvaluationFunction',
+    což je v podstatě konjunkční obal evaluačních funkcí reagujících na
+    navštívení políčka. Pro každou cestu je pak vytvořena jedna."""
+
+    def __init__(self):
+        Task.__init__(
+            self, "VisitAllTask",
+            "Úkol, který očekává navštívení všech cest světa.",
+            ef_module.VisitAllEvaluationFunction())
 
 
 def always_true_task() -> "Task":
