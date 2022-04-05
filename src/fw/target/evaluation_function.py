@@ -245,37 +245,61 @@ class AlwaysFalseEvaluationFunction(EvaluationFunction):
 
 
 class Visited(EvaluationFunction):
-    """"""
+    """Tato vyhodnocovací funkce má za cíl umožnit zaznamenávat, zda bylo
+    políčko s danými souřadnicemi navštíveno či nikoliv.
+
+    K tomu z titulu dědění z 'EventHandler' protokolu přijímá v rámci
+    parametrů metody 'update(EventEmitter, Event)' událost, ke které
+    došlo. Jde-li o událost přesunu robota na jiné políčko, je ověřeno,
+    zda souřadnice neodpovídají těm, které jsou stanoveny ke sledování.
+    """
 
     def __init__(self, x: int, y: int):
-        """"""
+        """Initor, který přijímá souřadnice políčka, které se má sledovat.
+        """
+
+        # Volání předka
         EvaluationFunction.__init__(self, f"Visited ({x}, {y})")
 
+        # Uložení souřadnic
         self._x = x
         self._y = y
+
+        # Defaultní nastavení, zda políčko bylo či nebylo navštíveno
         self._visited = False
 
     @property
     def x(self) -> int:
+        """Vlastnost vrací souřadnici x, která odpovídá sledovanému políčku.
+        """
         return self._x
 
     @property
     def y(self) -> int:
+        """Vlastnost vrací souřadnici y, která odpovídá sledovanému políčku.
+        """
         return self._y
 
     @property
     def xy(self) -> "tuple[int, int]":
-        """"""
+        """Vlastnost vrací sledované souřadnice v ntici."""
         return self._x, self._y,
 
     def eval(self) -> bool:
-        """"""
+        """Funkce vyhodnocuje, zda-li políčko bylo či nebylo navštíveno.
+        Pokud ano, vrací True, pokud ne, vrací False."""
         return self._visited
 
     def update(self, emitter: "EventEmitter", event: "Event"):
+        """Funkce naslouchání událostem. Naplnění této evaluační funkce je
+        stanoveno hned v několika možných situacích:
+
+            - Když se robot přesune na sledované políčko
+        """
         if isinstance(event, world_events.FieldChangeEvent):
             if (event.x == self.x) and (event.y == self.y):
                 self._visited = True
                 emitter.unregister_event_handler(self)
+        # TODO - on spawn
 
 
