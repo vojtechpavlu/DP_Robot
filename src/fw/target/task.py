@@ -138,6 +138,20 @@ class VisitSpecificFieldsTask(Task):
             ef_module.VisitSpecificFieldEvaluationFunction(to_visit))
 
 
+class ApplyAllInteractions(Task):
+    """Třída, která obaluje evaluační funkce z kontextu ověřování aplikace
+    požadovaných interakcí.
+
+    Tento úkol slouží k ověření, že bylo použito všech minimálních prostředků.
+    """
+
+    def __init__(self, interaction_names: "Iterable[str]"):
+        Task.__init__(
+            self, "ApplyAllInteractions",
+            "Úkol, který kontroluje, že byly použity všechny stanovené"
+            "interakce.", ef_module.UsedAllInteractions(interaction_names))
+
+
 def always_true_task() -> "Task":
     """Funkce vrací instanci úkolu, který je vykonstruován tak, že je vždy
     za všech okolností pravdivý, tedy splněný."""
