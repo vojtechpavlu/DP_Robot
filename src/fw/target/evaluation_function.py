@@ -11,6 +11,8 @@ funkcí zároveň, a konečně negaci - pro snazší použití evaluačních fun
 from abc import ABC, abstractmethod
 
 # Import lokálních knihoven
+from typing import Iterable
+
 from src.fw.utils.error import PlatformError
 from src.fw.utils.identifiable import Identifiable
 from src.fw.utils.named import Named
@@ -360,3 +362,59 @@ class VisitAllEvaluationFunction(Conjunction):
             # emitorů událostí
             world.world_interface.register_event_handler(ef)
             world.robot_state_manager.register_event_handler(ef)
+
+
+class VisitSpecificFieldEvaluationFunction(Conjunction):
+    """"""
+
+    def __init__(self, to_visit: "Iterable[tuple[int, int]]"):
+        """"""
+        Conjunction.__init__(self, "VisitSpecificFieldEvaluationFunction")
+        self._to_visit = list(to_visit)
+
+    @property
+    def to_visit(self) -> "tuple[tuple[int, int]]":
+        """"""
+        return tuple(self._to_visit)
+
+    def configure(self):
+        """Funkce se stará o konfiguraci, tedy doplnění této instance o
+        jednotlivé evaluační funkce odpovědné za kontrolu navštívění daného
+        políčka."""
+
+        # Získání reference na svět, který má být vrácen
+        world = self.task.target.world
+
+        # Pro každou dodanou kombinaci souřadnic
+        for coords in self.to_visit:
+
+            # Kontrola, že jsou dodané souřadnice ve správném formátu
+            if len(coords) != 2:
+                raise EvaluationFunctionError(
+                    f"Dodané souřadnice nejsou platné: '{coords}'", self)
+
+            # Kontrola, že políčko existuje
+            elif not world.has_field(coords[0], coords[1]):
+                raise EvaluationFunctionError(
+                    f"Dodané souřadnice neukazují na "
+                    f"platné políčko: {coords}", self)
+
+            # Uložení existující políčka světa
+            field = world.field(*coords)
+
+            # Kontrola, že je políčko cestou (tedy navštivitelné políčko)
+            if not field.is_path:
+                raise EvaluationFunctionError(
+                    f"Políčko na souřadnicích '{coords}' není cesta a nejde "
+                    f"tedy navštívit", self)
+
+            # Evidence nové evaluační funkce
+            ef = Visited(*coords)
+            self.add_eval_func(ef)
+
+            # Registrace u možných instancí EventEmitter
+            world.world_interface.register_event_handler(ef)
+            world.robot_state_manager.register_event_handler(ef)
+
+
+
