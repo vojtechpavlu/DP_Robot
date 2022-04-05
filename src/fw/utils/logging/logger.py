@@ -1,14 +1,15 @@
 """"""
 
 # Import standardních knihoven
-from abc import ABC, abstractmethod
 from datetime import datetime
 
 # Import lokálních knihoven
 import src.fw.utils.timeworks as timeworks
 import src.fw.utils.logging.logging_output as output_module
+import src.fw.utils.logging.logger_pipeline as pipeline_module
 
 from src.fw.utils.identifiable import Identifiable
+
 
 
 class Log(Identifiable):
@@ -79,6 +80,15 @@ class Logger:
         """Vlastnost vrací množinu všech výstupních logovacích zpracovatelů
         v podobě ntice."""
         return tuple(self._outputs)
+
+    def make_pipeline(self, context: str) -> "pipeline_module.LoggerPipeline":
+        """Funkce vrací pro dodaný kontext novou pipeline loggeru, která mu
+        umožňuje se ukrýt za poskytovanou funkci.
+
+        Pomocí tohoto prostředníka tak dokáže logger ukrýt svoji implementaci
+        a stanovit použití konkrétního kontextu pro dané části programu, které
+        danou funkcionalitu vyžadují."""
+        return pipeline_module.LoggerPipeline(self, context)
 
     def add_output(self, output: "output_module.LoggingOutput"):
         """Funkce přidá nového výstupního logovacího zpracovatele do evidence.
