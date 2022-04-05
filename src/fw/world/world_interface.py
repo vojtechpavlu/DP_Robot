@@ -19,6 +19,7 @@ import src.fw.robot.interaction as interaction_module
 import src.fw.world.interaction_handler_manager as ihm_module
 import src.fw.world.interaction_rules as inter_rls
 import src.fw.target.event_handling as event_module
+import src.fw.robot.robot_events as robot_event_module
 
 from src.fw.utils.error import PlatformError
 
@@ -162,15 +163,29 @@ class WorldInterface(ihm_module.InteractionHandlerManager,
         tato podrobena zkouškám ověřujícím její platnost.
         """
         try:
+            # Kontrola interakce
             self.check_interaction(interaction)
-            return self.get_interaction_handler(interaction).execute(
+
+            # Uložení výstupu
+            result = self.get_interaction_handler(interaction).execute(
                 interaction, self)
+
+            # Notifikace všech posluchačů o úspěšné aplikaci interakce
+            self.notify_all_event_handlers(
+                robot_event_module.InteractionUsageEvent(interaction))
+
+            # Vrácení výstupu
+            return result
+
         except inter_rls.InteractionRulesError as irlse:
+
             # Provedení stanovené funkce jako reakce na chybu
             interaction.call_error_function()
+
             # Ukončení programu
             interaction.robot.program.terminate(
                 f"Robot porušil pravidla světa: '{irlse.interaction_rules}'")
+
             raise WorldInterfaceError(
                 f"Při zpracovávání interakce došlo k chybě: '{irlse}'", self)
 
