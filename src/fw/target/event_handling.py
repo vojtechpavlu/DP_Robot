@@ -90,7 +90,7 @@ class Event:
 
     Základem je pojmenování takového objektu. To umožňuje člověku v případě
     potřeby rozpoznat, co se v rámci systému dělo."""
-    event_name: str = "«event_not_named»"
+    event_name: str
 
 
 
