@@ -14,9 +14,11 @@ from abc import ABC, abstractmethod
 from src.fw.utils.error import PlatformError
 from src.fw.utils.identifiable import Identifiable
 from src.fw.utils.named import Named
+from src.fw.target.event_handling import EventEmitter, Event
 
 import src.fw.target.task as task_module
 import src.fw.target.event_handling as event_module
+import src.fw.world.world_events as world_events
 
 
 class EvaluationFunction(Named, Identifiable, event_module.EventHandler):
@@ -71,6 +73,12 @@ class EvaluationFunction(Named, Identifiable, event_module.EventHandler):
         """Jádrem evaluační funkce je právě tato metoda, která umožňuje
         vyhodnocení splnění stanoveného úkolu."""
 
+    @abstractmethod
+    def configure(self):
+        """Abstraktní funkce, která umožňuje provedení konfigurace. Typicky
+        je tato funkce volána teprve až v situaci, kdy jsou všechny prostředky
+        stanoveny a lze tedy tuto evaluační funkci napojit."""
+
 
 class EvaluationFunctionJunction(EvaluationFunction):
     """Spojka evaluačních funkcí slouží jako společný předek všem typům
@@ -93,6 +101,19 @@ class EvaluationFunctionJunction(EvaluationFunction):
         """Metoda umožňující dynamicky přidávat instance evaluačních funkcí
         do této instance."""
         self._eval_funcs.append(fun)
+
+    def update(self, emitter: "EventEmitter", event: "Event"):
+        """Funkce je odpovědná za postoupení události všem svým evaluačním
+        funkcím, které tato sdružuje.
+        """
+        for evaluation_function in self.evaluation_functions:
+            evaluation_function.update(emitter, event)
+
+    def configure(self):
+        """Tato funkce pouze zavolá konfigurační proceduru nad všemi svými
+        evaluačními funkcemi."""
+        for eval_fun in self.evaluation_functions:
+            eval_fun.configure()
 
 
 class Conjunction(EvaluationFunctionJunction):
@@ -194,8 +215,6 @@ class AlwaysTrueEvaluationFunction(EvaluationFunction):
     třídy 'EventEmitter', neboť de facto nic nevyhodnocují a není tedy třeba
     ani žádného ověřování."""
 
-    from src.fw.target.event_handling import EventEmitter
-
     def __init__(self):
         """Jednoduchý initor třídy, který pouze iniciuje předka s defaultním
         názvem evaluační funkce."""
@@ -205,10 +224,14 @@ class AlwaysTrueEvaluationFunction(EvaluationFunction):
         """Funkce, jejímž cílem je vždy vrátit jen a pouze hodnotu True."""
         return True
 
-    def update(self, emitter: "EventEmitter"):
+    def update(self, emitter: "EventEmitter", event: "Event"):
         """Elementární implementace funkce 'update' pro funkci vždy pravdu
         vracející. De facto není třeba cokoliv vyhodnocovat a tedy ani
         ověřovat."""
+        pass
+
+    def configure(self):
+        """Tato funkce není v případě této implementace potřeba."""
         pass
 
 
@@ -221,8 +244,6 @@ class AlwaysFalseEvaluationFunction(EvaluationFunction):
     třídy 'EventEmitter', neboť de facto nic nevyhodnocují a není tedy třeba
     ani žádného ověřování."""
 
-    from src.fw.target.event_handling import EventEmitter
-
     def __init__(self):
         """Jednoduchý initor třídy, který pouze iniciuje předka s defaultním
         názvem evaluační funkce."""
@@ -232,10 +253,110 @@ class AlwaysFalseEvaluationFunction(EvaluationFunction):
         """Funkce, jejímž cílem je vždy vrátit jen a pouze hodnotu False."""
         return True
 
-    def update(self, emitter: "EventEmitter"):
+    def update(self, emitter: "EventEmitter", event: "Event"):
         """Elementární implementace funkce 'update' pro funkci vždy nepravdu
         vracející. De facto není třeba cokoliv vyhodnocovat a tedy ani
         ověřovat."""
         pass
 
+    def configure(self):
+        """Tato funkce není v případě této implementace potřeba."""
+        pass
 
+
+class Visited(EvaluationFunction):
+    """Tato vyhodnocovací funkce má za cíl umožnit zaznamenávat, zda bylo
+    políčko s danými souřadnicemi navštíveno či nikoliv.
+
+    K tomu z titulu dědění z 'EventHandler' protokolu přijímá v rámci
+    parametrů metody 'update(EventEmitter, Event)' událost, ke které
+    došlo. Jde-li o událost přesunu robota na jiné políčko, je ověřeno,
+    zda souřadnice neodpovídají těm, které jsou stanoveny ke sledování.
+    """
+
+    def __init__(self, x: int, y: int):
+        """Initor, který přijímá souřadnice políčka, které se má sledovat.
+        """
+
+        # Volání předka
+        EvaluationFunction.__init__(self, f"Visited ({x}, {y})")
+
+        # Uložení souřadnic
+        self._x = x
+        self._y = y
+
+        # Defaultní nastavení, zda políčko bylo či nebylo navštíveno
+        self._visited = False
+
+    @property
+    def x(self) -> int:
+        """Vlastnost vrací souřadnici x, která odpovídá sledovanému políčku.
+        """
+        return self._x
+
+    @property
+    def y(self) -> int:
+        """Vlastnost vrací souřadnici y, která odpovídá sledovanému políčku.
+        """
+        return self._y
+
+    @property
+    def xy(self) -> "tuple[int, int]":
+        """Vlastnost vrací sledované souřadnice v ntici."""
+        return self._x, self._y,
+
+    def eval(self) -> bool:
+        """Funkce vyhodnocuje, zda-li políčko bylo či nebylo navštíveno.
+        Pokud ano, vrací True, pokud ne, vrací False."""
+        return self._visited
+
+    def update(self, emitter: "EventEmitter", event: "Event"):
+        """Funkce naslouchání událostem. Naplnění této evaluační funkce je
+        stanoveno hned v několika možných situacích:
+
+            - Když se robot přesune na sledované políčko
+            - Když je na dané políčko robot zasazen
+        """
+        if (isinstance(event, world_events.FieldChangeEvent) or
+                isinstance(event, world_events.SpawnRobotEvent)):
+
+            if (event.x == self.x) and (event.y == self.y):
+                self._visited = True
+                emitter.unregister_event_handler(self)
+
+    def configure(self):
+        """Tato funkce není v případě této implementace potřeba."""
+        pass
+
+
+class VisitAllEvaluationFunction(Conjunction):
+    """"""
+
+    def __init__(self):
+        Conjunction.__init__(self, "VisitAllEvaluationFunction")
+
+    def configure(self):
+        """Funkce se pokusí napojit pro každé navštivitelné políčko svoji
+        evaluační funkci očekávající navštívění.
+
+        Celý proces probíhá tak, že si funkce vyžádá z instance světa všechny
+        cesty (políčka, které lze navštívit) a pro souřadnice každé této cesty
+        si vytvoří jednu evaluační funkci čekající na událost značící návštěvu
+        tohoto políčka.
+
+        Poté tato funkce zaregistruje každou tuto evaluační funkci k
+        příslušným emitorům událostí - tam, kde vznikají změny v kontextu
+        změny pozice, tedy především stav robotů."""
+
+        # Získání reference na svět, který má být sledován
+        world = self.task.target.world
+
+        # Pro každou cestu připoj jednu evaluační funkci
+        for path in world.all_paths:
+            ef = Visited(path.x, path.y)
+            self.add_eval_func(ef)
+
+            # Registrace dané evaluační funkce u všech důležitých
+            # emitorů událostí
+            world.world_interface.register_event_handler(ef)
+            world.robot_state_manager.register_event_handler(ef)

@@ -9,11 +9,13 @@
 import src.fw.world.robot_state as rs_module
 import src.fw.robot.robot as robot_module
 import src.fw.world.spawner as spawner_module
+import src.fw.target.event_handling as event_handling
+import src.fw.world.world_events as world_events
 
 from src.fw.utils.error import PlatformError
 
 
-class RobotStateManager:
+class RobotStateManager(event_handling.EventEmitter):
     """Správce stavů robotů je odpovědný za řízení jejich životního cyklu.
     Především je pro ně přepravkou, stejně jako má schopnost tyto vytvářet,
     tedy registrovat.
@@ -28,7 +30,13 @@ class RobotStateManager:
         Kromě toho však přijímá v argumentu spawner, který má být použit
         pro zasazování robotů do světa při jejich registraci.
         """
+        # Volání předka
+        event_handling.EventEmitter.__init__(self)
+
+        # Iniciace vlastních polí
         self._spawner = spawner
+
+        # Iniciace vlastní evidence stavů robota
         self._robot_states: "list[rs_module.RobotState]" = []
 
     @property
@@ -60,12 +68,24 @@ class RobotStateManager:
         robota hypoteticky usadí do políčka na příslušných souřadnicích
         a natočí ho výchozím směrem.
         """
+        # Pokud již jednou tento robot je evidován
         if self.has_robot(robot):
             raise RobotStateManagerError(
                 f"Správce stavů robotů již robota '{robot.name}' "
                 f"s ID '{robot.id}' evidovaného má", self)
+
+        # Vytvoření stavu robota
         robot_state = self.spawner.spawn(robot)
+
+        # Přidání do vlastní evidence
         self._robot_states.append(robot_state)
+
+        # Vytvoření události
+        field = robot_state.field
+        self.notify_all_event_handlers(
+            world_events.SpawnRobotEvent(field.x, field.y, robot))
+
+        # Vrácení stavu robota
         return robot_state
 
     def robot_state(self, robot: "robot_module.Robot"

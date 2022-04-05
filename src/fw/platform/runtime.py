@@ -179,6 +179,12 @@ class SingleRobotRuntime(AbstractRuntime):
             for unit in self.robot.units:
                 unit.deactivate()
             raise e
+
+        for task in self.target.tasks:
+            junction = task.evaluation_function
+            for ef in junction.evaluation_functions:
+                print(ef.name, ef.eval())
+
         # TODO - kontrola Targetu a jeho vyhodnocení
 
 

@@ -88,7 +88,7 @@ class World:
     def all_paths(self) -> "tuple[field_mod.Field]":
         """Vlastnost vrací ntici ze seznamu všech políček, která jsou stěnou,
         tedy potomky třídy Wall."""
-        return tuple(filter(lambda field: field.is_wall, self.fields))
+        return tuple(filter(lambda field: field.is_path, self.fields))
 
     @property
     def world_interface(self) -> "world_inter_module.WorldInterface":
