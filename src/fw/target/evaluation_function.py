@@ -73,7 +73,6 @@ class EvaluationFunction(Named, Identifiable, event_module.EventHandler):
         """Jádrem evaluační funkce je právě tato metoda, která umožňuje
         vyhodnocení splnění stanoveného úkolu."""
 
-
     @abstractmethod
     def configure(self):
         """Abstraktní funkce, která umožňuje provedení konfigurace. Typicky
@@ -109,6 +108,12 @@ class EvaluationFunctionJunction(EvaluationFunction):
         """
         for evaluation_function in self.evaluation_functions:
             evaluation_function.update(emitter, event)
+
+    def configure(self):
+        """Tato funkce pouze zavolá konfigurační proceduru nad všemi svými
+        evaluačními funkcemi."""
+        for eval_fun in self.evaluation_functions:
+            eval_fun.configure()
 
 
 class Conjunction(EvaluationFunctionJunction):
@@ -310,12 +315,14 @@ class Visited(EvaluationFunction):
         stanoveno hned v několika možných situacích:
 
             - Když se robot přesune na sledované políčko
+            - Když je na dané políčko robot zasazen
         """
-        if isinstance(event, world_events.FieldChangeEvent):
+        if (isinstance(event, world_events.FieldChangeEvent) or
+                isinstance(event, world_events.SpawnRobotEvent)):
+
             if (event.x == self.x) and (event.y == self.y):
                 self._visited = True
                 emitter.unregister_event_handler(self)
-        # TODO - on spawn
 
     def configure(self):
         """Tato funkce není v případě této implementace potřeba."""
@@ -330,12 +337,26 @@ class VisitAllEvaluationFunction(Conjunction):
 
     def configure(self):
         """Funkce se pokusí napojit pro každé navštivitelné políčko svoji
-        evaluační funkci očekávající navštívění."""
+        evaluační funkci očekávající navštívění.
 
-        # Získání všech cest, které ve světě jsou
-        paths = self.task.target.world.all_paths
+        Celý proces probíhá tak, že si funkce vyžádá z instance světa všechny
+        cesty (políčka, které lze navštívit) a pro souřadnice každé této cesty
+        si vytvoří jednu evaluační funkci čekající na událost značící návštěvu
+        tohoto políčka.
+
+        Poté tato funkce zaregistruje každou tuto evaluační funkci k
+        příslušným emitorům událostí - tam, kde vznikají změny v kontextu
+        změny pozice, tedy především stav robotů."""
+
+        # Získání reference na svět, který má být sledován
+        world = self.task.target.world
 
         # Pro každou cestu připoj jednu evaluační funkci
-        for path in paths:
-            self.add_eval_func(Visited(path.x, path.y))
+        for path in world.all_paths:
+            ef = Visited(path.x, path.y)
+            self.add_eval_func(ef)
 
+            # Registrace dané evaluační funkce u všech důležitých
+            # emitorů událostí
+            world.world_interface.register_event_handler(ef)
+            world.robot_state_manager.register_event_handler(ef)
