@@ -31,11 +31,14 @@ class EventHandler(ABC):
         emitter.unregister_event_handler(self)
 
     @abstractmethod
-    def update(self, emitter: "EventEmitter"):
+    def update(self, emitter: "EventEmitter", event: "AbstractEvent"):
         """Abstraktní funkce stanovující protokol pro zpracování událostí.
         Funkce přijímá referenci na emitor událostí, který je původcem,
         například pro potřeby odregistrování se u něj, nebude-li naslouchání
-        dalším událostem již třeba."""
+        dalším událostem již třeba.
+
+        Dále funkce přijímá událost, která nastala a která je potenciálním
+        nositelem důležité informace v souvislosti s touto událostí."""
 
 
 class EventEmitter(ABC):
@@ -74,11 +77,11 @@ class EventEmitter(ABC):
         if self.has_event_handler(handler):
             self._event_handlers.remove(handler)
 
-    def notify_all_event_handlers(self):
+    def notify_all_event_handlers(self, event: "AbstractEvent"):
         """Funkce, která obvolá všechny své posluchače a upozorní je na vznik
         situace."""
         for handler in self._event_handlers:
-            handler.update(self)
+            handler.update(self, event)
 
 
 class AbstractEvent(Identifiable, Named):
