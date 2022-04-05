@@ -74,6 +74,13 @@ class EvaluationFunction(Named, Identifiable, event_module.EventHandler):
         vyhodnocení splnění stanoveného úkolu."""
 
 
+    @abstractmethod
+    def configure(self):
+        """Abstraktní funkce, která umožňuje provedení konfigurace. Typicky
+        je tato funkce volána teprve až v situaci, kdy jsou všechny prostředky
+        stanoveny a lze tedy tuto evaluační funkci napojit."""
+
+
 class EvaluationFunctionJunction(EvaluationFunction):
     """Spojka evaluačních funkcí slouží jako společný předek všem typům
     evaluačních funkcí, které se sestávají z vyhodnocování více funkcí
@@ -218,6 +225,10 @@ class AlwaysTrueEvaluationFunction(EvaluationFunction):
         ověřovat."""
         pass
 
+    def configure(self):
+        """Tato funkce není v případě této implementace potřeba."""
+        pass
+
 
 class AlwaysFalseEvaluationFunction(EvaluationFunction):
     """Tato třída reprezentuje vyhodnocovací funkci, která je za všech
@@ -241,6 +252,10 @@ class AlwaysFalseEvaluationFunction(EvaluationFunction):
         """Elementární implementace funkce 'update' pro funkci vždy nepravdu
         vracející. De facto není třeba cokoliv vyhodnocovat a tedy ani
         ověřovat."""
+        pass
+
+    def configure(self):
+        """Tato funkce není v případě této implementace potřeba."""
         pass
 
 
@@ -302,4 +317,25 @@ class Visited(EvaluationFunction):
                 emitter.unregister_event_handler(self)
         # TODO - on spawn
 
+    def configure(self):
+        """Tato funkce není v případě této implementace potřeba."""
+        pass
+
+
+class VisitAllEvaluationFunction(Conjunction):
+    """"""
+
+    def __init__(self):
+        Conjunction.__init__(self, "VisitAllEvaluationFunction")
+
+    def configure(self):
+        """Funkce se pokusí napojit pro každé navštivitelné políčko svoji
+        evaluační funkci očekávající navštívění."""
+
+        # Získání všech cest, které ve světě jsou
+        paths = self.task.target.world.all_paths
+
+        # Pro každou cestu připoj jednu evaluační funkci
+        for path in paths:
+            self.add_eval_func(Visited(path.x, path.y))
 
