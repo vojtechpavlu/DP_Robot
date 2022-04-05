@@ -14,9 +14,11 @@ from abc import ABC, abstractmethod
 from src.fw.utils.error import PlatformError
 from src.fw.utils.identifiable import Identifiable
 from src.fw.utils.named import Named
+from src.fw.target.event_handling import EventEmitter, Event
 
 import src.fw.target.task as task_module
 import src.fw.target.event_handling as event_module
+import src.fw.world.world_events as world_events
 
 
 class EvaluationFunction(Named, Identifiable, event_module.EventHandler):
@@ -93,6 +95,13 @@ class EvaluationFunctionJunction(EvaluationFunction):
         """Metoda umožňující dynamicky přidávat instance evaluačních funkcí
         do této instance."""
         self._eval_funcs.append(fun)
+
+    def update(self, emitter: "EventEmitter", event: "Event"):
+        """Funkce je odpovědná za postoupení události všem svým evaluačním
+        funkcím, které tato sdružuje.
+        """
+        for evaluation_function in self.evaluation_functions:
+            evaluation_function.update(emitter, event)
 
 
 class Conjunction(EvaluationFunctionJunction):
@@ -194,8 +203,6 @@ class AlwaysTrueEvaluationFunction(EvaluationFunction):
     třídy 'EventEmitter', neboť de facto nic nevyhodnocují a není tedy třeba
     ani žádného ověřování."""
 
-    from src.fw.target.event_handling import EventEmitter
-
     def __init__(self):
         """Jednoduchý initor třídy, který pouze iniciuje předka s defaultním
         názvem evaluační funkce."""
@@ -205,7 +212,7 @@ class AlwaysTrueEvaluationFunction(EvaluationFunction):
         """Funkce, jejímž cílem je vždy vrátit jen a pouze hodnotu True."""
         return True
 
-    def update(self, emitter: "EventEmitter"):
+    def update(self, emitter: "EventEmitter", event: "Event"):
         """Elementární implementace funkce 'update' pro funkci vždy pravdu
         vracející. De facto není třeba cokoliv vyhodnocovat a tedy ani
         ověřovat."""
@@ -221,8 +228,6 @@ class AlwaysFalseEvaluationFunction(EvaluationFunction):
     třídy 'EventEmitter', neboť de facto nic nevyhodnocují a není tedy třeba
     ani žádného ověřování."""
 
-    from src.fw.target.event_handling import EventEmitter
-
     def __init__(self):
         """Jednoduchý initor třídy, který pouze iniciuje předka s defaultním
         názvem evaluační funkce."""
@@ -232,10 +237,45 @@ class AlwaysFalseEvaluationFunction(EvaluationFunction):
         """Funkce, jejímž cílem je vždy vrátit jen a pouze hodnotu False."""
         return True
 
-    def update(self, emitter: "EventEmitter"):
+    def update(self, emitter: "EventEmitter", event: "Event"):
         """Elementární implementace funkce 'update' pro funkci vždy nepravdu
         vracející. De facto není třeba cokoliv vyhodnocovat a tedy ani
         ověřovat."""
         pass
+
+
+class Visited(EvaluationFunction):
+    """"""
+
+    def __init__(self, x: int, y: int):
+        """"""
+        EvaluationFunction.__init__(self, f"Visited ({x}, {y})")
+
+        self._x = x
+        self._y = y
+        self._visited = False
+
+    @property
+    def x(self) -> int:
+        return self._x
+
+    @property
+    def y(self) -> int:
+        return self._y
+
+    @property
+    def xy(self) -> "tuple[int, int]":
+        """"""
+        return self._x, self._y,
+
+    def eval(self) -> bool:
+        """"""
+        return self._visited
+
+    def update(self, emitter: "EventEmitter", event: "Event"):
+        if isinstance(event, world_events.FieldChangeEvent):
+            if (event.x == self.x) and (event.y == self.y):
+                self._visited = True
+                emitter.unregister_event_handler(self)
 
 
