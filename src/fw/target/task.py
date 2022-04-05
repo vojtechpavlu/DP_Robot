@@ -5,6 +5,7 @@ tedy jaký má mít protokol.
 """
 
 # Import standardních knihoven
+from typing import Iterable
 
 
 # Import lokálních knihoven
@@ -117,6 +118,24 @@ class VisitAllTask(Task):
             self, "VisitAllTask",
             "Úkol, který očekává navštívení všech cest světa.",
             ef_module.VisitAllEvaluationFunction())
+
+
+class VisitSpecificFieldsTask(Task):
+    """Třída definuje úkol, který je plněn navštívením konkrétních políček.
+    Tato políčka jsou předem známá a musí v daném světě existovat."""
+
+    def __init__(self, to_visit: "Iterable[Iterable[int, int]]"):
+        """Initor, který přijímá iterovatelnou množinu iterovatelných
+        souřadnic, na kterých se nachází políčko, které má být sledováno
+        co do navštívení.
+
+        Doporučená podoba těchto souřadnic je například taková:
+            >>> [(1, 1), (2, 2), (3, 3)]
+        """
+        Task.__init__(
+            self, "VisitSpecificFields",
+            "Úkol, který očekává navštívění specifických políček ve světě.",
+            ef_module.VisitSpecificFieldEvaluationFunction(to_visit))
 
 
 def always_true_task() -> "Task":
