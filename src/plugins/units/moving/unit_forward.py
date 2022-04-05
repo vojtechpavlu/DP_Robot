@@ -13,6 +13,7 @@ from typing import Type
 from src.fw.robot.interaction import Interaction, InteractionError
 from src.fw.robot.unit import Actuator, AbstractUnitFactory, UnitError
 from src.fw.world.world_interface import WorldInterface
+from src.fw.world.world_events import FieldChangeEvent
 
 
 """Definice proměnných"""
@@ -118,7 +119,12 @@ class MoveForwardInteraction(Interaction):
 
         # Jinak, když je vše v pořádku
         else:
+            # Nastavení políčka
             rs.field = field
+
+            # Vytvoření události
+            interface.notify_all_event_handlers(
+                FieldChangeEvent(field.x, field.y, self.robot))
 
 
 class ForwardMoverFactory(AbstractUnitFactory):
