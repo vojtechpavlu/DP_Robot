@@ -10,6 +10,9 @@ Realizace je podle návrhového vzoru Observer."""
 # Import standardních knihoven
 from abc import ABC, abstractmethod
 
+from src.fw.utils.identifiable import Identifiable
+from src.fw.utils.named import Named
+
 
 class EventHandler(ABC):
     """Abstraktní třída EventHandler je odpovědná za definici základního
@@ -76,5 +79,14 @@ class EventEmitter(ABC):
         situace."""
         for handler in self._event_handlers:
             handler.update(self)
+
+
+class Event(Identifiable, Named):
+    """"""
+
+    def __init__(self, event_name: str):
+        """"""
+        Identifiable.__init__(self)
+        Named.__init__(self, event_name)
 
 
