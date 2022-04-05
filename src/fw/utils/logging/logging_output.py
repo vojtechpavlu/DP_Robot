@@ -83,7 +83,7 @@ class LoggingOutput(ABC):
         Funkce přijímá referenci na log, který by měl být zpracován."""
 
 
-class OutputWithMemo(ABC, LoggingOutput):
+class OutputWithMemo(LoggingOutput):
     """Abstraktní třída OutputWithMemo má za cíl definovat obecný protokol
     pro všechny své potomky, tedy výstupní zpracovatelé logů, které jsou si
     schopny zapamatovat (a udržet v paměti) dodané logy."""
