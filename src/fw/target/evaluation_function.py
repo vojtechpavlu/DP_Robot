@@ -582,6 +582,37 @@ class IsRobotMountedWith(EvaluationFunction):
         pass
 
 
+class IsRobotMountedWithAll(Conjunction):
+    """"""
+
+    def __init__(self, unit_names: "Iterable[str]"):
+        """"""
+        Conjunction.__init__(self, "IsRobotMountedWithAll")
+        self._unit_names = tuple(unit_names)
+
+    @property
+    def unit_names(self) -> "tuple[str]":
+        """"""
+        return self._unit_names
+
+    def configure(self):
+        """"""
+
+        # Získání reference na instanci světa
+        world = self.task.target.world
+
+        # Pro každý stav robota
+        for robot_state in world.robot_state_manager.robot_states:
+
+            # Pro každý název jednotky
+            for unit_name in self._unit_names:
+
+                # Přidání nové evaluační funkce
+                self.add_eval_func(IsRobotMountedWith(
+                    unit_name, robot_state.robot))
+
+
+
 
 
 
