@@ -152,6 +152,18 @@ class ApplyAllInteractions(Task):
             "interakce.", ef_module.UsedAllInteractions(interaction_names))
 
 
+class IsMountedWithAllTask(Task):
+    """Tento úkol umožňuje kontrolu robotů co do jejich osazení, zda-li jsou
+    osazeni všemi požadovanými jednotkami."""
+
+    def __init__(self, unit_names: "Iterable[str]"):
+        """"""
+        Task.__init__(
+            self, "IsMountedWithAllTask",
+            "Úkol, kontrolující robota, zda je osazen všemi požadovanými "
+            "jednotkami", ef_module.IsRobotMountedWithAll(unit_names))
+
+
 def always_true_task() -> "Task":
     """Funkce vrací instanci úkolu, který je vykonstruován tak, že je vždy
     za všech okolností pravdivý, tedy splněný."""
