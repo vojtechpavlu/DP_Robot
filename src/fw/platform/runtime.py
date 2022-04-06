@@ -10,6 +10,7 @@ from abc import ABC, abstractmethod
 from typing import Iterable
 
 # Import lokálních knihoven
+from src.fw.robot.mounting_error import MountingError
 from src.fw.utils.identifiable import Identifiable
 
 import src.fw.world.world as world_module
@@ -21,9 +22,11 @@ import src.fw.robot.unit as unit_module
 import src.fw.robot.robot_container as robot_cont_module
 import src.fw.platform.platform as platform_module
 import src.fw.platform.unit_factories_manager as uf_manager_module
+import src.fw.target.event_handling as event_module
+import src.fw.platform.runtime_events as runtime_events
 
 
-class AbstractRuntime(Identifiable):
+class AbstractRuntime(Identifiable, event_module.EventEmitter):
     """Abstraktní třída reprezentující běhové prostředí. Cílem této třídy
     je stanovit obecný protokol, který je společný pro všechny své potomky.
 
@@ -118,6 +121,29 @@ class AbstractRuntime(Identifiable):
         # provázána se světem a sledovat v něm plnění úkolů této úlohy
         self._target = self.target_factory.build(self._world)
 
+    def check_mounting(self, robot: "robot_module.Robot"):
+        """Funkce se pokusí ověřit, že je osazení platné. Robot může být
+        po ukončení osazovací procedury pouze povolenými jednotkami. Pokud
+        tomu tak není, je vyhozena výjimka."""
+
+        # Pro každou jednotku, kterou je dodaný robot osazen
+        for unit in robot.units:
+
+            # Pro každou továrnu jednotek, které jsou povolené
+            for uf in self.unit_factories:
+
+                # Pokud je továrna jednotek a továrna té dané jednotky
+                # identická instance, ukonči vnitřní cyklus
+                if unit.unit_factory.int_id == uf.int_id:
+                    # Jelikož si odpovídá továrna jednotek a jednotka, přeruš
+                    break
+
+            # Pokud nebyl vnitřní cyklus předčasně ukončen, vyhoď výjimku
+            else:
+                raise MountingError(
+                    f"Jednotka '{unit.name}' není pro toto běhové prostředí "
+                    f"povolena", robot, unit)
+
     @abstractmethod
     def run(self):
         """Abstraktní funkce odpovědná za běh a řízení běhu daného prostředí.
@@ -163,29 +189,51 @@ class SingleRobotRuntime(AbstractRuntime):
         """
         self.prepare()
         self.program.mount(self.robot, self.units)
-        for unit in self.robot.units:
-            unit.set_world_interface(self.world.world_interface)
-            self.world.world_interface.add_interaction_handler(
-                unit.unit_factory.interaction_handler)
-        # TODO - kontrola osazení
-        self.world.robot_state_manager.register_robot(self.robot)
         try:
+            # Kontrola osazení
+            self.check_mounting(self.robot)
+
+            # Napojení všech jednotek robota na rozhraní světa
+            for unit in self.robot.units:
+                unit.set_world_interface(self.world.world_interface)
+                self.world.world_interface.add_interaction_handler(
+                    unit.unit_factory.interaction_handler)
+
+            # Zasazení robota do světa pomocí registrace jeho stavu
+            self.world.robot_state_manager.register_robot(self.robot)
+
+            # Spuštění běhu robota
             self.program.run(self.robot)
+
+        # Pokud dojde k chybě při osazení; když se při osazování podvádí
+        except MountingError as e:
+            for unit in self.robot.units:
+                unit.deactivate()
+
+        # Předčasné ukončení programu
         except program_module.ProgramTermination as pt:
             # TODO - doplnit
             print(f"Program byl se stavem '{pt.abort_type}' "
                   f"ukončen: {pt.message}")
+
+        # Libovolná jiná chyba; je vyhozena nová výjimka
         except Exception as e:
             for unit in self.robot.units:
                 unit.deactivate()
             raise e
 
-        for task in self.target.tasks:
-            junction = task.evaluation_function
-            for ef in junction.evaluation_functions:
-                print(ef.name, ef.eval())
+        # Ať už došlo k chybě či nikoliv, proveď výstup
+        finally:
+            print(30*"=")
+            print("EVALUATION:")
 
-        # TODO - kontrola Targetu a jeho vyhodnocení
+            for task in self.target.tasks:
+                print(task.name)
+                junction = task.evaluation_function
+                for ef in junction.evaluation_functions:
+                    print("\t", ef.name, ef.eval())
+
+            # TODO - kontrola Targetu a jeho vyhodnocení
 
 
 class AbstractRuntimeFactory(ABC):
