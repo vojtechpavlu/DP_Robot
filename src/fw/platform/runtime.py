@@ -118,6 +118,18 @@ class AbstractRuntime(Identifiable):
         # provázána se světem a sledovat v něm plnění úkolů této úlohy
         self._target = self.target_factory.build(self._world)
 
+    def check_mounting(self, robot: "robot_module.Robot"):
+        """Funkce se pokusí ověřit, že je osazení platné. Robot může být
+        po ukončení osazovací procedury pouze povolenými jednotkami. Pokud
+        tomu tak není, je vyhozena výjimka."""
+        for unit in robot.units:
+            for uf in self.unit_factories:
+                if unit.unit_factory.int_id == uf.int_id:
+                    break
+                raise MountingError(
+                    f"Jednotka '{unit.name}' není pro toto běhové prostředí "
+                    f"povolena", robot, unit)
+
     @abstractmethod
     def run(self):
         """Abstraktní funkce odpovědná za běh a řízení běhu daného prostředí.
@@ -163,13 +175,13 @@ class SingleRobotRuntime(AbstractRuntime):
         """
         self.prepare()
         self.program.mount(self.robot, self.units)
-        for unit in self.robot.units:
-            unit.set_world_interface(self.world.world_interface)
-            self.world.world_interface.add_interaction_handler(
-                unit.unit_factory.interaction_handler)
-        # TODO - kontrola osazení
-        self.world.robot_state_manager.register_robot(self.robot)
         try:
+            self.check_mounting(self.robot)
+            for unit in self.robot.units:
+                unit.set_world_interface(self.world.world_interface)
+                self.world.world_interface.add_interaction_handler(
+                    unit.unit_factory.interaction_handler)
+            self.world.robot_state_manager.register_robot(self.robot)
             self.program.run(self.robot)
         except program_module.ProgramTermination as pt:
             # TODO - doplnit
@@ -180,10 +192,14 @@ class SingleRobotRuntime(AbstractRuntime):
                 unit.deactivate()
             raise e
 
+        print(30*"=")
+        print("EVALUATION:")
+
         for task in self.target.tasks:
+            print(task.name)
             junction = task.evaluation_function
             for ef in junction.evaluation_functions:
-                print(ef.name, ef.eval())
+                print("\t", ef.name, ef.eval())
 
         # TODO - kontrola Targetu a jeho vyhodnocení
 
