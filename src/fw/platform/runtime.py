@@ -10,6 +10,7 @@ from abc import ABC, abstractmethod
 from typing import Iterable
 
 # Import lokálních knihoven
+from src.fw.robot.mounting_error import MountingError
 from src.fw.utils.identifiable import Identifiable
 
 import src.fw.world.world as world_module
@@ -21,9 +22,11 @@ import src.fw.robot.unit as unit_module
 import src.fw.robot.robot_container as robot_cont_module
 import src.fw.platform.platform as platform_module
 import src.fw.platform.unit_factories_manager as uf_manager_module
+import src.fw.target.event_handling as event_module
+import src.fw.platform.runtime_events as runtime_events
 
 
-class AbstractRuntime(Identifiable):
+class AbstractRuntime(Identifiable, event_module.EventEmitter):
     """Abstraktní třída reprezentující běhové prostředí. Cílem této třídy
     je stanovit obecný protokol, který je společný pro všechny své potomky.
 
