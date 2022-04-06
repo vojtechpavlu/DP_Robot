@@ -122,10 +122,21 @@ class AbstractRuntime(Identifiable):
         """Funkce se pokusí ověřit, že je osazení platné. Robot může být
         po ukončení osazovací procedury pouze povolenými jednotkami. Pokud
         tomu tak není, je vyhozena výjimka."""
+
+        # Pro každou jednotku, kterou je dodaný robot osazen
         for unit in robot.units:
+
+            # Pro každou továrnu jednotek, které jsou povolené
             for uf in self.unit_factories:
+
+                # Pokud je továrna jednotek a továrna té dané jednotky
+                # identická instance, ukonči vnitřní cyklus
                 if unit.unit_factory.int_id == uf.int_id:
+                    # Jelikož si odpovídá továrna jednotek a jednotka, přeruš
                     break
+
+            # Pokud nebyl vnitřní cyklus předčasně ukončen, vyhoď výjimku
+            else:
                 raise MountingError(
                     f"Jednotka '{unit.name}' není pro toto běhové prostředí "
                     f"povolena", robot, unit)
@@ -183,6 +194,7 @@ class SingleRobotRuntime(AbstractRuntime):
                     unit.unit_factory.interaction_handler)
             self.world.robot_state_manager.register_robot(self.robot)
             self.program.run(self.robot)
+        # TODO - odchytit chybné osazení
         except program_module.ProgramTermination as pt:
             # TODO - doplnit
             print(f"Program byl se stavem '{pt.abort_type}' "
