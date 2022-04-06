@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from typing import Iterable
 
 # Import lokálních knihoven
-from src.fw.robot.mounting_error import MountingError
+import src.fw.robot.mounting_error as mounting_error_module
 from src.fw.utils.identifiable import Identifiable
 from src.fw.utils.named import Named
 
@@ -93,9 +93,9 @@ class Robot(Identifiable, Named):
             self._units.remove(unit)
             unit.detach()
         else:
-            raise MountingError(
-                f"Robot, ke kterému je napojena jednotka {unit} není "
-                f"tento: {unit.robot=}, {self}")
+            raise mounting_error_module.MountingError(
+                f"Tento robot a robot, ke které je jednotka připojena, není "
+                f"tentýž", self, unit)
 
     def deactivate(self):
         """Funkce deaktivuje všechny jednotky. To znamená, že je robot již
