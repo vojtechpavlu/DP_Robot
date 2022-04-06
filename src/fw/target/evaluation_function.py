@@ -19,6 +19,7 @@ from src.fw.utils.named import Named
 from src.fw.target.event_handling import EventEmitter, Event
 
 import src.fw.target.task as task_module
+import src.fw.robot.robot as robot_module
 import src.fw.target.event_handling as event_module
 import src.fw.world.world_events as world_events
 import src.fw.robot.robot_events as robot_events
@@ -544,6 +545,44 @@ class UsedAllInteractions(Conjunction):
 
             # Registrace evaluační funkce u rozhraní světa
             world.world_interface.register_event_handler(ef)
+
+
+class IsRobotMountedWith(EvaluationFunction):
+    """Tato evaluační funkce je odpovědná za ověření, že je robot osazen
+    jednotkou daného názvu.
+
+    Pokud ano, je metodou 'eval' vrácena hodnota True, jinak False.
+    """
+
+    def __init__(self, unit_name: str, robot: "robot_module.Robot"):
+        """Initor třídy, který přijímá v parametrech název jednotky, který
+        je sledován co do osazení, a instanci robota, který má být co do
+        osazení sledován.
+        """
+
+        # Volání initoru předka
+        EvaluationFunction.__init__(
+            self, f"IsMountedWith '{unit_name}'")
+
+        # Uložení dodaných parametrů
+        self._unit_name = unit_name
+        self._robot: "robot_module.Robot" = robot
+
+    def eval(self) -> bool:
+        """Evaluační funkce, která má za cíl vyhodnotit, zda-li je stanovený
+        robot osazen příslušnou jednotkou."""
+        return self._unit_name in self._robot.unit_names
+
+    def configure(self):
+        """Konfigurační metoda zde nemá smysl."""
+        pass
+
+    def update(self, emitter: "EventEmitter", event: "Event"):
+        """Metoda změny stavu zde nemá smysl."""
+        pass
+
+
+
 
 
 
