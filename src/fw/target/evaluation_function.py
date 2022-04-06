@@ -583,20 +583,31 @@ class IsRobotMountedWith(EvaluationFunction):
 
 
 class IsRobotMountedWithAll(Conjunction):
-    """"""
+    """Instance této třídy umožňují kontrolovat, zda-li je robot osazen
+    všemi jednotkami definovanými množinou názvů jednotek."""
 
     def __init__(self, unit_names: "Iterable[str]"):
-        """"""
+        """Initor konjunkce, který přijímá interovatelnou množinu názvů
+        jednotek, které jsou požadovány pro splnění tohoto úkolu.
+        """
+
+        # Volání initoru předka
         Conjunction.__init__(self, "IsRobotMountedWithAll")
+
+        # Uložení všech dodaných názvů jednotek
         self._unit_names = tuple(unit_names)
 
     @property
     def unit_names(self) -> "tuple[str]":
-        """"""
+        """Vlastnost vrací ntici názvů jednotek, které tvoří požadavky na
+        robota co do osazení.
+        """
         return self._unit_names
 
     def configure(self):
-        """"""
+        """Konfigurační metoda se stará o iniciaci všech vyhodnocovacích
+        funkcí, které ověřují, že jsou roboti osazen všemi jednotkami, jejichž
+        názvy byly dodány."""
 
         # Získání reference na instanci světa
         world = self.task.target.world
