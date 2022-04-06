@@ -11,6 +11,7 @@ from typing import Iterable
 from threading import Thread
 
 # Import lokálních knihoven
+from src.fw.platform.robot_program_executor import RobotProgramExecutor
 from src.fw.robot.mounting_error import MountingError
 from src.fw.utils.identifiable import Identifiable
 
@@ -219,8 +220,21 @@ class SingleRobotRuntime(AbstractRuntime):
             # Zasazení robota do světa pomocí registrace jeho stavu
             self.world.robot_state_manager.register_robot(self.robot)
 
-            # Spuštění běhu robota
-            self.program.run(self.robot)
+            # Vytvoření exekutoru, pomocí kterého bude program robota spuštěn
+            executor = RobotProgramExecutor(self.program, self.robot)
+
+            # Spuštění běhu programu přes exekutor ve vlákně
+            robot_thread = Thread(target=executor.run_program)
+
+            # Odeslání události o počátku běhu robota
+            self.notify_all_event_handlers(
+                runtime_events.RuntimeStartedEvent(self))
+
+            # Samotné spuštění programu robota (ve vlákně) a join vlákna
+            robot_thread.start()
+            robot_thread.join()
+
+            raise executor.raised_exception
 
         # Pokud dojde k chybě při osazení; když se při osazování podvádí
         except MountingError as e:
