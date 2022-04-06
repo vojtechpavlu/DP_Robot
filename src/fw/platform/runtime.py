@@ -8,6 +8,7 @@ třída továrny běhových prostředí).
 # Import standardních knihoven
 from abc import ABC, abstractmethod
 from typing import Iterable
+from threading import Thread
 
 # Import lokálních knihoven
 from src.fw.robot.mounting_error import MountingError
@@ -148,6 +149,21 @@ class AbstractRuntime(Identifiable, event_module.EventEmitter):
                     f"Jednotka '{unit.name}' není pro toto běhové prostředí "
                     f"povolena", robot, unit)
 
+    def connect_with_interface(self, robot: "robot_module.Robot"):
+        """Funkce je odpovědná za napojení všech jednotek dodaného robota na
+        rozhraní světa.
+        """
+        # Pro každou jednotku robota
+        for unit in robot.units:
+
+            # Nastav jednotce rozhraní světa
+            unit.set_world_interface(self.world.world_interface)
+
+            # Přidej mu z titulu dědění 'InteractionHandlerManager'
+            # požadovaný handler interakcí
+            self.world.world_interface.add_interaction_handler(
+                unit.unit_factory.interaction_handler)
+
     @abstractmethod
     def run(self):
         """Abstraktní funkce odpovědná za běh a řízení běhu daného prostředí.
@@ -198,10 +214,7 @@ class SingleRobotRuntime(AbstractRuntime):
             self.check_mounting(self.robot)
 
             # Napojení všech jednotek robota na rozhraní světa
-            for unit in self.robot.units:
-                unit.set_world_interface(self.world.world_interface)
-                self.world.world_interface.add_interaction_handler(
-                    unit.unit_factory.interaction_handler)
+            self.connect_with_interface(self.robot)
 
             # Zasazení robota do světa pomocí registrace jeho stavu
             self.world.robot_state_manager.register_robot(self.robot)
