@@ -12,7 +12,24 @@ import src.fw.platform.runtime as runtime_module
 
 
 @dataclass(frozen=True)
-class RuntimeStarted(event_module.Event):
+class RuntimeEvent(event_module.Event):
+    """Tato datová třída reprezentuje událost v souvislosti s běhovým
+    prostředím.
+
+    Slouží jako společný předek. Sama stanovuje protokol pro své potomky,
+    kde se očekává běhové prostředí."""
+    runtime: "runtime_module.AbstractRuntime"
+
+
+@dataclass(frozen=True)
+class RuntimePreparedEvent(RuntimeEvent):
+    """Tato datová třída reprezentuje událost úspěšného připravení běhového
+    prostředí."""
+    runtime: "runtime_module.AbstractRuntime"
+
+
+@dataclass(frozen=True)
+class RuntimeStartedEvent(RuntimeEvent):
     """Tato datová třída reprezentuje událost započetí běhového prostředí."""
     runtime: "runtime_module.AbstractRuntime"
 
