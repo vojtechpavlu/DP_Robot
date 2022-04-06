@@ -21,7 +21,6 @@ import src.fw.robot.program as program_module
 import src.fw.robot.unit as unit_module
 import src.fw.robot.robot_container as robot_cont_module
 import src.fw.platform.platform as platform_module
-import src.fw.platform.unit_factories_manager as uf_manager_module
 import src.fw.target.event_handling as event_module
 import src.fw.platform.runtime_events as runtime_events
 
@@ -49,6 +48,7 @@ class AbstractRuntime(Identifiable, event_module.EventEmitter):
         program."""
 
         Identifiable.__init__(self)
+        event_module.EventEmitter.__init__(self)
 
         self._target_factory = target_factory
         self._world_factory = world_factory
