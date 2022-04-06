@@ -208,8 +208,12 @@ class SingleRobotRuntime(AbstractRuntime):
     def run(self):
         """Hlavní funkce třídy, která se stará o řízení běhu jediného robota.
         """
+        # Příprava prostředí
         self.prepare()
+
+        # Spuštění přípravné procedury pro osazování robota
         self.program.mount(self.robot, self.units)
+
         try:
             # Kontrola osazení
             self.check_mounting(self.robot)
@@ -234,7 +238,10 @@ class SingleRobotRuntime(AbstractRuntime):
             robot_thread.start()
             robot_thread.join()
 
-            raise executor.raised_exception
+            # Vyhození výjimek reprezentující chyby, ke kterým došlo při
+            # běhu programu exekutorem
+            if executor.raised_any:
+                raise executor.raised_exception
 
         # Pokud dojde k chybě při osazení; když se při osazování podvádí
         except MountingError as e:
