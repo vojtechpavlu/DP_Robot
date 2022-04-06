@@ -121,6 +121,10 @@ class AbstractRuntime(Identifiable, event_module.EventEmitter):
         # provázána se světem a sledovat v něm plnění úkolů této úlohy
         self._target = self.target_factory.build(self._world)
 
+        # Vytvoření a vyhození události, že běhové prostředí bylo připraveno
+        self.notify_all_event_handlers(
+            runtime_events.RuntimePreparedEvent(self))
+
     def check_mounting(self, robot: "robot_module.Robot"):
         """Funkce se pokusí ověřit, že je osazení platné. Robot může být
         po ukončení osazovací procedury pouze povolenými jednotkami. Pokud
