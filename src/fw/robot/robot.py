@@ -97,6 +97,13 @@ class Robot(Identifiable, Named):
                 f"Tento robot a robot, ke které je jednotka připojena, není "
                 f"tentýž", self, unit)
 
+    def get_unit(self, unit_name: str) -> "unit_module.AbstractUnit":
+        """Funkce vrátí jednotku dle zadaného názvu. Pokud taková není
+        nalezena, vrací None."""
+        for unit in self.units:
+            if unit.name == unit_name:
+                return unit
+
     def deactivate(self):
         """Funkce deaktivuje všechny jednotky. To znamená, že je robot již
         nevratně nefunkční."""
