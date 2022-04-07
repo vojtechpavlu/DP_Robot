@@ -6,6 +6,7 @@ definuje obecný protokol pro všechny výstupní loggery, konkrétně třídu
 
 # Import standardních knihoven
 from abc import ABC, abstractmethod
+import sys
 
 # Import lokálních knihoven
 import src.fw.utils.logging.logger as logger_module
@@ -144,7 +145,7 @@ class PrintingOutput(LoggingOutput):
     def log(self, log: "logger_module.Log"):
         """Funkce implementující protokol definovaný v předkovi. Funkce se
         pouze stará o výpis v daném formátu."""
-        print(f"[{log.time}][{log.context}]: {log.message}")
+        sys.stdout.write(f"[{log.time}][{log.context}]: {log.message}\n")
 
 
 class SimpleOutputWithMemo(OutputWithMemo):

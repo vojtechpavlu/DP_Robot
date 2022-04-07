@@ -5,6 +5,7 @@ tedy jaký má mít protokol.
 """
 
 # Import standardních knihoven
+from collections import Callable
 from typing import Iterable
 
 
@@ -46,6 +47,10 @@ class Task(Identifiable, Named, Described):
         """Úloha, které tato instance úkolu náleží"""
         self._target: "target_module.Target" = None
 
+        """Potrubí loggeru, kterého je použito pro tvorbu standardizovaných
+        záznamů v kontextu plnění úkolu."""
+        self._logger_pipeline: "Callable" = None
+
     @property
     def target(self) -> "target_module.Target":
         """Vlastnost vrací úlohu, ke které tento úkol náleží."""
@@ -64,6 +69,19 @@ class Task(Identifiable, Named, Described):
             raise TaskError(f"Nelze přenastavovat úlohu", self)
         self._target = target
         self.evaluation_function.configure()
+
+    @property
+    def log(self) -> "Callable":
+        """Vlastnost vrací potrubí loggeru přidělené kontextu úkolu. Pomocí
+        této funkce navrácené touto vlastností je možné zaznamenávat pokrok
+        v plnění úkolů."""
+        return self._logger_pipeline
+
+    @log.setter
+    def log(self, logger_pipeline: "Callable"):
+        """Vlastnost nastavuje potrubí, kterého má být použito pro potřeby
+        logování."""
+        self._logger_pipeline = logger_pipeline
 
     @property
     def evaluation_function(self) -> "ef_module.EvaluationFunction":

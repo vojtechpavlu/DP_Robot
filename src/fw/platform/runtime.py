@@ -7,7 +7,7 @@ třída továrny běhových prostředí).
 
 # Import standardních knihoven
 from abc import ABC, abstractmethod
-from typing import Iterable
+from typing import Iterable, Callable
 from threading import Thread
 
 # Import lokálních knihoven
@@ -25,6 +25,7 @@ import src.fw.robot.robot_container as robot_cont_module
 import src.fw.platform.platform as platform_module
 import src.fw.target.event_handling as event_module
 import src.fw.platform.runtime_events as runtime_events
+import src.fw.utils.logging.logger as logger_module
 
 
 class AbstractRuntime(Identifiable, event_module.EventEmitter):
@@ -44,7 +45,8 @@ class AbstractRuntime(Identifiable, event_module.EventEmitter):
                  unit_factories: "Iterable[unit_module.AbstractUnitFactory]",
                  program: "program_module.AbstractProgram",
                  robot_factory: "robot_module.RobotFactory",
-                 platform: "platform_module.Platform"):
+                 platform: "platform_module.Platform",
+                 logger: "logger_module.Logger"):
         """Initor funkce, který přijímá tovární třídu světa, tovární třídu
         úlohy, množinu povolených továrních tříd jednotek a referenci na
         program."""
@@ -58,9 +60,13 @@ class AbstractRuntime(Identifiable, event_module.EventEmitter):
         self._program = program
         self._robot_factory = robot_factory
         self._platform = platform
+        self._logger = logger
 
         self._world = None
         self._target = None
+
+        # Příprava logovacího potrubí
+        self._logger_pipeline = logger.make_pipeline("runtime").log
 
     @property
     def world(self) -> "world_module.World":
@@ -112,6 +118,17 @@ class AbstractRuntime(Identifiable, event_module.EventEmitter):
         jednotek."""
         return tuple(uf.build() for uf in self.unit_factories)
 
+    @property
+    def logger(self) -> "logger_module.Logger":
+        """"""
+        return self._logger
+
+    @property
+    def log(self) -> "Callable":
+        """Vlastnost vrací funkci reprezentující potrubí, pomocí kterého lze
+        vytvářet záznamy."""
+        return self._logger_pipeline
+
     def prepare(self):
         """Funkce připravující svět a úlohu ke spuštění. V podstatě si z
         dodaných továren nechá příslušné instance vygenerovat.
@@ -121,7 +138,7 @@ class AbstractRuntime(Identifiable, event_module.EventEmitter):
 
         # Dodání reference světa pro přípravu úlohy; aby úloha mohla být
         # provázána se světem a sledovat v něm plnění úkolů této úlohy
-        self._target = self.target_factory.build(self._world)
+        self._target = self.target_factory.build(self._world, self.logger)
 
         # Vytvoření a vyhození události, že běhové prostředí bylo připraveno
         self.notify_all_event_handlers(
@@ -132,6 +149,8 @@ class AbstractRuntime(Identifiable, event_module.EventEmitter):
         po ukončení osazovací procedury pouze povolenými jednotkami. Pokud
         tomu tak není, je vyhozena výjimka."""
 
+        self.log("Kontroluji osazení robota jednotkami")
+
         # Pro každou jednotku, kterou je dodaný robot osazen
         for unit in robot.units:
 
@@ -141,6 +160,8 @@ class AbstractRuntime(Identifiable, event_module.EventEmitter):
                 # Pokud je továrna jednotek a továrna té dané jednotky
                 # identická instance, ukonči vnitřní cyklus
                 if unit.unit_factory.int_id == uf.int_id:
+                    self.log(f"Jednotka", unit.name, "je v pořádku")
+
                     # Jelikož si odpovídá továrna jednotek a jednotka, přeruš
                     break
 
@@ -154,6 +175,9 @@ class AbstractRuntime(Identifiable, event_module.EventEmitter):
         """Funkce je odpovědná za napojení všech jednotek dodaného robota na
         rozhraní světa.
         """
+
+        self.log("Propojuji jednotky robota s rozhraním světa")
+
         # Pro každou jednotku robota
         for unit in robot.units:
 
@@ -183,7 +207,8 @@ class SingleRobotRuntime(AbstractRuntime):
                  unit_factories: "Iterable[unit_module.AbstractUnitFactory]",
                  program: "program_module.AbstractProgram",
                  robot_factory: "robot_module.RobotFactory",
-                 platform: "platform_module.Platform"):
+                 platform: "platform_module.Platform",
+                 logger: "logger_module.Logger"):
         """Initor třídy, který přijímá tovární třídy (továrnu světa, úlohy,
         robotů a továrny jednotek) a referenci na program, který má být pro
         jediného robota spuštěn. Dále přijímá referenci na platformu, pod
@@ -192,7 +217,7 @@ class SingleRobotRuntime(AbstractRuntime):
         # Volání předka
         AbstractRuntime.__init__(
             self, world_factory, target_factory, unit_factories, program,
-            robot_factory, platform)
+            robot_factory, platform, logger)
 
         # Příprava kontejneru robota
         self.__robot_container = robot_cont_module.SingleRobotContainer()
@@ -208,8 +233,13 @@ class SingleRobotRuntime(AbstractRuntime):
     def run(self):
         """Hlavní funkce třídy, která se stará o řízení běhu jediného robota.
         """
+
+        self.log("Příprava běhového prostředí")
+
         # Příprava prostředí
         self.prepare()
+
+        self.log("Osazování robota")
 
         # Spuštění přípravné procedury pro osazování robota
         self.program.mount(self.robot, self.units)
@@ -225,7 +255,8 @@ class SingleRobotRuntime(AbstractRuntime):
             self.world.robot_state_manager.register_robot(self.robot)
 
             # Vytvoření exekutoru, pomocí kterého bude program robota spuštěn
-            executor = RobotProgramExecutor(self.program, self.robot)
+            executor = RobotProgramExecutor(
+                self.program, self.robot, self.logger.make_pipeline("output"))
 
             # Spuštění běhu programu přes exekutor ve vlákně
             robot_thread = Thread(target=executor.run_program)
@@ -233,6 +264,8 @@ class SingleRobotRuntime(AbstractRuntime):
             # Odeslání události o počátku běhu robota
             self.notify_all_event_handlers(
                 runtime_events.RuntimeStartedEvent(self))
+
+            self.log("Spouštím program robota")
 
             # Samotné spuštění programu robota (ve vlákně) a join vlákna
             robot_thread.start()
@@ -250,9 +283,12 @@ class SingleRobotRuntime(AbstractRuntime):
 
         # Předčasné ukončení programu
         except program_module.ProgramTermination as pt:
-            # TODO - doplnit
-            print(f"Program byl se stavem '{pt.abort_type}' "
-                  f"ukončen: {pt.message}")
+            if pt.abort_type == program_module.AbortType.SUCCESS:
+                self.log("Program se předčasně ukončil po dokončení cíle")
+            elif pt.abort_type == program_module.AbortType.FAILURE:
+                self.log("Program narazil na neřešitelný problém")
+            elif pt.abort_type == program_module.AbortType.ERROR:
+                self.log("Program vyústil v chybu")
 
         # Libovolná jiná chyba; je vyhozena nová výjimka
         except Exception as e:
@@ -262,14 +298,14 @@ class SingleRobotRuntime(AbstractRuntime):
 
         # Ať už došlo k chybě či nikoliv, proveď výstup
         finally:
-            print(30*"=")
-            print("EVALUATION:")
+            self.log(50*"=")
+            self.log("EVALUATION:")
 
             for task in self.target.tasks:
-                print(task.name)
+                self.log(task.name)
                 junction = task.evaluation_function
                 for ef in junction.evaluation_functions:
-                    print("\t", ef.name, ef.eval())
+                    self.log("\t", ef.name, ef.eval())
 
             # TODO - kontrola Targetu a jeho vyhodnocení
 
@@ -342,13 +378,17 @@ class AbstractRuntimeFactory(ABC):
 
     @abstractmethod
     def build(self, platform: "platform_module.Platform",
-              program: "program_module.AbstractProgram") -> "AbstractRuntime":
+              program: "program_module.AbstractProgram",
+              logger: "logger_module.Logger") -> "AbstractRuntime":
         """Abstraktní funkce odpovědná za vybudování nové instance potomka
         třídy AbstractRuntime.
 
         V parametru přijímá instanci platformy, které toto běhové prostředí
         náleží, vedle reference na program, který mají roboti mít a dle
-        kterého se mají chovat."""
+        kterého se mají chovat.
+
+        Dále je této funkci poskytnut logger, pomocí kterého budou schopny
+        jednotlivé významné komponenty dělat záznamy o své aktivitě."""
 
     @staticmethod
     def pick_unit_factories(platform: "platform_module.Platform",

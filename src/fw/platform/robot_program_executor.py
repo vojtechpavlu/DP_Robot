@@ -6,6 +6,7 @@ systému."""
 # Import lokálních knihoven
 import src.fw.robot.robot as robot_module
 import src.fw.robot.program as program_module
+import src.fw.utils.logging.logger_pipeline as logger_pipeline
 
 
 class RobotProgramExecutor:
@@ -16,7 +17,8 @@ class RobotProgramExecutor:
     komunikaci."""
 
     def __init__(self, program: "program_module.AbstractProgram",
-                 robot: "robot_module.Robot"):
+                 robot: "robot_module.Robot",
+                 pipeline: "logger_pipeline.LoggerPipeline"):
         """Initor, který přijímá v parametrech program, který má být spuštěn,
         a robota, pro který má tento program běžet.
 
@@ -25,6 +27,8 @@ class RobotProgramExecutor:
         """
         self._program = program
         self._robot = robot
+        self._pipeline = pipeline
+
         self.__exception = None
 
     @property
@@ -51,6 +55,12 @@ class RobotProgramExecutor:
         """Vlastnost vrací robota, pro kterého má být robot spuštěn."""
         return self._robot
 
+    @property
+    def logger_pipeline(self) -> "logger_pipeline.LoggerPipeline":
+        """Vlastnost vrací přiřazenou pipeline, které má být použito pro
+        logování."""
+        return self._pipeline
+
     def run_program(self):
         """Funkce 'run_program' se stará o samotnou exekuci programu. Její
         tělo se stará o spuštění daného programu v 'bezpečném módu', přesněji
@@ -68,7 +78,7 @@ class RobotProgramExecutor:
 
         try:
             # Spuštění dodaného programu s dodaným robotem
-            self.program.run(self.robot)
+            self.program.run(self.robot, self._pipeline.log)
 
         # Odchycení výjimky, která se může během exekuce vyskytnout
         except Exception as e:

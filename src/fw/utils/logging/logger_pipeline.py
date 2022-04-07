@@ -43,8 +43,8 @@ class LoggerPipeline:
         """Kontext, ve kterém je logováno. Defaultně je v kapitálkách."""
         return self._context
 
-    def log(self, message: str):
+    def log(self, *message: str):
         """Samotná funkce, která se postará o zalogování dodané textové zprávy
         do privátního loggeru."""
-        self.__logger.log(self._context, message)
+        self.__logger.log(self._context, " ".join(map(str, message)))
 

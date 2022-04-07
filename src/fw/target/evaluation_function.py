@@ -72,6 +72,11 @@ class EvaluationFunction(Named, Identifiable, event_module.EventHandler):
                 f"Úkol nelze znovu přenastavovat", self)
         self._task = task
 
+    def log(self, message: object):
+        """Funkce se postará o zalogování dodané zprávy z kontextu plnění
+        úkolů."""
+        self.task.log(message)
+
     @abstractmethod
     def eval(self) -> bool:
         """Jádrem evaluační funkce je právě tato metoda, která umožňuje
@@ -105,6 +110,7 @@ class EvaluationFunctionJunction(EvaluationFunction):
         """Metoda umožňující dynamicky přidávat instance evaluačních funkcí
         do této instance."""
         self._eval_funcs.append(fun)
+        fun.task = self.task
 
     def update(self, emitter: "EventEmitter", event: "Event"):
         """Funkce je odpovědná za postoupení události všem svým evaluačním
@@ -327,6 +333,7 @@ class Visited(EvaluationFunction):
             if (event.x == self.x) and (event.y == self.y):
                 self._visited = True
                 emitter.unregister_event_handler(self)
+                self.log(f"Splnění úkolu '{self.name}'")
 
     def configure(self):
         """Tato funkce není v případě této implementace potřeba."""
@@ -501,6 +508,7 @@ class UsedInteraction(EvaluationFunction):
                 # Změna stavu a odregistrování se; úkol je splněn
                 self._used_interaction = True
                 emitter.unregister_event_handler(self)
+                self.log(f"Splnění úkolu '{self.name}'")
 
 
 class UsedAllInteractions(Conjunction):
