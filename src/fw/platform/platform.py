@@ -156,11 +156,17 @@ class Platform:
         pro každý získaný program vytvořeno a v rámci programu také spuštěno
         běhové prostředí.
         """
+
         # Načtení důležitých zdrojů
         self.load()
 
         # Výmaz evidovaných běhových prostředí
         self._runtimes: "list[runtime_module.AbstractRuntime]" = []
+
+        # Vytvoření nového loggeru
+        from src.fw.utils.logging.logger_factory import DefaultLoggerFactory
+        logger = DefaultLoggerFactory().build()
+        log = logger.make_pipeline("platform").log
 
         """Postupné spouštění všech běhových prostředí. Pro každou továrnu
         běhového prostředí je získán program, pro který je spuštěna nově
@@ -169,15 +175,20 @@ class Platform:
         # Pro každou továrnu běhového prostředí
         for runtime_factory in self.runtime_factories:
 
+            log("Příprava runtime:", type(runtime_factory).__name__)
+
             # Pro každý program
             for program in self.programs:
 
+                log("Příprava programu autora:", program.author_name)
+
                 # Vytvoření běhového prostředí
-                runtime = runtime_factory.build(self, program)
+                runtime = runtime_factory.build(self, program, logger)
 
                 # Registrace běhového prostředí
                 self._runtimes.append(runtime)
 
+                log("Spouštím runtime:", type(runtime_factory).__name__)
                 # Spuštění běhového prostředí
                 runtime.run()
             # TODO - evaluace výsledků
