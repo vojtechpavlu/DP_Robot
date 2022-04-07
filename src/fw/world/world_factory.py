@@ -18,7 +18,7 @@ class WorldFactory(ABC):
 
     def __init__(self,
                  world_if_factory: "world_if_module.WorldInterfaceFactory",
-                 spawner: "spawner_module.Spawner"):
+                 spawner_factory: "spawner_module.SpawnerFactory"):
         """Initor přijímá v initoru továrnu rozhraní světa, která bude použita
         pro vytvoření instance 'WorldInterface' příslušné tvořenému světu. Dále
         přijímá spawner, který bude použit pro zasazování nových robotů do
@@ -27,7 +27,7 @@ class WorldFactory(ABC):
         self._world_if_fact = world_if_factory
 
         # Spawner pro zasazování robotů do světa
-        self._spawner = spawner
+        self._spawner_factory = spawner_factory
 
     @property
     def world_interface_fact(self) -> "world_if_module.WorldInterfaceFactory":
@@ -37,9 +37,9 @@ class WorldFactory(ABC):
         return self._world_if_fact
 
     @property
-    def spawner(self) -> "spawner_module.Spawner":
-        """Vlastnost vrací spawner, který byl instanci přidělen."""
-        return self._spawner
+    def spawner_factory(self) -> "spawner_module.SpawnerFactory":
+        """Vlastnost vrací továrnu spawnerů, která byla instanci přidělena."""
+        return self._spawner_factory
 
     @abstractmethod
     def build(self) -> "world_module.World":
@@ -56,7 +56,7 @@ class OpenSpaceWorldFactory(WorldFactory):
 
     def __init__(self, width: int, height: int,
                  world_if_fact: "world_if_module.WorldInterfaceFactory",
-                 spawner: "spawner_module.Spawner"):
+                 spawner_factory: "spawner_module.SpawnerFactory"):
         """Initor třídy, který přijímá šířku a výšku tvořeného světa a továrnu
         rozhraní světa.
 
@@ -73,7 +73,7 @@ class OpenSpaceWorldFactory(WorldFactory):
         """
 
         # Volání initoru předka
-        WorldFactory.__init__(self, world_if_fact, spawner)
+        WorldFactory.__init__(self, world_if_fact, spawner_factory)
 
         # Uložení šířky a výšky světa
         self._width = width
@@ -135,7 +135,7 @@ class OpenSpaceWorldFactory(WorldFactory):
         """Vrácení vytvořené instance světa se všemi políčky a s továrnou
         rozhraní světa"""
         return world_module.World(
-            all_fields, self.world_interface_fact, self.spawner)
+            all_fields, self.world_interface_fact, self.spawner_factory)
 
 
 class WorldFactoryError(PlatformError):
