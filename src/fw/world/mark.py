@@ -125,7 +125,7 @@ jednotlivé značky."""
 _DEFAULT_MARK_RULES = [MaxLength(), MinLength(), AllowedCharset()]
 
 
-class Markable:
+class Markable(ABC):
     """Instance této třídy slouží k uchovávání značek, stejně jako k
     jejich ověřování.
 
@@ -135,7 +135,7 @@ class Markable:
     def __init__(
             self, rules: "Iterable[MarkRule]" = tuple(_DEFAULT_MARK_RULES)):
         """Initor třídy, který slouží k uložení potřebných hodnot a iniciaci
-        požadovaných polí. V parametru přijímá interovatelnou množinu pravidel,
+        požadovaných polí. V parametru přijímá iterovatelnou množinu pravidel,
         kterými budou dané značky ověřovány.
         """
         # Seznam ověřovacích pravidel pro nové potenciální značky
@@ -191,8 +191,13 @@ class Markable:
         # Vytvoření nové značky
         new_mark = Mark(text)
 
+        # Pokud nemůže být tato instance označkována
+        if not self.can_be_marked:
+            raise MarkError(
+                f"Tato instance nemůže být označkována: {self}", new_mark)
+
         # Pokud již jedna značka v této instanci evidována je
-        if self.has_mark:
+        elif self.has_mark:
             raise MarkError(
                 f"Jedna značka je již přítomná: '{self.mark=}'", self.mark)
 
@@ -206,6 +211,12 @@ class Markable:
         else:
             self._mark = new_mark
             return self.mark
+
+    @property
+    @abstractmethod
+    def can_be_marked(self) -> bool:
+        """Abstraktní vlastnost vrací, zda-li může být tato instance
+        označitelná či nikoliv."""
 
 
 class MarkError(PlatformError):
