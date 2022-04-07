@@ -128,6 +128,11 @@ class Field(rc_module.SingleRobotContainer, mark_module.Markable):
         return self.world.field(
             *self.coordinates.move_in_direction(direction).xy)
 
+    def __str__(self) -> str:
+        """Funkce vrací textovou reprezentaci políčka."""
+        return (f"{type(self).__name__} @ [{self.x}, {self.y}]"
+                f"{' ' + str(self.mark) if self.mark else ''}")
+
 
 class Wall(Field):
     """Reprezentace políčka ve světě, které není navštivitelné. Tato

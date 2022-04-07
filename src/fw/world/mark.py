@@ -26,6 +26,10 @@ class Mark:
         """Vlastnost vrací nastavený text značky."""
         return self.__text
 
+    def __str__(self) -> str:
+        """Funkce vrací textovou reprezentaci značky, tedy její text."""
+        return f"[{self.text}]"
+
 
 class MarkRule(ABC):
     """Abstraktní funkce MarkRule definuje protokol pro ověřující pravidla,
@@ -94,7 +98,7 @@ class AllowedCharset(MarkRule):
      výhradně jen ze znaků ze stanovené znakové sady."""
 
     # Výchozí znaková sada
-    default_charset = tuple("ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".split(""))
+    default_charset = tuple("ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
 
     def __init__(self, charset: "Iterable[str]" = default_charset):
         """Initor třídy, který přijímá v parametru iterovatelnou množinu
