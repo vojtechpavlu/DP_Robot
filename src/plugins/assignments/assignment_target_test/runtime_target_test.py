@@ -23,12 +23,15 @@ from src.fw.world.world_factory import WorldFactory, OpenSpaceWorldFactory
 from src.fw.world.world_interface import (WorldInterfaceFactory,
                                           DefaultWorldInterfaceFactory)
 
+from src.fw.utils.logging.logger import Logger
+
 
 class VisitingAllTargetFactory(TargetFactory):
     """"""
 
-    def build(self, world: "World") -> "Target":
-        target = Target("VisitAllTarget", "Navštiv všechna políčka", world)
+    def build(self, world: "World", logger: "Logger") -> "Target":
+        target = Target("VisitAllTarget", "Navštiv všechna políčka",
+                        world, logger)
         target.add_task(VisitSpecificFieldsTask(
             [(1, 1), (2, 1), (3, 1), ]
         ))
@@ -101,8 +104,8 @@ class PlaygroundRuntimeFactory(AbstractRuntimeFactory):
             _get_world_factory(),
             _get_target_factory())
 
-    def build(self, platform: "Platform",
-              program: "AbstractProgram") -> "AbstractRuntime":
+    def build(self, platform: "Platform", program: "AbstractProgram",
+              logger: "Logger") -> "AbstractRuntime":
         """Funkce 'build', která implementuje signaturu stanovenou předkem.
 
         Cílem této funkce je tvorba konkrétních běhových prostředí na
@@ -111,7 +114,7 @@ class PlaygroundRuntimeFactory(AbstractRuntimeFactory):
         return SingleRobotRuntime(
             self.world_factory, self.target_factory,
             self.pick_unit_factories(platform, self.available_units_names),
-            program, self.robot_factory, platform)
+            program, self.robot_factory, platform, logger)
 
 
 def get_runtime_factory() -> "AbstractRuntimeFactory":

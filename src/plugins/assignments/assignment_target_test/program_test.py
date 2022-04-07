@@ -22,6 +22,8 @@ plugin nebude a tedy nebude ani načten.
 """
 
 # Import potřebných zdrojů a nástrojů
+from typing import Callable
+
 from src.fw.robot.program import AbstractProgram, AbortType
 from src.fw.robot.robot import Robot
 
@@ -54,7 +56,7 @@ class Program(AbstractProgram):
     potřebných knihoven (v horní části tohoto modulu).
     """
 
-    def run(self, robot: "Robot"):
+    def run(self, robot: "Robot", log: "Callable"):
         """Šablona metody, která se stará o definici sekvence akcí, které
         má robot provést.
 
@@ -82,15 +84,17 @@ class Program(AbstractProgram):
 
         def get_state():
             for sensor in sensors:
-                print("\t", sensor.name, ":", sensor.scan())
+                log("\t", sensor.name, ":", sensor.scan())
 
         get_state()
 
         for actuator in actuators:
-            print(30*"-")
-            print(f"Testing actuator: {actuator.name}")
+            log(30*"-")
+            log(f"Testing actuator: {actuator.name}")
             actuator.execute()
             get_state()
+
+        log("Hello World!")
 
         self.terminate("Úspěšné ukončení", AbortType.SUCCESS)
 

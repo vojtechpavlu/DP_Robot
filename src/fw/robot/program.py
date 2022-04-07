@@ -5,6 +5,7 @@ manipulaci a běh programu, který řídí robota."""
 from abc import ABC, abstractmethod
 from typing import Iterable
 from enum import Enum
+from typing import Callable
 
 # Import lokálních knihoven
 import src.fw.robot.robot as robot_module
@@ -74,7 +75,7 @@ class AbstractProgram(ABC):
             robot.mount(unit)
 
     @abstractmethod
-    def run(self, robot: "robot_module.Robot"):
+    def run(self, robot: "robot_module.Robot", log: "Callable"):
         """Hlavní metoda, kterou program má. Implementace této abstraktní
         metody slouží k obsluze celého robota při interakci se světem.
         """
