@@ -15,6 +15,7 @@ from src.fw.utils.named import Named
 
 import src.fw.target.task as task_module
 import src.fw.world.world as world_module
+import src.fw.utils.logging.logger as logger_module
 
 
 class Target(Named, Described):
@@ -29,7 +30,7 @@ class Target(Named, Described):
     """
 
     def __init__(self, target_name: str, target_description: str,
-                 world: "world_module.World"):
+                 world: "world_module.World", logger: "logger_module.Logger"):
         """Initor třídy, který přijímá název úlohy a její popis. Obé je v
         podobě textového řetězce.
 
@@ -49,6 +50,10 @@ class Target(Named, Described):
         prázdný. Instance třídy 'Task' jsou do něj dodávány až za běhu."""
         self._tasks: "list[task_module.Task]" = []
 
+        """Uložení dodaného loggeru. Toho je použito hlavně pro zaznamenání,
+        že některý úkol (či jeho součást) byl splněn."""
+        self._logger = logger
+
     @property
     def tasks(self) -> "tuple[task_module.Task]":
         """Vlastnost vrací ntici úkolů v rámci úlohy, které mají být
@@ -60,10 +65,22 @@ class Target(Named, Described):
         """Vlastnost vrací svět, pro který je tato úloha definována."""
         return self._world
 
+    @property
+    def logger(self) -> "logger_module.Logger":
+        """Vlastnost vrací logger, kterého je použito pro zaznamenávání
+        údajů v případě splnění nějakého úkolu nebo podúkolu."""
+        return self._logger
+
     def add_task(self, task: "task_module.Task"):
         """Metoda přidává úkol ke splnění do této úlohy."""
+        # Uložení do evidence úkolů
         self._tasks.append(task)
+
+        # Nastavení této instance úlohy do úkolu
         task.target = self
+
+        # Přiřazení loggeru k použití
+        task.log = self.logger.make_pipeline("task").log
 
 
 class TargetFactory(ABC):
@@ -71,7 +88,8 @@ class TargetFactory(ABC):
     instancí úloh, tedy instancí třídy 'Target'."""
 
     @abstractmethod
-    def build(self, world: "world_module.World") -> "Target":
+    def build(self, world: "world_module.World",
+              logger: "logger_module.Logger") -> "Target":
         """Abstraktní metoda 'build' se zabývá tvorbou zadání úlohy.
         Funkce přijímá referenci na svět, který má za úkol úloha sledovat
         co do jejího splnění."""
@@ -85,13 +103,14 @@ class AlwaysCompletedTargetFactory(TargetFactory):
     za splněný, neboť má tak nastavenu i evaluační funkci vracející za všech
     okolností hodnotu True."""
 
-    def build(self, world: "world_module.World") -> "Target":
+    def build(self, world: "world_module.World",
+              logger: "logger_module.Logger") -> "Target":
         """Funkce odpovědná za vytvoření úlohy, která je automaticky
         považována za splněnou, neboť má jediný úkol, který je de facto
         také automaticky splněn.
         """
         target = Target("Always successful target",
-                        "Úloha, která je automaticky splněna", world)
+                        "Úloha, která je automaticky splněna", world, logger)
         target.add_task(task_module.always_true_task())
         return target
 
