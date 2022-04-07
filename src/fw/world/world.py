@@ -23,7 +23,7 @@ class World:
 
     def __init__(self, fields: "list[field_mod.Field]",
                  world_if_fact: "world_inter_module.WorldInterfaceFactory",
-                 spawner: "spawner_module.Spawner"):
+                 spawner_factory: "spawner_module.SpawnerFactory"):
         """Initor třídy je odpovědný za přijetí všech parametrů a jejich
         uložení.
 
@@ -69,6 +69,7 @@ class World:
         řídí přidávání robotů do světa; resp. vytváří stavy robota.
         Dále je instance tohoto spawneru inicializována co do reference na
         tuto instanci, tedy svět, do kterého budou zasazováni roboti."""
+        spawner = spawner_factory.build()
         self._robot_state_manager = rsm_module.RobotStateManager(spawner)
         spawner.world = self
 

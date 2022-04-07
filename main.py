@@ -5,7 +5,7 @@ from src.fw.utils.loading.runtime_factory_loader import \
 from src.fw.utils.loading.unit_factory_loader import DefaultUnitFactoryLoader
 
 
-assignment = "assignment_target_test"
+assignment = "assignment_playground"
 
 platform = Platform(
     [DefaultUnitFactoryLoader()],
