@@ -74,7 +74,7 @@ class RobotProgramExecutor:
         # Před spuštěním samotného programu je třeba chviličku počkat,
         # aby se systém dokázal zcela připravit na všechny okolnosti běhu
         from time import sleep
-        sleep(0.05)
+        sleep(0.1)
 
         try:
             # Spuštění dodaného programu s dodaným robotem
