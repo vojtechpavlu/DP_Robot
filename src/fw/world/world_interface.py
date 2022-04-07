@@ -177,17 +177,18 @@ class WorldInterface(ihm_module.InteractionHandlerManager,
             # Vrácení výstupu
             return result
 
-        except inter_rls.InteractionRulesError as irlse:
+        except (inter_rls.InteractionRulesError,
+                interaction_module.InteractionError) as e:
 
             # Provedení stanovené funkce jako reakce na chybu
             interaction.call_error_function()
 
             # Ukončení programu
             interaction.robot.program.terminate(
-                f"Robot porušil pravidla světa: '{irlse.interaction_rules}'")
+                f"Došlo k chybě při provádění akce ('{e.message}')")
 
             raise WorldInterfaceError(
-                f"Při zpracovávání interakce došlo k chybě: '{irlse}'", self)
+                f"Při zpracovávání interakce došlo k chybě: '{e}'", self)
 
 
 class WorldInterfaceFactory(ABC):
