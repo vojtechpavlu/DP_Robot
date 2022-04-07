@@ -10,11 +10,12 @@ from src.fw.utils.error import PlatformError
 from src.fw.world.coordinates import Coordinates
 from src.fw.world.direction import Direction
 
+import src.fw.world.mark as mark_module
 import src.fw.world.world as world_mod
 import src.fw.robot.robot_container as rc_module
 
 
-class Field(rc_module.SingleRobotContainer):
+class Field(rc_module.SingleRobotContainer, mark_module.Markable):
     """Abstraktní třída 'Field' je odpovědná za stanovení základního
     společného protokolu pro všechny své potomky.
 
@@ -35,7 +36,9 @@ class Field(rc_module.SingleRobotContainer):
         """Initor políčka, který je odpovědný za nastavení defaultních hodnot,
         stejně jako je odpovědný za volání initorů svých předků.
         """
+        # Volání předků, tedy kontejneru jediného robota a označení
         rc_module.SingleRobotContainer.__init__(self)
+        mark_module.Markable.__init__(self)
 
         """Nastavení souřadnicového identifikátoru z dodaných hodnot."""
         self._coordinates = Coordinates(x, y)
@@ -126,7 +129,6 @@ class Field(rc_module.SingleRobotContainer):
             *self.coordinates.move_in_direction(direction).xy)
 
 
-
 class Wall(Field):
     """Reprezentace políčka ve světě, které není navštivitelné. Tato
     reprezentace stěny značí úmyslnou a nepřekonatelnou překážku ve světě.
@@ -155,6 +157,12 @@ class Wall(Field):
     def can_go_to(self) -> bool:
         """Abstraktní vlastnost vrací informaci o tom, zda-li může robot
         vstoupit na toto políčko."""
+        return False
+
+    @property
+    def can_be_marked(self) -> bool:
+        """Vlastnost vrací hodnotu False, neboť tato instance nemůže být
+        označkována."""
         return False
 
 
@@ -186,6 +194,12 @@ class Path(Field):
     def can_go_to(self) -> bool:
         """Abstraktní vlastnost vrací informaci o tom, zda-li může robot
         vstoupit na toto políčko."""
+        return True
+
+    @property
+    def can_be_marked(self) -> bool:
+        """Vlastnost vrací hodnotu True, neboť tato instance může být
+        označkována."""
         return True
 
 
