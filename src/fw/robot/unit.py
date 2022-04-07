@@ -100,7 +100,7 @@ class AbstractUnit(Identifiable, Named, Described,
         """Abstraktní vlastnost vrací, zda-li jde o aktuátor či nikoliv."""
 
     @abstractmethod
-    def execute(self):
+    def execute(self, **kwargs):
         """Abstraktní funkce odpovědná za stanovení protokolu provedení
         interakce se světem.
 
@@ -114,7 +114,7 @@ class AbstractUnit(Identifiable, Named, Described,
         implementace této funkce potomků této třídy."""
 
     @abstractmethod
-    def scan(self) -> object:
+    def scan(self, **kwargs) -> object:
         """Abstraktní funkce odpovědná za stanovení protokolu pro provedení
         interakce se světem a navrácení informace o něm.
 
@@ -135,7 +135,7 @@ class AbstractUnit(Identifiable, Named, Described,
         if self.robot is not None:
             raise MountingError(
                 f"Již jednou osazenou jednotkou {self} není možné osadit "
-                f"robota znovu: {self.robot=}, {robot=}")
+                f"robota znovu: {self.robot=}, {robot=}", robot, self)
         self._robot = robot
 
     def detach(self):
@@ -173,7 +173,7 @@ class Actuator(AbstractUnit):
         """Funkce vrací informaci o tom, že tato jednotka je aktuátorem."""
         return True
 
-    def scan(self) -> object:
+    def scan(self, **kwargs) -> object:
         """Funkce implementující protokol předka. Tato funkce jen vyhazuje
         výjimku, protože aktuátory nejsou vybaveny schopností scanování
         světa."""
@@ -181,7 +181,7 @@ class Actuator(AbstractUnit):
             f"Aktuátor '{self.name}' neumí dodávat informace o světě."
             f"Použijte funkci 'execute'.", self)
 
-    def execute(self):
+    def execute(self, **kwargs):
         """Tato funkce 'execute()' je odpovědná za stanovení protokolu
         provedení akce (rozuměj změny) ve světě.
 
@@ -191,7 +191,7 @@ class Actuator(AbstractUnit):
         Novou implementací této funkce se dosáhne opatření jednotky danou
         funkcionalitou. Právě tato metoda je volána pro provedení kýžené
         akce."""
-        self.interact()
+        self.interact(**kwargs)
 
 
 class Sensor(AbstractUnit):
@@ -223,7 +223,7 @@ class Sensor(AbstractUnit):
         """Funkce vrací informaci o tom, že tato jednotka není aktuátorem."""
         return False
 
-    def execute(self):
+    def execute(self, **kwargs):
         """Funkce implementující protokol předka. Tato funkce v rámci senzorů
         pouze vyhazuje výjimku, neboť senzory jsou odpovědné za scanování,
         nikoliv za provádění změn ve světě.
@@ -232,7 +232,7 @@ class Sensor(AbstractUnit):
             f"Senzor '{self.name}' nemůže provádět změny ve světě. Použijte "
             f"funkci 'scan'.", self)
 
-    def scan(self) -> object:
+    def scan(self, **kwargs) -> object:
         """Funkce 'scan() -> object' odpovědná za stanovení protokolu pro
         provedení interakce se světem a navrácení informace o něm.
 
@@ -242,7 +242,7 @@ class Sensor(AbstractUnit):
         Novou implementací této funkce se dosáhne opatření jednotky danou
         funkcionalitou. Právě tato metoda je volána pro provedení snímání
         světa."""
-        return self.interact()
+        return self.interact(**kwargs)
 
 
 class AbstractUnitFactory(Identifiable, Named,

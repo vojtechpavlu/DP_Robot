@@ -13,13 +13,28 @@ třeba před použitím upravit.
 from src.fw.platform.platform import Platform
 from src.fw.robot.program import AbstractProgram
 from src.fw.robot.robot import RobotFactory, EmptyRobotFactory
+from src.fw.target.task import VisitAllTask
+from src.fw.utils.logging.logger import Logger
+from src.fw.world.world import World
 from src.fw.world.world_factory import WorldFactory, OpenSpaceWorldFactory
 from src.fw.world.spawner import SpawnerFactory, CoordinatesSpawnerFactory
-from src.fw.target.target import TargetFactory, AlwaysCompletedTargetFactory
+from src.fw.target.target import TargetFactory, AlwaysCompletedTargetFactory, \
+    Target
 from src.fw.world.world_interface import (WorldInterfaceFactory,
                                           DefaultWorldInterfaceFactory)
 from src.fw.platform.runtime import (AbstractRuntime, AbstractRuntimeFactory,
                                      SingleRobotRuntime)
+
+
+class CustomTargetFactory(TargetFactory):
+
+    def build(self, world: "World",
+              logger: "Logger") -> "Target":
+        target = Target("CustomTarget", "no desc", world, logger)
+        target.add_task(
+            VisitAllTask(),
+        )
+        return target
 
 
 def _get_unit_names() -> "list[str]":
@@ -29,6 +44,7 @@ def _get_unit_names() -> "list[str]":
     V tomto případě mají roboti možnost být osazeni všemi jednotkami, které
     jsou v rámci načtených pluginů dostupné."""
     return ["*"]
+
 
 def _get_robot_factory() -> "RobotFactory":
     """Funkce vrací novou instanci továrny robotů, která bude použita
@@ -52,7 +68,7 @@ def _get_target_factory() -> "TargetFactory":
     """Funkce vrací novou instanci továrny úlohy.
 
     Úloha je v tomto podání vždy per definitionem splněna."""
-    return AlwaysCompletedTargetFactory()
+    return CustomTargetFactory()
 
 
 def _get_world_interface_factory() -> "WorldInterfaceFactory":
@@ -67,8 +83,8 @@ def _get_world_factory() -> "WorldFactory":
     Na hřišti je vždy rozhraní světa 10x10 políček (resp. otevřený prostor
     8x8 cest a tento čtverec obehnaný zdí.
     """
-    return OpenSpaceWorldFactory(10, 10, _get_world_interface_factory(),
-                                 _get_spawner_factory().build())
+    return OpenSpaceWorldFactory(7, 7, _get_world_interface_factory(),
+                                 _get_spawner_factory())
 
 
 class PlaygroundRuntimeFactory(AbstractRuntimeFactory):
@@ -84,8 +100,8 @@ class PlaygroundRuntimeFactory(AbstractRuntimeFactory):
             _get_world_factory(),
             _get_target_factory())
 
-    def build(self, platform: "Platform",
-              program: "AbstractProgram") -> "AbstractRuntime":
+    def build(self, platform: "Platform", program: "AbstractProgram",
+              logger: "Logger") -> "AbstractRuntime":
         """Funkce 'build', která implementuje signaturu stanovenou předkem.
 
         Cílem této funkce je tvorba konkrétních běhových prostředí na
@@ -94,7 +110,7 @@ class PlaygroundRuntimeFactory(AbstractRuntimeFactory):
         return SingleRobotRuntime(
             self.world_factory, self.target_factory,
             self.pick_unit_factories(platform, self.available_units_names),
-            program, self.robot_factory, platform)
+            program, self.robot_factory, platform, logger)
 
 
 def get_runtime_factory() -> "AbstractRuntimeFactory":

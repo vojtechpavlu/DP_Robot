@@ -32,7 +32,7 @@ from src.fw.robot.robot import Robot
 # from typing import Iterable
 
 # Jméno autora, který je odpovědný za daný program
-_AUTHOR_NAME = "Tester Testičovič"
+_AUTHOR_NAME = "-----"
 
 
 class Program(AbstractProgram):
@@ -74,18 +74,20 @@ class Program(AbstractProgram):
         iswall = robot.get_unit("IsWallSensor").scan
         move = robot.get_unit("ForwardMover").execute
         turn = robot.get_unit("TurnLeft").execute
-        turn = robot.get_unit("TurnTo").execute
+        turnTo = robot.get_unit("TurnTo").execute
+        compass = robot.get_unit("CompassUnit").scan
 
-        from random import randint
-
-        def turn_randomly():
-            for _ in range(randint(0, 2)):
-                turn()
-
-        for _ in range(100000):
-            turn_randomly()
-            if not iswall():
-                move()
+        log(compass())
+        turnTo(direction="NORTH")
+        log(compass())
+        turnTo(direction="SOUTH")
+        log(compass())
+        turnTo(direction="EAST")
+        log(compass())
+        turnTo(direction="EAST")
+        log(compass())
+        move()
+        move()
 
         self.terminate("Snad všechna pole byla navštívena", AbortType.SUCCESS)
 

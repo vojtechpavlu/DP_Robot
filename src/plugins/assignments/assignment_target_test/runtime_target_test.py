@@ -88,7 +88,7 @@ def _get_world_factory() -> "WorldFactory":
     8x8 cest a tento čtverec obehnaný zdí.
     """
     return OpenSpaceWorldFactory(5, 5, _get_world_interface_factory(),
-                                 _get_spawner_factory().build())
+                                 _get_spawner_factory())
 
 
 class PlaygroundRuntimeFactory(AbstractRuntimeFactory):
