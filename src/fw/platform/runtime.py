@@ -241,6 +241,9 @@ class SingleRobotRuntime(AbstractRuntime):
 
         self.log("Osazování robota")
 
+        # Nastavení programu pro robota
+        self.robot.program = self.program
+
         # Spuštění přípravné procedury pro osazování robota
         self.program.mount(self.robot, self.units)
 
@@ -284,11 +287,12 @@ class SingleRobotRuntime(AbstractRuntime):
         # Předčasné ukončení programu
         except program_module.ProgramTermination as pt:
             if pt.abort_type == program_module.AbortType.SUCCESS:
-                self.log("Program se předčasně ukončil po dokončení cíle")
+                self.log("Program se předčasně ukončil po dokončení cíle:",
+                         pt.message)
             elif pt.abort_type == program_module.AbortType.FAILURE:
                 self.log("Program narazil na neřešitelný problém")
             elif pt.abort_type == program_module.AbortType.ERROR:
-                self.log("Program vyústil v chybu")
+                self.log("Program vyústil v chybu", f"'{pt.message}'")
 
         # Libovolná jiná chyba; je vyhozena nová výjimka
         except Exception as e:
