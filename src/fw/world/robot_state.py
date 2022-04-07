@@ -84,7 +84,7 @@ class RobotState:
             raise RobotStateError(
                 f"Robota nelze umístit na stěnu na souřadnicích "
                 f"[{field.x}, {field.y}]", self)
-        elif field.has_any_robot:
+        elif field.has_any_robot and field.robot != self.robot:
             raise RobotStateError(
                 f"Nelze robota umístit na políčko, na kterém již jeden robot "
                 f"umístěn je: {field.robot} @ [{field.x}, {field.y}]", self)
