@@ -290,15 +290,14 @@ class SingleRobotRuntime(AbstractRuntime):
                 self.log("Program se předčasně ukončil po dokončení cíle:",
                          pt.message)
             elif pt.abort_type == program_module.AbortType.FAILURE:
-                self.log("Program narazil na neřešitelný problém")
+                self.log("Program narazil na neřešitelný problém:", pt.message)
             elif pt.abort_type == program_module.AbortType.ERROR:
-                self.log("Program vyústil v chybu", f"'{pt.message}'")
+                self.log("Program vyústil v chybu:", f"'{pt.message}'")
 
         # Libovolná jiná chyba; je vyhozena nová výjimka
         except Exception as e:
             for unit in self.robot.units:
                 unit.deactivate()
-            raise e
 
         # Ať už došlo k chybě či nikoliv, proveď výstup
         finally:
