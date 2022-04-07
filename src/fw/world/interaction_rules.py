@@ -89,7 +89,7 @@ class LimitPerInteractionType(InteractionRule):
     'LimitCounter', které se zaměřuje na celkový počet všech interakcí.
     """
 
-    def __init__(self, num_of_allowed: int = 500):
+    def __init__(self, num_of_allowed: int = 1000):
         """Initor, který přijímá maximální počet interakcí pro libovolný typ.
         Pokud je tento limit dovršen, bude daná interakce zamítnuta.
         """
