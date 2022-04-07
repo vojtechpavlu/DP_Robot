@@ -35,7 +35,7 @@ class Interaction(Identifiable, Named, Described):
     souvislosti se světem, resp. jeho rozhraním."""
 
     def __init__(self, name: str, desc: str, unit: "unit_module.AbstractUnit",
-                 error_function: "Callable"):
+                 error_function: "Callable", **kwargs):
         """Initor přijímá v parametru název a popis interakce. Oba tyto
         popisné údaje slouží k lidské identifikaci, musí být tedy v přirozeném
         jazyce a dostatečně dobře popisovat podstatu.
@@ -62,6 +62,9 @@ class Interaction(Identifiable, Named, Described):
 
         # Funkce, která má být zavolána v případě chyby
         self.__ef = error_function
+
+        # Dodané parametry
+        self.kwargs = kwargs
 
         # Jednotka musí být zjistitelná
         if self.unit is None:
@@ -226,7 +229,7 @@ class InteractionFactory(ABC):
         # Jinak nastav nové rozhraní světa
         self.__world_interface = world_interface
 
-    def interact(self) -> object:
+    def interact(self, **kwargs) -> object:
         """Funkce odpovědná za provedení interakce, resp. její iniciace.
         Ta je odeslána na objekt rozhraní světa, které je z titulu
         'InteractionHandlerManager' odpovědné za její zprocesování.
@@ -238,8 +241,21 @@ class InteractionFactory(ABC):
         if self.is_deactivated:
             raise InteractionFactoryError(
                 "Nelze interagovat po deaktivaci", self)
-        return self.__world_interface.process_interaction(
-            self.build_interaction())
+        try:
+            return self.__world_interface.process_interaction(
+                self.build_interaction(**kwargs))
+
+        # Typicky tam, kde interakce vyžaduje některé keyworded argumenty
+        except InteractionError as ie:
+
+            # Deaktivace továrny interakcí
+            self.deactivate()
+
+            # Deaktivace robota
+            ie.interaction.robot.deactivate()
+
+            # Terminace programu robota
+            ie.interaction.robot.program.terminate(ie.message)
 
     def deactivate(self):
         """Funkce nastaví továrnu interakcí jako neaktivní. Tato továrna po
@@ -249,7 +265,7 @@ class InteractionFactory(ABC):
         self.__is_deactivated = True
 
     @abstractmethod
-    def build_interaction(self) -> "Interaction":
+    def build_interaction(self, **kwargs) -> "Interaction":
         """Abstraktní funkce, která definuje protokol způsobu získávání
         instance interakce."""
 
