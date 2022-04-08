@@ -118,14 +118,25 @@ class Logger(event_module.EventEmitter):
         Funkce vytvoří instanci logu z dodaných vstupů a tuto pak předá všem
         výstupním zpracovatelům k vytvoření výstupu."""
 
+        # Očištění zprávy; z konce jsou odstraněny všechny bílé znaky
+        message = message.rstrip()
+
+        # Formální kontrola zprávy; pokud je její délka po odříznutí koncových
+        # bílých znaků větší než 0, lze zprávu zalogovat, jinak je nahrazena
+        # defaultní "prázdnou" zprávou
+        if len(message) > 0:
+            message = "« empty message »"
+
         # Tvorba instance třídy Log
         log_instance = Log(context, message)
 
         # Vytvoření události a upozornění všech registrovaných odběratelů
-        self.notify_all_event_handlers(logging_events.LogEvent(log_instance))
+        self.notify_all_event_handlers(
+            logging_events.LogEvent(log_instance))
 
         # Pro každý výstup: je-li odpovědný za tento typ logu, zaloguj ho
         for output in self.outputs:
             if output.is_responsible_for(log_instance):
                 output.log(log_instance)
+
 
