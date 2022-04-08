@@ -742,10 +742,18 @@ class RemovedMarkEvalFun(EvaluationFunction):
 
 
 class LoggedAnything(EvaluationFunction):
-    """"""
+    """Evaluační funkce LoggedAnything má za cíl kontrolovat, že bylo
+    zalogováno cokoliv ze stanoveného kontextu. Defaultně je tento sledovaný
+    kontext nastaven na 'OUTPUT'. Znění zprávy však nemá vliv na splnění či
+    nesplnění cíle."""
 
     def __init__(self, context: str = "OUTPUT"):
-        """"""
+        """Initor třídy, který má za cíl nastavit předka a uložit postoupené
+        údaje. Do initoru vstupuje název kontextu, ve kterém mají být zprávy
+        kontrolovány. Ten je defaultně nastaven na hodnotu 'OUTPUT'.
+
+        Velikost znaků kontextu není důležitá, defaultně se převádí na
+        kapitálky."""
 
         # Iniciace předka
         EvaluationFunction.__init__(
@@ -756,22 +764,38 @@ class LoggedAnything(EvaluationFunction):
 
     @property
     def context(self) -> str:
-        """"""
+        """Vlastnost vrací kontext, který byl dané evaluační funkci svěřen."""
         return self._context
 
     def eval(self) -> bool:
-        """"""
+        """Vyhodnocení spočívá v prostém vrácení informace o tom, zda-li bylo
+        v daném kontextu logováno, tedy vnitřní stav funkce."""
         return self.__logged_in_context
 
     def configure(self):
-        """"""
+        """Konfigurace spočívá v zaregistrování se v loggeru, který má
+        kompetenci upozorňovat na události zaznamenání zprávy."""
         self.task.target.logger.register_event_handler(self)
 
     def update(self, emitter: "EventEmitter", event: "Event"):
-        """"""
+        """Funkce 'update' se stará o ověřování, že je tato událost pro
+        tuto evaluační funkci relevantní. V první řadě se kontroluje, zda
+        je dodaná událost vyžadovaného typu, dále zda je kontext záznamu
+        tím sledovaným. Pokud je toto splněno, je vnitřní stav evaluační
+        funkce nastaven na True a tato evaluační funkce se sama postará
+        o odstranění z evidence emitoru událostí; v tomto případě Loggeru.
+        """
+
+        # Kontrola relevance události
         if isinstance(event, logging_events.LogEvent):
+
+            # Pokud je záznam obsažený v události sledovaného kontextu
             if event.log.context == self.context:
+
+                # Nastavení vnitřního stavu funkce na True
                 self.__logged_in_context = True
+
+                # Ukončení odběru událostí
                 emitter.unregister_event_handler(self)
 
 
