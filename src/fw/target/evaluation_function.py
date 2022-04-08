@@ -20,7 +20,9 @@ from src.fw.target.event_handling import EventEmitter, Event
 
 import src.fw.target.task as task_module
 import src.fw.robot.robot as robot_module
+import src.fw.world.direction as direction_module
 import src.fw.target.event_handling as event_module
+
 import src.fw.world.world_events as world_events
 import src.fw.robot.robot_events as robot_events
 import src.fw.utils.logging.logging_events as logging_events
@@ -904,6 +906,115 @@ class LoggedSpecificMessage(EvaluationFunction):
 
         # Vyhodnocení, zda-li je zpráva totožná s očekávanou
         return self.message == message
+
+
+class TurnToDirection(EvaluationFunction):
+    """Třída definuje evaluační funkci, která dokáže ověřit, že se robot
+    otočil jedním konkrétním směrem."""
+
+    def __init__(self, direction_name: str):
+        """Initor třídy, který přijímá název směru, kterým se má robot
+        natočit. Je k tomu důležité dbát na standardní názvy; povolené jsou
+        následující:
+
+            - 'EAST', 'NORTH', 'WEST' a 'SOUTH'
+            - 'E', 'N', 'W' a 'S'
+
+        Ekvivalentně lze použít názvy nepsané v kapitálkách, viz dokumentace
+        funkce 'direction_by_name(direction_name)' v modulu Direction.
+        """
+
+        # Volání initoru předka
+        EvaluationFunction.__init__(self, f"TurnToDirection {direction_name}")
+
+        # Vyhledání příslušného směru
+        self._direction = direction_module.Direction.direction_by_name(
+            direction_name)
+
+        # Vnitřní stav evaluační funkce
+        self.__was_turned_to = False
+
+        # Název směru musí být platný, jinak je vyhozena výjimka
+        if not self._direction:
+            raise EvaluationFunctionError(
+                f"Dodaný název směru '{direction_name}' neukazuje na žádný "
+                f"platný směr. Použijte některý z doporučených názvů: "
+                f"{direction_module.Direction.direction_names()}", self)
+
+    @property
+    def direction(self) -> "direction_module.Direction":
+        """Vlastnost vrací směr, který je v tomto kontextu sledován."""
+        return self._direction
+
+    def eval(self) -> bool:
+        """Metoda vrací vnitřní stav evaluační funkce, zda-li tato zaznamenala
+        změnu směru na stanovený, či nikoliv."""
+        return self.__was_turned_to
+
+    def configure(self):
+        """Tato metoda v této implementaci nemá význam."""
+
+    def update(self, emitter: "EventEmitter", event: "Event"):
+        """Funkce má za cíl provést filtraci nerelevantních událostí
+        a vybrat z ní ty použitelné, v tomto případě ty symbolizující
+        změnu směru natočení robota, tedy typu 'DirectionChangeEvent'.
+
+        Pokud se tento shoduje s požadovaným, vnitřní stav evaluační
+        funkce se překlopí na True a odhlásí se z odběru dalších událostí.
+        """
+
+        # Kontrola relevance události pro tuto evaluační funkci
+        if isinstance(event, world_events.DirectionChangeEvent):
+
+            # Kontrola, že je nový směr natočení robota stejný,
+            # jako ten požadovaný
+            if event.direction == self.direction:
+
+                # Nastav vnitřní stav funkce a odhlaš se z odběru událostí
+                self.__was_turned_to = True
+                emitter.unregister_event_handler(self)
+
+                # Zaloguj úspěšné splnění úkolu
+                self.log(f"Splnění úkolu '{self.name}'")
+
+
+class TurnToAllDirections(Conjunction):
+    """Konjunkce evaluačních funkcí pro kontrolu natočení robota do každého
+    z definovaných směrů."""
+
+    def __init__(self):
+        """Initor třídy, který má za cíl připravit svého předka (tedy
+        konjunkci evaluačních funkcí; instanci třídy 'Conjunction').
+        """
+
+        # Volání initoru předka
+        Conjunction.__init__(self, "TurnToAllDirections")
+
+    def configure(self):
+        """Konfigurační metoda se stará o iniciaci všech vyhodnocovacích
+        funkcí, které ověřují, že se robot natočil všemi dostupnými směry.
+        Konkrétně pak má za cíl naplnit tuto jednotlivými evaluačními funkcemi
+        pro kontrolu natočení do směru (tedy typu 'TurnToDirection'), a to pro
+        každý platný směr.
+        """
+        # Získání reference na rozhraní světa
+        world_interface = self.task.target.world.world_interface
+
+        # Pro každý směr zaregistruj jednu evaluační funkci
+        for direction in direction_module.Direction.list():
+
+            # Vytvoření instance evaluační funkce
+            ef = TurnToDirection(direction.name)
+
+            # Registrace evaluační funkce u event emitor
+            world_interface.register_event_handler(ef)
+
+            # Přidání evaluační funkce do konjunkce
+            self.add_eval_func(ef)
+
+
+
+
 
 
 
