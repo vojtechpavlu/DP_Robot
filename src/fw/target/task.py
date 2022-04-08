@@ -182,6 +182,19 @@ class IsMountedWithAllTask(Task):
             "jednotkami", ef_module.IsRobotMountedWithAll(unit_names))
 
 
+class AddedMarkAtTask(Task):
+    """Tento úkol umožňuje kontrolu splnění požadavku na označení stanoveného
+    políčka na specifických souřadnicích. Samotný text značky zde není
+    nijak rozhodující."""
+
+    def __init__(self, x: int, y: int):
+        """"""
+        Task.__init__(
+            self, f"AddedMark @ [{x}, {y}]", "Úkol, který kontroluje, "
+            f"že bylo políčko na souřadnicích [{x}, {y}] robotem označeno",
+            ef_module.AddedAnyMarkEvalFun(x, y))
+
+
 def always_true_task() -> "Task":
     """Funkce vrací instanci úkolu, který je vykonstruován tak, že je vždy
     za všech okolností pravdivý, tedy splněný."""
