@@ -23,6 +23,7 @@ import src.fw.robot.robot as robot_module
 import src.fw.target.event_handling as event_module
 import src.fw.world.world_events as world_events
 import src.fw.robot.robot_events as robot_events
+import src.fw.utils.logging.logging_events as logging_events
 
 
 class EvaluationFunction(Named, Identifiable, event_module.EventHandler):
@@ -738,6 +739,40 @@ class RemovedMarkEvalFun(EvaluationFunction):
 
                     # Odhlášení z odběru událostí
                     emitter.unregister_event_handler(self)
+
+
+class LoggedAnything(EvaluationFunction):
+    """"""
+
+    def __init__(self, context: str = "OUTPUT"):
+        """"""
+
+        # Iniciace předka
+        EvaluationFunction.__init__(
+            self, f"LoggedAnything in {context} context")
+
+        self._context = context.upper()
+        self.__logged_in_context = False
+
+    @property
+    def context(self) -> str:
+        """"""
+        return self._context
+
+    def eval(self) -> bool:
+        """"""
+        return self.__logged_in_context
+
+    def configure(self):
+        """"""
+        self.task.target.logger.register_event_handler(self)
+
+    def update(self, emitter: "EventEmitter", event: "Event"):
+        """"""
+        if isinstance(event, logging_events.LogEvent):
+            if event.log.context == self.context:
+                self.__logged_in_context = True
+                emitter.unregister_event_handler(self)
 
 
 
