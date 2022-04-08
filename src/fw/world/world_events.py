@@ -12,6 +12,7 @@ from dataclasses import dataclass
 # Import lokálních knihoven
 import src.fw.target.event_handling as event_module
 import src.fw.robot.robot as robot_module
+import src.fw.world.field as field_module
 
 
 @dataclass(frozen=True)
@@ -49,4 +50,15 @@ class SpawnRobotEvent(event_module.Event):
     # Robot, který byl přiřazen
     robot: "robot_module.Robot"
 
+
+@dataclass(frozen=True)
+class MarkChangeEvent(event_module.Event):
+    """Datová třída reprezentující událost změny označkování políčka. Tato
+    událost by měla symbolizovat vznik značky na políčku, stejně jako její
+    odebrání.
+
+    Příklad použití:
+        >>> MarkChangeEvent(field)"""
+
+    field: "field_module.Field"
 
