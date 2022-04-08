@@ -28,10 +28,14 @@ class LoggerFactory(ABC):
 
 
 class DefaultLoggerFactory(LoggerFactory):
-    """"""
+    """Výchozí definice továrny loggeru, která má za cíl tvořit instanci
+    loggeru s defaultním nastavením."""
 
     def build(self) -> "logger_module.Logger":
+        """Funkce tvoří logger s defaultním nastavením."""
         logger = logger_module.Logger()
-        logger.add_output(logging_output_module.PrintingOutput())
+        output = logging_output_module.PrintingOutput(take_all=True)
+        output.add_context("output")
+        logger.add_output(output)
         return logger
 
