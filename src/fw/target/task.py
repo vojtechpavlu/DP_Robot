@@ -133,7 +133,7 @@ class VisitAllTask(Task):
 
     def __init__(self):
         Task.__init__(
-            self, "VisitAllTask",
+            self, "Visited all fields",
             "Úkol, který očekává navštívení všech cest světa.",
             ef_module.VisitAllEvaluationFunction())
 
@@ -151,7 +151,7 @@ class VisitSpecificFieldsTask(Task):
             >>> [(1, 1), (2, 2), (3, 3)]
         """
         Task.__init__(
-            self, "VisitSpecificFields",
+            self, "Visited specific fields",
             "Úkol, který očekává navštívění specifických políček ve světě.",
             ef_module.VisitSpecificFieldEvaluationFunction(to_visit))
 
@@ -165,7 +165,7 @@ class ApplyAllInteractions(Task):
 
     def __init__(self, interaction_names: "Iterable[str]"):
         Task.__init__(
-            self, "ApplyAllInteractions",
+            self, "Applied all given interactions",
             "Úkol, který kontroluje, že byly použity všechny stanovené"
             "interakce.", ef_module.UsedAllInteractions(interaction_names))
 
@@ -177,7 +177,7 @@ class IsMountedWithAllTask(Task):
     def __init__(self, unit_names: "Iterable[str]"):
         """"""
         Task.__init__(
-            self, "IsMountedWithAllTask",
+            self, "Is mounted with all",
             "Úkol, kontrolující robota, zda je osazen všemi požadovanými "
             "jednotkami", ef_module.IsRobotMountedWithAll(unit_names))
 
@@ -190,7 +190,7 @@ class AddedMarkAtTask(Task):
     def __init__(self, x: int, y: int):
         """Initor, který přijímá souřadnice sledovaného políčka."""
         Task.__init__(
-            self, f"AddedMark @ [{x}, {y}]", "Úkol, který kontroluje, "
+            self, f"Added mark @ [{x}, {y}]", "Úkol, který kontroluje, "
             f"že bylo políčko na souřadnicích [{x}, {y}] robotem označeno",
             ef_module.AddedAnyMarkEvalFun(x, y))
 
@@ -205,7 +205,7 @@ class RemovedMarkAtTask(Task):
     def __init__(self, x: int, y: int):
         """Initor, který přijímá souřadnice sledovaného políčka."""
         Task.__init__(
-            self, f"RemovedMark @ [{x}, {y}]", "Úkol, který kontroluje, "
+            self, f"Removed mark @ [{x}, {y}]", "Úkol, který kontroluje, "
             f"že byla odstraněna značka z políčka na souřadnicích [{x}, {y}]",
             ef_module.RemovedMarkEvalFun(x, y))
 
@@ -217,7 +217,7 @@ class LoggedAnythingInContext(Task):
     def __init__(self, context: str = "OUTPUT"):
         """"""
         Task.__init__(
-            self, f"LoggedAnythingInContext '{context}'", "Úkol, který "
+            self, f"Logged anything in Context '{context}'", "Úkol, který "
             f"kontroluje, že bylo zalogováno v kontextu '{context}'",
             ef_module.LoggedAnything(context))
 
@@ -229,7 +229,7 @@ class LoggedMessageInContext(Task):
     def __init__(self, message: str, context: str = "OUTPUT",
                  ignore_casing: bool = False, strip: bool = False):
         Task.__init__(
-            self, f"LoggedMessageInContext '{message}' in '{context}'",
+            self, f"Logged message '{message}' in context '{context}'",
             f"Úkol, který kontroluje, že byla zpráva '{message}' zalogována "
             f"v kontextu '{context}'", ef_module.LoggedSpecificMessage(
                 message, context, ignore_casing=ignore_casing, strip=strip))
@@ -243,7 +243,7 @@ class TurnToDirectionTask(Task):
         """Initor, který postupuje svému předkovi všechny potřebné parametry.
         """
         Task.__init__(
-            self, f"TurnedToDirection '{direction_name}'",
+            self, f"Turned to direction '{direction_name}'",
             f"Úkol ověřující, že se robot otočil směrem '{direction_name}'",
             ef_module.TurnToDirection(direction_name))
 
@@ -256,9 +256,29 @@ class TurnedToAllDirectionsTask(Task):
         """Initor, který postupuje svému předkovi všechny potřebné parametry.
         """
         Task.__init__(
-            self, "TurnedToAllDirections", "Úkol, který ověřuje, že se robot "
-            "natočil do každého z definovaných směrů",
+            self, "Turned to all directions", "Úkol, který ověřuje, že se "
+            "robot natočil do každého z definovaných směrů",
             ef_module.TurnToAllDirections())
+
+
+class EndAtPosition(Task):
+    """Instance této třídy odpovídají za kontrolu, že robot při evaluaci
+    (typicky na konci běhu) je zastaven na specifickém políčku a natočen
+    očekávaným směrem."""
+
+    def __init__(self, x: int, y: int, direction_name: str):
+        """Initor, který přijímá souřadnice políčka, na kterém by měl
+        stát robot natočený definovaným směrem. Ten je specifikován
+        názvem směru; bližší informace o specifikaci směru jeho názvem
+        jsou uvedeny v dokumentaci funkce 'direction_by_name(str)'
+        výčtového typu 'Direction'.
+        """
+
+        Task.__init__(
+            self, f"Ended @ [{x}, {y}] and turned to '{direction_name}'",
+            f"Úkol, který ověřuje, že robot po svém ukončení je na políčku "
+            f"na souřadnicích [{x}, {y}] a natočen směrem '{direction_name}'",
+            ef_module.RobotIsAtAndHeadingTo(x, y, direction_name))
 
 
 def always_true_task() -> "Task":
