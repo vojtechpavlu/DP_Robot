@@ -113,7 +113,7 @@ class AllowedCharset(MarkRule):
     def check(self, mark: "Mark") -> bool:
         """Funkce ověřuje, zda-li je značka značky sestaven z pouze povolených
         znaků či zda obsahuje i nějaké nepovolené."""
-        for char in mark.text.split(""):
+        for char in tuple(mark.text):
             if char not in self.charset:
                 return False
         return True
@@ -177,7 +177,7 @@ class Markable(ABC):
     def check_mark(self, mark: "Mark") -> bool:
         """Funkce se stará o kontrolu potenciální značky, zda-li neporušuje
         některé pravidlo."""
-        return self.violated_mark_rules(mark) == 0
+        return len(self.violated_mark_rules(mark)) == 0
 
     def violated_mark_rules(self, mark: "Mark") -> "tuple[MarkRule]":
         """Funkce vrací pro dodanou značku sadu pravidel, která byla porušena.
