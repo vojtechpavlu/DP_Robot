@@ -23,6 +23,7 @@ import src.fw.robot.robot as robot_module
 import src.fw.target.event_handling as event_module
 import src.fw.world.world_events as world_events
 import src.fw.robot.robot_events as robot_events
+import src.fw.utils.logging.logging_events as logging_events
 
 
 class EvaluationFunction(Named, Identifiable, event_module.EventHandler):
@@ -738,6 +739,168 @@ class RemovedMarkEvalFun(EvaluationFunction):
 
                     # Odhlášení z odběru událostí
                     emitter.unregister_event_handler(self)
+
+
+class LoggedAnything(EvaluationFunction):
+    """Evaluační funkce LoggedAnything má za cíl kontrolovat, že bylo
+    zalogováno cokoliv ze stanoveného kontextu. Defaultně je tento sledovaný
+    kontext nastaven na 'OUTPUT'. Znění zprávy však nemá vliv na splnění či
+    nesplnění cíle."""
+
+    def __init__(self, context: str = "OUTPUT"):
+        """Initor třídy, který má za cíl nastavit předka a uložit postoupené
+        údaje. Do initoru vstupuje název kontextu, ve kterém mají být zprávy
+        kontrolovány. Ten je defaultně nastaven na hodnotu 'OUTPUT'.
+
+        Velikost znaků kontextu není důležitá, defaultně se převádí na
+        kapitálky."""
+
+        # Iniciace předka
+        EvaluationFunction.__init__(
+            self, f"LoggedAnything in {context} context")
+
+        self._context = context.upper()
+        self.__logged_in_context = False
+
+    @property
+    def context(self) -> str:
+        """Vlastnost vrací kontext, který byl dané evaluační funkci svěřen."""
+        return self._context
+
+    def eval(self) -> bool:
+        """Vyhodnocení spočívá v prostém vrácení informace o tom, zda-li bylo
+        v daném kontextu logováno, tedy vnitřní stav funkce."""
+        return self.__logged_in_context
+
+    def configure(self):
+        """Konfigurace spočívá v zaregistrování se v loggeru, který má
+        kompetenci upozorňovat na události zaznamenání zprávy."""
+        self.task.target.logger.register_event_handler(self)
+
+    def update(self, emitter: "EventEmitter", event: "Event"):
+        """Funkce 'update' se stará o ověřování, že je tato událost pro
+        tuto evaluační funkci relevantní. V první řadě se kontroluje, zda
+        je dodaná událost vyžadovaného typu, dále zda je kontext záznamu
+        tím sledovaným. Pokud je toto splněno, je vnitřní stav evaluační
+        funkce nastaven na True a tato evaluační funkce se sama postará
+        o odstranění z evidence emitoru událostí; v tomto případě Loggeru.
+        """
+
+        # Kontrola relevance události
+        if isinstance(event, logging_events.LogEvent):
+
+            # Pokud je záznam obsažený v události sledovaného kontextu
+            if event.log.context == self.context:
+
+                # Nastavení vnitřního stavu funkce na True
+                self.__logged_in_context = True
+
+                # Ukončení odběru událostí
+                emitter.unregister_event_handler(self)
+
+
+class LoggedSpecificMessage(EvaluationFunction):
+    """Tato evaluační funkce umožňuje ověřovat, že byla zaznamenána v loggeru
+    konkrétní zpráva v konkrétním kontextu. Zároveň instance této třídy
+    umožňují měnit 'citlivost' na jednotlivé zprávy; konkrétně velikost písmen
+    či bílé znaky na začátku a konci řetězců."""
+
+    def __init__(self, message: str, context: str = "OUTPUT",
+                 ignore_casing: bool = False, strip: bool = False):
+        """Initor, který inicializuje svého předka a ukládá si vstupní
+        nastavení v podobě:
+
+            - očekávané zprávy
+            - poslouchaného kontextu
+            - zda záleží na velikosti písmen
+            - zda záleží na počátečních a koncových bílých znacích ve zprávě
+        """
+
+        # Volání předka
+        EvaluationFunction.__init__(
+            self, f"LoggedSpecificMessage '{message}' in '{context}'")
+
+        # Uložení parametrů evaluační funkce
+        self._ignore_casing = ignore_casing
+        self._strip = strip
+
+        # Iniciace stavu evaluační funkce
+        self.__logged_in_context = False
+
+        # Pokud ignorovat velikost písmen, pak převeď na kapitálky
+        if self._ignore_casing:
+            message = message.upper()
+
+        # Pokud ignorovat bílé znaky, pak oříznout
+        if self._strip:
+            message = message.strip()
+
+        # Uložení očekávané zprávy
+        self._message = message
+        self._context = context
+
+    @property
+    def message(self) -> str:
+        """Vlastnost vrací zprávu, na kterou má být evaluační funkcí čekáno.
+        """
+        return self._message
+
+    @property
+    def context(self) -> str:
+        """Vlastnost vrací název očekávaného kontextu."""
+        return self._context
+
+    def eval(self) -> bool:
+        """Funkce vrací hodnotu vnitřního stavu evaluační funkce, tedy zda
+        byla či nebyla zalogována konkrétní zpráva v daném kontextu."""
+        return self.__logged_in_context
+
+    def configure(self):
+        """Zaregistrování se u loggeru z jeho titulu emitoru událostí."""
+        self.task.target.logger.register_event_handler(self)
+
+    def update(self, emitter: "EventEmitter", event: "Event"):
+        """Funkce je odpovědná za zpracování postoupených událostí.
+
+        V první řadě se ověřuje, zda je pro tuto evaluační funkce daná
+        událost relevantní či nikoliv. Pokud ano, kontroluje se, zda-li
+        se shoduje kontext zprávy se sledovaným kontextem a konečně se
+        ověřuje, zda-li je zpráva tou očekávanou. Pokud se ukáže že ano,
+        změní se vnitřní stav evaluační funkce a je odhlášena z odběru
+        těchto událostí příslušného emitoru."""
+
+        # Kontrola příslušnosti události
+        if isinstance(event, logging_events.LogEvent):
+
+            # Kontrola příslušnosti kontextu
+            if event.log.context == self.context:
+
+                # Provedení kontroly zprávy logu
+                if self.check_message(event.log.message):
+
+                    # Změna stavu evaluační funkce
+                    self.__logged_in_context = True
+
+                    # Odebrání se z odběru u emitoru událostí, v tomto případě
+                    # konkrétně loggeru
+                    emitter.unregister_event_handler(self)
+
+    def check_message(self, message: str) -> bool:
+        """Funkce se stará o ověření zprávy dle vnitřních nastavených pravidel.
+        """
+
+        # Odstranění rozdílů ve velikosti písmen
+        if self._ignore_casing:
+            message = message.upper()
+
+        # Odstranění rozdílů v bílých znacích
+        if self._strip:
+            message = message.strip()
+
+        print(message, self.message)
+
+        # Vyhodnocení, zda-li je zpráva totožná s očekávanou
+        return self.message == message
 
 
 
