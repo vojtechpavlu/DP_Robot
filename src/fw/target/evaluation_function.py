@@ -685,6 +685,60 @@ class AddedAnyMarkEvalFun(EvaluationFunction):
                     emitter.unregister_event_handler(self)
 
 
+class RemovedMarkEvalFun(EvaluationFunction):
+    """Tato evaluační funkce reaguje na událost odstranění značky. Mluvíme
+    zde však o explicitním odstranění značky z políčka. Nebude-li políčko
+    nejdříve opatřeno značkou a pak robotem explicitně odznačkováno, bude
+    tato evaluační funkce vracet vždy hodnotu False, a to i kdyby na políčku
+    nikdy žádná značka nebyla."""
+
+    def __init__(self, x: int, y: int):
+        """Initor třídy, který přijímá souřadnice 'x' a 'y', které patří
+        políčku, které má být sledováno.
+        """
+
+        # Volání initoru předka
+        EvaluationFunction.__init__(self, "AddedAnyMark")
+
+        # Uložení dodaných parametrů
+        self._x = x
+        self._y = y
+
+        # Defaultní nastavení stavu evaluační funkce
+        self.__was_demarked = False
+
+    def eval(self) -> bool:
+        return self.__was_demarked
+
+    def configure(self):
+        """Metoda, jejímž cílem je pouze zaregistrování se u vydavatele
+        událostí, kterým tato evaluační funkce naslouchá.
+        """
+        self.task.target.world.world_interface.register_event_handler(self)
+
+    def update(self, emitter: "EventEmitter", event: "Event"):
+        """Hlavní vyhodnocovací funkce, která umožňuje rozpoznat, že políčku
+        byla odstraněna značka. Nereaguje však na to, když značka na políčku
+        nebyla; musí být explicitně odstraněna robotem.
+        """
+
+        # Pokud je daná událost příslušná této evaluační funkci
+        if isinstance(event, world_events.MarkChangeEvent):
+
+            # Uložení políčka pro snazší čtení
+            field = event.field
+
+            # Porovnání, zda-li jde skutečně o sledované políčko
+            if field.x == self._x and field.y == self._y:
+
+                # Pokud má políčko značku
+                if not field.has_mark:
+                    # Změna stavu evaluační funkce
+                    self.__was_demarked = True
+
+                    # Odhlášení z odběru událostí
+                    emitter.unregister_event_handler(self)
+
 
 
 

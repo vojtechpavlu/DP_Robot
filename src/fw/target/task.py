@@ -188,11 +188,26 @@ class AddedMarkAtTask(Task):
     nijak rozhodující."""
 
     def __init__(self, x: int, y: int):
-        """"""
+        """Initor, který přijímá souřadnice sledovaného políčka."""
         Task.__init__(
             self, f"AddedMark @ [{x}, {y}]", "Úkol, který kontroluje, "
             f"že bylo políčko na souřadnicích [{x}, {y}] robotem označeno",
             ef_module.AddedAnyMarkEvalFun(x, y))
+
+
+class RemovedMarkAtTask(Task):
+    """Tento úkol umožňuje kontrolu splnění požadavku na odstranění značky
+    ze stanoveného políčka na specifických souřadnicích.
+
+    Tato značka předtím na políčku musí být, resp. musí dojít k explicitnímu
+    odstranění značky robotem."""
+
+    def __init__(self, x: int, y: int):
+        """Initor, který přijímá souřadnice sledovaného políčka."""
+        Task.__init__(
+            self, f"RemovedMark @ [{x}, {y}]", "Úkol, který kontroluje, "
+            f"že byla odstraněna značka z políčka na souřadnicích [{x}, {y}]",
+            ef_module.RemovedMarkEvalFun(x, y))
 
 
 def always_true_task() -> "Task":
