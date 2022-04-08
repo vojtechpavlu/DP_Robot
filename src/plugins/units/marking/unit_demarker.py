@@ -1,66 +1,64 @@
-"""Defaultní šablona pluginu pro továrny jednotek.
+"""Jednotka 'Demarker' slouží k odznačkování políček. Jde o aktuátor, který
+odstraní značku z políčka, na kterém robot právě stojí.
 
-V tomto dokumentačním komentáři musí být uveden účel jednotky, způsob jejího
-chování a doporučený způsob nakládání s ní.
+Způsob použití tedy je například:
 
-U aktuátorů je vhodné, aby zde byl uveden výsledek po aplikování, stejně jako
-možné chyby, k jakým může dojít. U senzorů zase uvedení alespoň typu návratové
-hodnoty a nějaký ilustrační příklad."""
+    robot.get_unit("Demarker").execute()
+
+Jednotka vyhazuje chybu, pokud na políčku žádná značka není.
+"""
 
 # Import standardních knihoven
 from typing import Type
 
 # Import lokálních knihoven
 from src.fw.robot.interaction import Interaction, InteractionError
-from src.fw.robot.unit import AbstractUnitFactory, Sensor
+from src.fw.robot.unit import Actuator, AbstractUnitFactory, Sensor
 from src.fw.world.world_interface import WorldInterface
 
 
 """Definice proměnných"""
 # Název jednotky - ten musí být napříč všemi importovanými jednotkami unikátní
-_UNIT_NAME = "TemplateActuator"
+_UNIT_NAME = "Demarker"
 
 # Popis jednotky - lidsky čitelný popis
-_UNIT_DESCRIPTION = "Template description of 'TemplateActuator'"
+_UNIT_DESCRIPTION = "Jednotka odstraňuje značky"
 
 # Název továrny jednotek - lidsky čitelný název
-_UNIT_FACTORY_NAME = "Template 'TemplateActuator' Factory"
+_UNIT_FACTORY_NAME = "DemarkerFactory"
 
 # Název interakce - pokud možno srozumitelný identifikátor toho, co se provádí
-_INTERACTION_NAME = "TemplateInteraction"
+_INTERACTION_NAME = "Demark"
 
 # Popis interakce - lidsky čitelný popis interakce, která probíhá
-_INTERACTION_DESCRIPTION = "TemplateInteraction description"
+_INTERACTION_DESCRIPTION = "Odstranění značky z políčka"
 
 
-class TemplateActuator(Sensor):
-    """Šablona senzoru, která definuje ukázkovou implementaci, jak by měla
-    jednotka vypadat co do definice třídy."""
+class Demarker(Actuator):
+    """Jednotky této třídy jsou odpovědné za poskytnutí funkcionality
+    odstranění značky z políčka, na kterém právě robot stojí."""
 
     def __init__(self, factory: "AbstractUnitFactory"):
-        """Initor senzoru, který z úsporných důvodů používá skromnou
-        implementaci. De facto jen iniciuje svého předka názvem jednotky,
-        popisem účelu jednotky (nezapomenout doplnit) a referencí na továrnu,
-        která je za vytvoření této jednotky odpovědná.
-        """
-        Sensor.__init__(self, factory.unit_name,
-                        _UNIT_DESCRIPTION, factory)
+        """Initor, který postupuje svému předkovi základní údaje, především
+        od své továrny, ale také popis jednotky."""
+        Actuator.__init__(self, factory.unit_name,
+                          _UNIT_DESCRIPTION, factory)
 
     def build_interaction(self) -> "Interaction":
         """Metoda, která vrací zcela novou instanci interakce, pomocí které
         jednotka bude interagovat se světem.
         """
-        return TemplateInteraction(self)
+        return DemarkInteraction(self)
 
 
-class TemplateInteraction(Interaction):
+class DemarkInteraction(Interaction):
     """Instance této třídy obsahují definici procedury, která má být
     provedena coby reprezentace samotného aktu interagování se světem.
     Tato nejdůležitější část je reprezentována implementací metody
-    'execute_interaction' (doplnit).
+    'execute_interaction'.
     """
 
-    def __init__(self, unit: "Sensor", **kwargs):
+    def __init__(self, unit: "Actuator", **kwargs):
         """Initor interakce, který přijímá v parametru jednotku, která
         interakci provedla."""
         Interaction.__init__(self, _INTERACTION_NAME,
@@ -70,18 +68,40 @@ class TemplateInteraction(Interaction):
     def execute_interaction(
             self, interface: "WorldInterface") -> object:
         """Tato funkce definuje samotný akt interakce se světem, resp. jeho
-        rozhraním. V této šablonové implementaci pouze vyhazuje výjimku, aby
-        se nezapomnělo tuto implementovat.
+        rozhraním.
+
+        Funkce se pokusí ověřit, zda je políčko platné a zda-li je opatřeno
+        nějakou značkou. Tu se pak pokusí odstranit. Pokudže není některá z
+        podmínek naplněna, je vyhozena výjimka.
         """
-        raise InteractionError(
-            f"«NO INTERACTION SPECIFIED: '{type(self)}'»", self)
+
+        # Získání stavu robota a políčka, na kterém stojí
+        rs = interface.world.robot_state_manager.robot_state(self.robot)
+        field = rs.field
+
+        # Pokud políčko není evidováno
+        if field is None:
+            raise InteractionError(
+                f"Políčko, na kterém robot stojí je None", self)
+
+        # Pokud na políčku žádná značka není
+        elif not field.has_mark:
+            raise InteractionError(
+                f"Na políčku {field} nebyla žádná značka nalezena", self)
+
+        # Jinak, když je vše v pořádku
+        else:
+            field.pop_mark
 
 
-class TemplateActuatorFactory(AbstractUnitFactory):
+class DemarkerFactory(AbstractUnitFactory):
     """Továrna jednotek, která definuje způsob dynamického obdržení instance
     konkrétní jednotky. Kromě vlastního poskytování těchto instancí je také
     odpovědná za poskytování informací o interakcích, které lze od jednotek
-    této továrny čekat."""
+    této továrny čekat.
+
+    Tato továrna je odpovědná za dynamické poskytování jednotek typu
+    'Demarker', které slouží k odstraňování značek z políček."""
 
     def __init__(self):
         """Bezparametrický initor třídy, který iniciuje svého předka s
@@ -90,21 +110,21 @@ class TemplateActuatorFactory(AbstractUnitFactory):
         AbstractUnitFactory.__init__(
             self, _UNIT_FACTORY_NAME, _UNIT_NAME)
 
-    def build(self) -> "Sensor":
-        """Funkce odpovědná za vytvoření nové instance příslušného senzoru.
+    def build(self) -> "Actuator":
+        """Funkce odpovědná za vytvoření nové instance příslušného aktuátoru.
         Tato funkce umožňuje dynamicky získávat instance jednotek."""
-        return TemplateActuator(self)
+        return Demarker(self)
 
     @property
     def interaction_type(self) -> "Type":
         """Vlastnost vrací typ interakce, který může být od jednotek tvořených
         touto třídou očekáván."""
-        return TemplateInteraction
+        return DemarkInteraction
 
 
 def get_unit_factory() -> "AbstractUnitFactory":
     """Hlavní funkce tohoto modulu, která vrací novou instanci továrny
     jednotek."""
-    return TemplateActuatorFactory()
+    return DemarkerFactory()
 
 

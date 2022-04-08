@@ -85,15 +85,16 @@ class RandomRobotName(RobotNameGenerator):
     o stanovené délce a ze stanovené abecedy."""
 
     """Výchozí abeceda použitá pro generování názvů robotů."""
-    _DEF_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789"
+    _DEF_ALPHABET = tuple("abcdefghijklmnopqrstuvwxyz0123456789")
 
-    def __init__(self, name_length: int = 8, alphabet: str = _DEF_ALPHABET):
+    def __init__(self, name_length: int = 8,
+                 alphabet: Iterable[str] = _DEF_ALPHABET):
         """Initor, který přijímá délku vytvářených řetězců (názvů) a abecedu,
         která má být k tomuto účelu použita. Oba parametry jsou nastaveny na
         defaultní hodnoty a není tedy nutné je poskytovat.
         """
         self._length = name_length
-        self._alphabet = alphabet.split("")
+        self._alphabet = tuple(alphabet)
 
         if len(self._alphabet) <= 1:
             raise Exception(

@@ -3,10 +3,13 @@ manipulace s herním světem.
 """
 
 # Import lokálních knihoven
+from typing import Callable
+
 import src.fw.world.field as field_mod
 import src.fw.world.world_interface as world_inter_module
 
 from src.fw.utils.error import PlatformError
+from src.fw.utils.logging.logger import Logger
 from src.fw.world.direction import Direction
 import src.fw.world.spawner as spawner_module
 import src.fw.world.robot_state_manager as rsm_module
@@ -23,7 +26,8 @@ class World:
 
     def __init__(self, fields: "list[field_mod.Field]",
                  world_if_fact: "world_inter_module.WorldInterfaceFactory",
-                 spawner_factory: "spawner_module.SpawnerFactory"):
+                 spawner_factory: "spawner_module.SpawnerFactory",
+                 logger: "Logger"):
         """Initor třídy je odpovědný za přijetí všech parametrů a jejich
         uložení.
 
@@ -62,15 +66,23 @@ class World:
                         f"Nelze evidovat dvě políčka se "
                         f"stejnými souřadnicemi: {field.x}, {field.y}", self)
 
+        """Uložení loggeru, který byl této instanci dodán. Z něj je také
+        rovnou vytvořena potřebná pipeline pro tuto instanci."""
+        self._logger = logger
+        self.log: Callable = logger.make_pipeline("world").log
+
         """Připravení rozhraní světa z dodané továrny"""
-        self._world_interface = world_if_fact.build(self)
+        self._world_interface = world_if_fact.build(
+            self, self._logger.make_pipeline("world_interface").log)
 
         """Připravení správce stavů robotů. K tomu je potřeba spawner, který
         řídí přidávání robotů do světa; resp. vytváří stavy robota.
         Dále je instance tohoto spawneru inicializována co do reference na
-        tuto instanci, tedy svět, do kterého budou zasazováni roboti."""
+        tuto instanci, tedy svět, do kterého budou zasazováni roboti.
+        """
         spawner = spawner_factory.build()
-        self._robot_state_manager = rsm_module.RobotStateManager(spawner)
+        self._robot_state_manager = rsm_module.RobotStateManager(
+            spawner, self._logger.make_pipeline("robot_state").log)
         spawner.world = self
 
     @property

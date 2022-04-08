@@ -11,6 +11,7 @@ import src.fw.world.field as field_module
 import src.fw.world.spawner as spawner_module
 
 from src.fw.utils.error import PlatformError
+from src.fw.utils.logging.logger import Logger
 
 
 class WorldFactory(ABC):
@@ -42,7 +43,7 @@ class WorldFactory(ABC):
         return self._spawner_factory
 
     @abstractmethod
-    def build(self) -> "world_module.World":
+    def build(self, logger: "Logger") -> "world_module.World":
         """Abstraktní metoda stanovující protokol abstraktní třídy
         WorldFactory. Funkce je odpovědná za generování instance světa v
         závislosti na parametrech dodaných v konstruktoru."""
@@ -107,7 +108,7 @@ class OpenSpaceWorldFactory(WorldFactory):
         okolní zeď."""
         return self._height
 
-    def build(self) -> "world_module.World":
+    def build(self, logger: Logger) -> "world_module.World":
         """Funkce, která vygeneruje obdélníkový svět obehnaný stěnou. Ten
         je z povahy implementace OpenSpace, tedy otevřený prostor.
 
@@ -134,8 +135,8 @@ class OpenSpaceWorldFactory(WorldFactory):
 
         """Vrácení vytvořené instance světa se všemi políčky a s továrnou
         rozhraní světa"""
-        return world_module.World(
-            all_fields, self.world_interface_fact, self.spawner_factory)
+        return world_module.World(all_fields, self.world_interface_fact,
+                                  self.spawner_factory, logger)
 
 
 class WorldFactoryError(PlatformError):
