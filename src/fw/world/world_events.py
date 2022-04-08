@@ -42,9 +42,11 @@ class SpawnRobotEvent(event_module.Event):
     Příklad použití:
         >>> SpawnRobotEvent(x, y, robot)
     """
+    # Souřadnice políčka
     x: int
     y: int
 
+    # Robot, který byl přiřazen
     robot: "robot_module.Robot"
 
 
