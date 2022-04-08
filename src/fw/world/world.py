@@ -152,26 +152,42 @@ class World:
         Pokud na dodaných souřadnicích není evidované políčko, je vyhozena
         výjimka.
         """
+
+        # Uložení dodaného políčka
         field = self.field(x, y)
+
+        # Pokud políčko není ve světě evidováno
         if not field:
             raise WorldError(
                 f"Nelze najít sousedy pro políčko [{x};{y}], protože není "
                 f"ve světě evidováno", self)
 
+        # Iniciace úložiště pro sousedy
         neighbours = []
+
+        # Pro všechny směry
         for direction in Direction:
+
+            # Souřadnice posunutého políčka v daném směru
             moved_coords = field.coordinates.move_in_direction(direction)
+
+            # Zjištění souseda; pokud je obsažen ve světě (není None)
+            # je přidán do úložiště sousedů
             neighbour = self.field(moved_coords.x, moved_coords.y)
             if neighbour:
                 neighbours.append(neighbour)
+
+        # Navrácení v podobě ntice
         return tuple(neighbours)
 
 
 class WorldError(PlatformError):
-    """Výjimka 'WorldError' svojí podstatou rozšířuje obecnou výjimku tím, že
+    """Výjimka 'WorldError' svojí podstatou rozšiřuje obecnou výjimku tím, že
     v sobě uchovává referenci na svět, v jehož kontextu došlo k chybě."""
 
     def __init__(self, message: str, world: "World"):
+        """Initor, který přijímá textovou zprávu o chybě a postupuje ji svému
+        předkovi, a svět, v jehož kontextu došlo k chybě."""
         PlatformError.__init__(self, message)
         self._world = world
 
