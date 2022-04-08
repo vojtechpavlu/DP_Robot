@@ -235,6 +235,32 @@ class LoggedMessageInContext(Task):
                 message, context, ignore_casing=ignore_casing, strip=strip))
 
 
+class TurnToDirectionTask(Task):
+    """Tento úkol umožňuje ověřovat, že se robotovi změnil směr na jeden
+    konkrétní kýžený."""
+
+    def __init__(self, direction_name: str):
+        """Initor, který postupuje svému předkovi všechny potřebné parametry.
+        """
+        Task.__init__(
+            self, f"TurnedToDirection '{direction_name}'",
+            f"Úkol ověřující, že se robot otočil směrem '{direction_name}'",
+            ef_module.TurnToDirection(direction_name))
+
+
+class TurnedToAllDirectionsTask(Task):
+    """Instance této třídy se starají o kontrolu, že se robot natočil do
+    všech platných směrů, tedy EAST, NORTH, WEST a SOUTH."""
+
+    def __init__(self):
+        """Initor, který postupuje svému předkovi všechny potřebné parametry.
+        """
+        Task.__init__(
+            self, "TurnedToAllDirections", "Úkol, který ověřuje, že se robot "
+            "natočil do každého z definovaných směrů",
+            ef_module.TurnToAllDirections())
+
+
 def always_true_task() -> "Task":
     """Funkce vrací instanci úkolu, který je vykonstruován tak, že je vždy
     za všech okolností pravdivý, tedy splněný."""
