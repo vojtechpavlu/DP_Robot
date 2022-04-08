@@ -60,12 +60,12 @@ class TemplateInteraction(Interaction):
     'execute_interaction' (doplnit).
     """
 
-    def __init__(self, unit: "Sensor"):
+    def __init__(self, unit: "Sensor", **kwargs):
         """Initor interakce, který přijímá v parametru jednotku, která
         interakci provedla."""
         Interaction.__init__(self, _INTERACTION_NAME,
                              _INTERACTION_DESCRIPTION, unit,
-                             unit.robot.deactivate)
+                             unit.robot.deactivate, **kwargs)
 
     def execute_interaction(
             self, interface: "WorldInterface") -> object:
