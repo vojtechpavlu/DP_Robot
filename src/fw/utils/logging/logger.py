@@ -65,6 +65,9 @@ class Log(Identifiable):
         Výsledný řetězec odpovídá defaultnímu formátu, tedy 'DD-MM-YY'."""
         return timeworks.date(self.timestamp)
 
+    def __str__(self) -> str:
+        return f"LOG({self.date=}, {self.context=}, {self.message=})"
+
 
 class Logger(event_module.EventEmitter):
     """Třída Logger je odpovědná za definici loggeru, který bude schopen
