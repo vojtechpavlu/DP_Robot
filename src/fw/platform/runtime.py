@@ -13,6 +13,7 @@ from threading import Thread
 # Import lokálních knihoven
 from src.fw.platform.robot_program_executor import RobotProgramExecutor
 from src.fw.robot.mounting_error import MountingError
+from src.fw.utils.error import PlatformError
 from src.fw.utils.identifiable import Identifiable
 
 import src.fw.world.world as world_module
@@ -134,7 +135,7 @@ class AbstractRuntime(Identifiable, event_module.EventEmitter):
         dodaných továren nechá příslušné instance vygenerovat.
         """
         # Tvorba světa
-        self._world = self.world_factory.build()
+        self._world = self.world_factory.build(self.logger)
 
         # Dodání reference světa pro přípravu úlohy; aby úloha mohla být
         # provázána se světem a sledovat v něm plnění úkolů této úlohy
@@ -221,7 +222,8 @@ class SingleRobotRuntime(AbstractRuntime):
 
         # Příprava kontejneru robota
         self.__robot_container = robot_cont_module.SingleRobotContainer()
-        self.__robot_container.robot = self.robot_factory.build()
+        self.__robot_container.robot = self.robot_factory.build(
+            self.logger.make_pipeline("robot").log)
 
     @property
     def robot(self) -> "robot_module.Robot":
@@ -294,10 +296,19 @@ class SingleRobotRuntime(AbstractRuntime):
             elif pt.abort_type == program_module.AbortType.ERROR:
                 self.log("Program vyústil v chybu:", f"'{pt.message}'")
 
+        except PlatformError as pe:
+            self.robot.deactivate()
+
+            import traceback
+            import sys
+
+            #self.log(f"Byla vyhozena výjimka: '{pe}'")
+            traceback.print_exception(*sys.exc_info())
+
         # Libovolná jiná chyba; je vyhozena nová výjimka
         except Exception as e:
-            for unit in self.robot.units:
-                unit.deactivate()
+            self.robot.deactivate()
+            raise e
 
         # Ať už došlo k chybě či nikoliv, proveď výstup
         finally:

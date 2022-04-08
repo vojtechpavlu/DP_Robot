@@ -3,10 +3,12 @@ klíčových tříd celého systému."""
 
 # Import standardních knihoven
 from abc import ABC, abstractmethod
+from collections import Callable
 from typing import Iterable
 
 # Import lokálních knihoven
 import src.fw.robot.mounting_error as mounting_error_module
+from src.fw.utils.error import PlatformError
 from src.fw.utils.identifiable import Identifiable
 from src.fw.utils.named import Named
 
@@ -20,7 +22,7 @@ class Robot(Identifiable, Named):
     je postavena na kombinaci jednotek, kterými je robot osazen a řízení
     jejich osazování."""
 
-    def __init__(self, robot_name: str):
+    def __init__(self, robot_name: str, logger_pipeline: Callable):
         """Jednoduchý initor, který má za cíl iniciovat své předky a
         připravit si prázdný seznam pro jednotky, kterými bude robot osazován.
         """
@@ -35,6 +37,10 @@ class Robot(Identifiable, Named):
         na program, který byl robotovi přiřazen. V úvodní části životního
         cyklu robota je tato proměnná nenaplněna."""
         self._program: "program_module.AbstractProgram" = None
+
+        """Uložení potrubí loggeru pro potřeby tvorby záznamů na úrovni
+        robota."""
+        self.__log = logger_pipeline
 
     @property
     def units(self) -> "tuple[unit_module.AbstractUnit]":
@@ -67,12 +73,18 @@ class Robot(Identifiable, Named):
         """Vlastnost nastavuje program, který má být robotovi přiřazen.
         Tento program lze nastavit pouze jednou. Nesmí být tedy None a
         nesmí být již jednou nastaven na neprázdnou hodnotu."""
-        # TODO - specifikace výjimky
+
+        # Pokud je program None
         if program is None:
-            raise Exception(f"Dodaný program nesmí být None")
+            raise RobotError(f"Dodaný program nesmí být None", self)
+
+        # Pokud již jednou program byl nastaven
         elif self.program is not None:
-            raise Exception(f"Dodaný program nelze přenastavovat")
+            raise RobotError(f"Dodaný program nelze přenastavovat", self)
+
+        # Nastavení programu
         self._program = program
+        self.__log("Program autora", program.author_name, "byl nastaven")
 
     def is_mounted_with(self, unit: "unit_module.AbstractUnit") -> bool:
         """Vlastnost vrací, je-li robot osazen dodanou jednotkou."""
@@ -99,17 +111,27 @@ class Robot(Identifiable, Named):
 
     def get_unit(self, unit_name: str) -> "unit_module.AbstractUnit":
         """Funkce vrátí jednotku dle zadaného názvu. Pokud taková není
-        nalezena, vrací None."""
+        nalezena, vyhazuje výjimku."""
+
+        # Pro všechny jednotky, kterými je robot osazen
         for unit in self.units:
+            # Pokud se jednotka názvem shoduje s dodaným názvem
             if unit.name == unit_name:
                 return unit
+
+        # Pokud nebyla nalezena příslušná jednotka, vyhodí výjimku s
+        # informacemi o těch platných
+        raise RobotError(
+            f"Robot není osazen jednotkou '{unit_name}' a nemůže na ni vrátit "
+            f"odkaz. Zkuste některou z: "
+            f"{list(map(lambda u: u.name, self.units))}", self)
 
     def deactivate(self):
         """Funkce deaktivuje všechny jednotky. To znamená, že je robot již
         nevratně nefunkční."""
+        self.__log("Robot", self.name, "se deaktivuje...")
         for unit in self.units:
             unit.deactivate()
-        # TODO - ukončení programu
 
 
 class RobotFactory(ABC):
@@ -137,7 +159,7 @@ class RobotFactory(ABC):
         jednotky předdefinovat jako výchozí."""
 
     @abstractmethod
-    def build(self) -> "Robot":
+    def build(self, logger_pipeline: Callable) -> "Robot":
         """Implementace této funkce jsou odpovědné za připravení instance
         robota a její vrácení.
 
@@ -161,11 +183,11 @@ class EmptyRobotFactory(RobotFactory):
         """
         return robot
 
-    def build(self) -> "Robot":
+    def build(self, logger_pipeline: Callable) -> "Robot":
         """Funkce vrací instanci nově vytvořeného robota včetně předosazení
         defaultními jednotkami.
         """
-        return self.premount(Robot(self.robot_name))
+        return self.premount(Robot(self.robot_name, logger_pipeline))
 
 
 class CompleteRobotFactory(EmptyRobotFactory):
@@ -208,3 +230,15 @@ class CompleteRobotFactory(EmptyRobotFactory):
         return robot
 
 
+class RobotError(PlatformError):
+    """"""
+
+    def __init__(self, message: str, robot: Robot):
+        """"""
+        PlatformError.__init__(self, message)
+        self._robot = robot
+
+    @property
+    def robot(self) -> Robot:
+        """"""
+        return self._robot

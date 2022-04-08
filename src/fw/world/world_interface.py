@@ -14,6 +14,8 @@ from abc import ABC, abstractmethod
 
 
 # Import lokálních knihoven
+from typing import Callable
+
 import src.fw.world.world as world_module
 import src.fw.robot.interaction as interaction_module
 import src.fw.world.interaction_handler_manager as ihm_module
@@ -33,7 +35,8 @@ class WorldInterface(ihm_module.InteractionHandlerManager,
 
     def __init__(
             self, world: "world_module.World",
-            rules_manager_factory: "inter_rls.InteractionRuleManagerFactory"):
+            rules_manager_factory: "inter_rls.InteractionRuleManagerFactory",
+            logger_pipeline: Callable):
         """Initor třídy, který přijímá instanci světa, kterému náleží a se
         kterým bude tato komunikovat. Dále pracuje s továrnou správce
         interakčních pravidel, ze které si vytvoří novou instanci třídy
@@ -46,6 +49,13 @@ class WorldInterface(ihm_module.InteractionHandlerManager,
 
         self._world = world
         self._rules_manager = rules_manager_factory.build()
+        self._log = logger_pipeline
+
+    @property
+    def log(self) -> Callable:
+        """Vlastnost vrací funkci potrubí loggeru, která má být volána pro
+        tvorbu záznamů."""
+        return self._log
 
     @property
     def world(self) -> "world_module.World":
@@ -86,6 +96,7 @@ class WorldInterface(ihm_module.InteractionHandlerManager,
         v interakci zjistitelný a že interakce skutečně pochází z jeho
         programu."""
         self.check_robot(interaction)
+
         # TODO - Přidat kontrolu (příslušnost, roboti, jednotky, ...)
 
     def check_unit(self, interaction: "interaction_module.Interaction"):
@@ -170,6 +181,10 @@ class WorldInterface(ihm_module.InteractionHandlerManager,
             result = self.get_interaction_handler(interaction).execute(
                 interaction, self)
 
+            self.log("Interakce", interaction.name,
+                     "byla úspěšně aplikována s parametry:",
+                     interaction.kwargs)
+
             # Notifikace všech posluchačů o úspěšné aplikaci interakce
             self.notify_all_event_handlers(
                 robot_event_module.InteractionUsageEvent(interaction))
@@ -201,7 +216,8 @@ class WorldInterfaceFactory(ABC):
     """
 
     @abstractmethod
-    def build(self, world: "world_module.World") -> "WorldInterface":
+    def build(self, world: "world_module.World",
+              log: Callable) -> "WorldInterface":
         """Abstraktní funkce 'build()' odpovědná za vytvoření rozhraní
         světa. Funkce přijímá referenci na svět, jehož rozhraní má být
         touto funkcí vytvořeno a vráceno jako návratová hodnota funkce.
@@ -218,7 +234,8 @@ class DefaultWorldInterfaceFactory(WorldInterfaceFactory):
         """Jednoduchý initor odpovědný za iniciaci předka."""
         WorldInterfaceFactory.__init__(self)
 
-    def build(self, world: "world_module.World") -> "WorldInterface":
+    def build(self, world: "world_module.World",
+              logger_pipeline: Callable) -> "WorldInterface":
         """Implementace abstraktní funkce předka. Jejím cílem je poskytnutí
         instance rozhraní světa. Konkrétně má tato za cíl poskytnout instanci
         s výchozím nastavením.
@@ -231,7 +248,7 @@ class DefaultWorldInterfaceFactory(WorldInterfaceFactory):
         ir_manager_factory = inter_rls.DefaultInteractionRuleManagerFactory()
 
         # Vrácení nově vytvořené instance rozhraní světa
-        return WorldInterface(world, ir_manager_factory)
+        return WorldInterface(world, ir_manager_factory, logger_pipeline)
 
 
 class WorldInterfaceError(PlatformError):
