@@ -1013,19 +1013,141 @@ class TurnToAllDirections(Conjunction):
             self.add_eval_func(ef)
 
 
+class IsRobotAt(EvaluationFunction):
+    """Evaluační funkce, která vyhodnocuje, zda-li je robot na konkrétních
+    souřadnicích v době vyhodnocení."""
+
+    def __init__(self, x: int, y: int):
+        """Initor, který přijímá a ukládá dodané parametry pro tuto evaluační
+        funkci; konkrétně celočíselné souřadnice identifikující políčko světa.
+        """
+
+        # Volání initoru
+        EvaluationFunction.__init__(self, f"Is robot @ [{x}, {y}] right now")
+
+        # Uložení dodaných souřadnic
+        self._x = x
+        self._y = y
+
+    def eval(self) -> bool:
+        """Evaluační funkce, která zjišťuje, zda je robot postaven na
+        konkrétním políčku tak, že povolá správce stavů robotů, aby vyhledal
+        stav, který odpovídá robotovi stojícímu na daných souřadnicích.
+
+        Pokud je takový robot nalezen, je vrácena hodnota True, jinak False.
+        """
+
+        # Získání reference na stav robota podle souřadnic, tedy stojí-li
+        # na políčku s těmito souřadnicemi nějaký robot, je vrácen stav robota
+        rs = self.task.target.world.robot_state_manager.robot_state_by_coords(
+            self._x, self._y)
+
+        # Pokud není získaný stav robota None, pak je vráceno True,
+        # jinak False
+        return rs is not None
+
+    def configure(self):
+        """Konfigurační funkce v tomto kontextu nemá význam."""
+
+    def update(self, emitter: "EventEmitter", event: "Event"):
+        """Funkce pro update v tomto kontextu nemá význam."""
 
 
+class IsRobotTurnedTo(EvaluationFunction):
+    """Instance této třídy jsou odpovědné za vyhodnocování, zda je robot
+    stojící na specifických souřadnicích natočen specifikovaným směrem."""
+
+    def __init__(self, x: int, y: int, direction_name: str):
+        """Initor třídy, který přijímá souřadnice políčka, na kterém by měl
+        stát robot příslušně natočen. Natočení je definováno názvem směru;
+        pro bližší informace o povolených názvech směrů viz dokumentaci
+        funkce 'Direction.direction_by_name(str)'. Pokud tato není validní,
+        je vyhozena výjimka.
+        """
+
+        # Volání initoru předka
+        EvaluationFunction.__init__(self, f"Is robot @ [{x}, {y}] turned to "
+                                          f"'{direction_name}' right now")
+
+        # Uložení souřadnic
+        self._x = x
+        self._y = y
+
+        # Získání směru z dodaného názvu
+        self._direction = direction_module.Direction.direction_by_name(
+            direction_name)
+
+        # Ověření, že název popisuje platný směr
+        if self._direction is None:
+            raise EvaluationFunctionError(
+                f"Dodaný název směru '{direction_name}' neukazuje na žádný "
+                f"platný směr. Použijte některý z doporučených názvů: "
+                f"{direction_module.Direction.direction_names()}", self)
+
+    def eval(self) -> bool:
+        """Evaluační funkce, která zjišťuje, zda je robot otočen konkrétním
+        směrem. To je zjišťováno postupným procházením všech stavů robotů
+        v rámci jejich správce, zda neexistuje takový stav, který by"""
+
+        # Získání reference na stav robota podle souřadnic, tedy stojí-li
+        # na políčku s těmito souřadnicemi nějaký robot, je vrácen stav robota
+        rs = self.task.target.world.robot_state_manager.robot_state_by_coords(
+            self._x, self._y)
+
+        # Pokud neexistuje robot se stavem ukazujícím na políčko [x, y]
+        if not rs:
+
+            # Vrátit False
+            return False
+        else:
+
+            # Pokud směr, ve kterém je robot na daných souřadnicích natočen,
+            # je stejný, jako požadovaný, vrať True, jinak False
+            return rs.direction == self._direction
+
+    def configure(self):
+        """Konfigurační funkce v tomto kontextu nemá význam."""
+
+    def update(self, emitter: "EventEmitter", event: "Event"):
+        """Funkce pro update v tomto kontextu nemá význam."""
 
 
+class RobotIsAtAndHeadingTo(Conjunction):
+    """Tato evaluační funkce spojuje dvě funkce dohromady. Konkrétně provádí
+    konjunkci nad kontrolou, zda je nějaký robot v moment vyhodnocení na
+    políčku s dodanými souřadnicemi a zda je takový robot otočen požadovaným
+    směrem."""
 
+    def __init__(self, x: int, y: int, direction_name: str):
+        """Initor třídy, který iniciuje předka a přijímá souřadnice sledovaného
+        políčka spolu se směrem, kterým má být robot na tomto políčku otočen.
 
+        Směr natočení je zde definován textovým řetězcem. Ten musí být validí,
+        tedy v souladu s požadavky na směr (pro konkrétní informace viz
+        dokumentaci funkce 'Direction.direction_by_name(str)'. Pokud nebude
+        tato podmínka splněna, je vyhozena výjimka.
+        """
 
+        # Volání initoru předka
+        Conjunction.__init__(
+            self, f"Is robot @ [{x}, {y}] and turned to '{direction_name}'")
 
+        # Uložení souřadnic
+        self._x = x
+        self._y = y
 
+        # Získání směru z názvu směru
+        self._direction = direction_module.Direction.direction_by_name(
+            direction_name)
 
+        if self._direction is None:
+            raise EvaluationFunctionError(
+                f"Dodaný název směru '{direction_name}' neukazuje na žádný "
+                f"platný směr. Použijte některý z doporučených názvů: "
+                f"{direction_module.Direction.direction_names()}", self)
 
-
-
-
-
-
+    def configure(self):
+        """Funkce zjistí referenci na svět, ve kterém se robot nachází."""
+        self.add_eval_func(IsRobotAt(self._x, self._y))
+        self.add_eval_func(
+            IsRobotTurnedTo(self._x, self._y, self._direction.name))
