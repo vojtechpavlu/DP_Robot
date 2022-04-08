@@ -554,6 +554,7 @@ class UsedAllInteractions(Conjunction):
 
             # Registrace evaluační funkce u rozhraní světa
             world.world_interface.register_event_handler(ef)
+            self.log(f"Splnění úkolu '{self.name}'")
 
 
 class IsRobotMountedWith(EvaluationFunction):
@@ -643,7 +644,7 @@ class AddedAnyMarkEvalFun(EvaluationFunction):
         """
 
         # Volání initoru předka
-        EvaluationFunction.__init__(self, "AddedAnyMark")
+        EvaluationFunction.__init__(self, f"AddedAnyMark @ [{x}, {y}]")
 
         # Uložení dodaných parametrů
         self._x = x
@@ -684,6 +685,7 @@ class AddedAnyMarkEvalFun(EvaluationFunction):
 
                     # Odhlášení z odběru událostí
                     emitter.unregister_event_handler(self)
+                    self.log(f"Splnění úkolu '{self.name}'")
 
 
 class RemovedMarkEvalFun(EvaluationFunction):
@@ -699,7 +701,7 @@ class RemovedMarkEvalFun(EvaluationFunction):
         """
 
         # Volání initoru předka
-        EvaluationFunction.__init__(self, "AddedAnyMark")
+        EvaluationFunction.__init__(self, f"RemovedAnyMark @ [{x}, {y}]")
 
         # Uložení dodaných parametrů
         self._x = x
@@ -739,6 +741,7 @@ class RemovedMarkEvalFun(EvaluationFunction):
 
                     # Odhlášení z odběru událostí
                     emitter.unregister_event_handler(self)
+                    self.log(f"Splnění úkolu '{self.name}'")
 
 
 class LoggedAnything(EvaluationFunction):
@@ -797,6 +800,7 @@ class LoggedAnything(EvaluationFunction):
 
                 # Ukončení odběru událostí
                 emitter.unregister_event_handler(self)
+                self.log(f"Splnění úkolu '{self.name}'")
 
 
 class LoggedSpecificMessage(EvaluationFunction):
@@ -884,6 +888,7 @@ class LoggedSpecificMessage(EvaluationFunction):
                     # Odebrání se z odběru u emitoru událostí, v tomto případě
                     # konkrétně loggeru
                     emitter.unregister_event_handler(self)
+                    self.log(f"Splnění úkolu '{self.name}'")
 
     def check_message(self, message: str) -> bool:
         """Funkce se stará o ověření zprávy dle vnitřních nastavených pravidel.
