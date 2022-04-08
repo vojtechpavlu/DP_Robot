@@ -124,7 +124,7 @@ class Logger(event_module.EventEmitter):
         # Formální kontrola zprávy; pokud je její délka po odříznutí koncových
         # bílých znaků větší než 0, lze zprávu zalogovat, jinak je nahrazena
         # defaultní "prázdnou" zprávou
-        if len(message) > 0:
+        if len(message) == 0:
             message = "« empty message »"
 
         # Tvorba instance třídy Log
