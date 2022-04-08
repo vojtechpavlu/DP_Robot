@@ -317,8 +317,13 @@ class SingleRobotRuntime(AbstractRuntime):
 
             for task in self.target.tasks:
                 self.log(task.name)
-                junction = task.evaluation_function
-                for ef in junction.evaluation_functions:
+                from src.fw.target.evaluation_function import EvaluationFunctionJunction
+                if isinstance(task.evaluation_function, EvaluationFunctionJunction):
+                    junction = task.evaluation_function
+                    for ef in junction.evaluation_functions:
+                        self.log("\t", ef.name, ef.eval())
+                else:
+                    ef = task.evaluation_function
                     self.log("\t", ef.name, ef.eval())
 
             # TODO - kontrola Targetu a jeho vyhodnocení

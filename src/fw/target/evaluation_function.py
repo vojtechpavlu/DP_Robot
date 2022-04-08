@@ -631,6 +631,63 @@ class IsRobotMountedWithAll(Conjunction):
                     unit_name, robot_state.robot))
 
 
+class AddedAnyMarkEvalFun(EvaluationFunction):
+    """Tato evaluační funkce umí prozkoumat, zda bylo či nebylo políčko na
+    dodaných souřadnicích označkováno; a to na základě události změny značky.
+    """
+
+    def __init__(self, x: int, y: int):
+        """Initor třídy, který přijímá souřadnice 'x' a 'y', které patří
+        políčku, které má být sledováno.
+        """
+
+        # Volání initoru předka
+        EvaluationFunction.__init__(self, "AddedAnyMark")
+
+        # Uložení dodaných parametrů
+        self._x = x
+        self._y = y
+
+        # Defaultní nastavení stavu evaluační funkce
+        self.__was_marked = False
+
+    def eval(self) -> bool:
+        return self.__was_marked
+
+    def configure(self):
+        """Metoda, jejímž cílem je pouze zaregistrování se u vydavatele
+        událostí, kterým tato evaluační funkce naslouchá.
+        """
+        self.task.target.world.world_interface.register_event_handler(self)
+
+    def update(self, emitter: "EventEmitter", event: "Event"):
+        """Hlavní vyhodnocovací funkce, která umožňuje rozpoznat, že políčko
+        bylo označeno 'nějakou' značkou. To, jaký text značka obsahuje, není
+        v případě této evaluační funkce relevantní.
+        """
+
+        # Pokud je daná událost příslušná této evaluační funkci
+        if isinstance(event, world_events.MarkChangeEvent):
+
+            # Uložení políčka pro snazší čtení
+            field = event.field
+
+            # Porovnání, zda-li jde skutečně o sledované políčko
+            if field.x == self._x and field.y == self._y:
+
+                # Pokud má políčko značku
+                if field.has_mark:
+
+                    # Změna stavu evaluační funkce
+                    self.__was_marked = True
+
+                    # Odhlášení z odběru událostí
+                    emitter.unregister_event_handler(self)
+
+
+
+
+
 
 
 
