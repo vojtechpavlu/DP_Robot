@@ -210,6 +210,18 @@ class RemovedMarkAtTask(Task):
             ef_module.RemovedMarkEvalFun(x, y))
 
 
+class LoggedAnythingInContext(Task):
+    """Tento úkol slouží ke kontrole splnění požadavku na zalogování libovolné
+    zprávy v předem stanoveném kontextu."""
+
+    def __init__(self, context: str = "OUTPUT"):
+        """"""
+        Task.__init__(
+            self, f"LoggedAnythingInContext '{context}'", "Úkol, který "
+            f"kontroluje, že bylo zalogováno v kontextu '{context}'",
+            ef_module.LoggedAnything(context))
+
+
 def always_true_task() -> "Task":
     """Funkce vrací instanci úkolu, který je vykonstruován tak, že je vždy
     za všech okolností pravdivý, tedy splněný."""
