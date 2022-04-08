@@ -31,6 +31,7 @@ from src.fw.robot.interaction import Interaction, InteractionError
 from src.fw.robot.unit import Actuator, AbstractUnitFactory
 from src.fw.world.world_interface import WorldInterface
 from src.fw.world.mark import Mark
+from src.fw.world.world_events import MarkChangeEvent
 
 
 """Definice proměnných"""
@@ -129,7 +130,12 @@ class MarkingInteraction(Interaction):
 
         # Jinak, když je již vše v pořádku
         else:
+
+            # Označkování daným textem
             field.mark_yourself(self.mark.text)
+
+            # Vytvoření události na změnu značky políčka a upozornění na ni
+            interface.notify_all_event_handlers(MarkChangeEvent(field))
 
 
 class MarkerFactory(AbstractUnitFactory):

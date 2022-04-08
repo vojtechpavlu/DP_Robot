@@ -14,6 +14,7 @@ from typing import Type
 # Import lokálních knihoven
 from src.fw.robot.interaction import Interaction, InteractionError
 from src.fw.robot.unit import Actuator, AbstractUnitFactory, Sensor
+from src.fw.world.world_events import MarkChangeEvent
 from src.fw.world.world_interface import WorldInterface
 
 
@@ -91,7 +92,12 @@ class DemarkInteraction(Interaction):
 
         # Jinak, když je vše v pořádku
         else:
+
+            # Odstranění značky z políčka
             field.pop_mark
+
+            # Vytvoření události na změnu značky políčka a upozornění na ni
+            interface.notify_all_event_handlers(MarkChangeEvent(field))
 
 
 class DemarkerFactory(AbstractUnitFactory):
