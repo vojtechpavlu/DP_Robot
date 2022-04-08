@@ -51,3 +51,39 @@ class Direction(Enum):
             Direction.WEST,
             Direction.SOUTH,
         ]
+
+    @staticmethod
+    def direction_by_name(direction_name: str) -> "Direction":
+        """Funkce vrací konkrétní směr, který názvem odpovídá dodanému názvu.
+        Pokud takový směr není, je vrácena hodnota None.
+
+        Název může být celým názvem (např. 'NORTH'), nebo pouze počáteční
+        písmeno (např. 'N'). Zároveň nezáleží na velikosti písmen; vždy je
+        název převeden na kapitálky.
+
+        Validní řetězce tedy jsou:
+
+            - 'EAST', 'NORTH', 'WEST' a 'SOUTH',
+            - 'E', 'N', 'W' a 'S',
+            -  a všechny výše uvedené řetězce v libovolném casingu
+        """
+
+        # Převod názvu na kapitálky (pro jistotu)
+        direction_name = direction_name.upper()
+
+        # Pro každý směr ze všech směrů
+        for direction in Direction.list():
+
+            # Pokud se název směru nebo jeho první písmeno shoduje s dodaným
+            # názvem, pak tento směr vrať
+            if (direction.name == direction_name or
+                    direction.name[0] == direction_name):
+                return direction
+
+    @staticmethod
+    def direction_names() -> "tuple[str]":
+        """Funkce vrací názvy všech směrů."""
+        # Redundantní přetypování pro potřeby správné kontroly typů IDE,
+        # která mají problém s lambdami
+        return tuple(map(lambda d: str(d.name), Direction.list()))
+
