@@ -22,6 +22,8 @@ plugin nebude a tedy nebude ani načten.
 """
 
 # Import potřebných zdrojů a nástrojů
+from typing import Callable
+
 from src.fw.robot.program import AbstractProgram
 from src.fw.robot.robot import Robot
 
@@ -54,7 +56,7 @@ class Program(AbstractProgram):
     potřebných knihoven (v horní části tohoto modulu).
     """
 
-    def run(self, robot: "Robot"):
+    def run(self, robot: "Robot", log: Callable):
         """Šablona metody, která se stará o definici sekvence akcí, které
         má robot provést.
 
@@ -67,7 +69,19 @@ class Program(AbstractProgram):
         použitelnou informaci o prostředí robota (pomocí své metody 'scan').
 
         Řetězením těchto interakcí se pak robot snaží vyřešit zadanou úlohu
-        a splnit tak své poslání."""
+        a splnit tak své poslání.
+
+        Dále je této metodě poskytnuto potrubí loggeru, pomocí kterého lze
+        provádět záznamy. Toto je nastaveno, aby napodobovalo co nejpřesněji
+        built-in funkci 'print'. Toto potrubí je doporučeno používat, neboť
+        je díky němu možné kontrolovat průběžné záznamy co do splnění úkolů.
+
+        Například oba tyto příkazy by vyústily v tu samou akci (jako v
+        built-in funkci 'print'):
+
+            >>> log("Hello World!")
+            >>> log("Hello", "World!")
+        """
 
 
 def get_program():

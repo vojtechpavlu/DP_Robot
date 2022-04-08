@@ -14,6 +14,7 @@ from typing import Type
 # Import lokálních knihoven
 from src.fw.robot.interaction import Interaction, InteractionError
 from src.fw.robot.unit import Actuator, AbstractUnitFactory, Sensor
+from src.fw.world.world_events import DirectionChangeEvent
 from src.fw.world.world_interface import WorldInterface
 from src.fw.world.world import Direction
 
@@ -106,6 +107,10 @@ class TurnToInteraction(Interaction):
 
         # Samotné otočení doleva
         rs.direction = self.direction
+
+        # Vytvoření události
+        interface.notify_all_event_handlers(
+            DirectionChangeEvent(self.robot, self.direction))
 
 
 class TurnToUnitFactory(AbstractUnitFactory):

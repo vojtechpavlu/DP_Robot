@@ -20,9 +20,12 @@ from src.fw.target.event_handling import EventEmitter, Event
 
 import src.fw.target.task as task_module
 import src.fw.robot.robot as robot_module
+import src.fw.world.direction as direction_module
 import src.fw.target.event_handling as event_module
+
 import src.fw.world.world_events as world_events
 import src.fw.robot.robot_events as robot_events
+import src.fw.utils.logging.logging_events as logging_events
 
 
 class EvaluationFunction(Named, Identifiable, event_module.EventHandler):
@@ -289,7 +292,7 @@ class Visited(EvaluationFunction):
         """
 
         # Volání předka
-        EvaluationFunction.__init__(self, f"Visited ({x}, {y})")
+        EvaluationFunction.__init__(self, f"Visited [{x}, {y}]")
 
         # Uložení souřadnic
         self._x = x
@@ -468,7 +471,7 @@ class UsedInteraction(EvaluationFunction):
         """
         # Volání předka
         EvaluationFunction.__init__(
-            self, f"UsedInteraction '{interaction_name}'")
+            self, f"Was interaction '{interaction_name}' used")
 
         # Uložení očekávaného názvu interakce
         self._interaction_name = interaction_name
@@ -504,7 +507,6 @@ class UsedInteraction(EvaluationFunction):
 
             # Pokud je název interakce tím očekávaným
             if event.interaction.name == self.interaction_name:
-
                 # Změna stavu a odregistrování se; úkol je splněn
                 self._used_interaction = True
                 emitter.unregister_event_handler(self)
@@ -546,13 +548,13 @@ class UsedAllInteractions(Conjunction):
 
         # Pro každý název interakce
         for inter_name in self.interaction_names:
-
             # Vytvoření evaluační funkce a přidání do evidence
             ef = UsedInteraction(inter_name)
             self.add_eval_func(ef)
 
             # Registrace evaluační funkce u rozhraní světa
             world.world_interface.register_event_handler(ef)
+            self.log(f"Splnění úkolu '{self.name}'")
 
 
 class IsRobotMountedWith(EvaluationFunction):
@@ -570,7 +572,7 @@ class IsRobotMountedWith(EvaluationFunction):
 
         # Volání initoru předka
         EvaluationFunction.__init__(
-            self, f"IsMountedWith '{unit_name}'")
+            self, f"Is robot mounted with unit '{unit_name}'")
 
         # Uložení dodaných parametrů
         self._unit_name = unit_name
@@ -625,19 +627,521 @@ class IsRobotMountedWithAll(Conjunction):
 
             # Pro každý název jednotky
             for unit_name in self._unit_names:
-
                 # Přidání nové evaluační funkce
                 self.add_eval_func(IsRobotMountedWith(
                     unit_name, robot_state.robot))
 
 
+class AddedAnyMarkEvalFun(EvaluationFunction):
+    """Tato evaluační funkce umí prozkoumat, zda bylo či nebylo políčko na
+    dodaných souřadnicích označkováno; a to na základě události změny značky.
+    """
+
+    def __init__(self, x: int, y: int):
+        """Initor třídy, který přijímá souřadnice 'x' a 'y', které patří
+        políčku, které má být sledováno.
+        """
+
+        # Volání initoru předka
+        EvaluationFunction.__init__(self, f"Added any mark @ [{x}, {y}]")
+
+        # Uložení dodaných parametrů
+        self._x = x
+        self._y = y
+
+        # Defaultní nastavení stavu evaluační funkce
+        self.__was_marked = False
+
+    def eval(self) -> bool:
+        return self.__was_marked
+
+    def configure(self):
+        """Metoda, jejímž cílem je pouze zaregistrování se u vydavatele
+        událostí, kterým tato evaluační funkce naslouchá.
+        """
+        self.task.target.world.world_interface.register_event_handler(self)
+
+    def update(self, emitter: "EventEmitter", event: "Event"):
+        """Hlavní vyhodnocovací funkce, která umožňuje rozpoznat, že políčko
+        bylo označeno 'nějakou' značkou. To, jaký text značka obsahuje, není
+        v případě této evaluační funkce relevantní.
+        """
+
+        # Pokud je daná událost příslušná této evaluační funkci
+        if isinstance(event, world_events.MarkChangeEvent):
+
+            # Uložení políčka pro snazší čtení
+            field = event.field
+
+            # Porovnání, zda-li jde skutečně o sledované políčko
+            if field.x == self._x and field.y == self._y:
+
+                # Pokud má políčko značku
+                if field.has_mark:
+                    # Změna stavu evaluační funkce
+                    self.__was_marked = True
+
+                    # Odhlášení z odběru událostí
+                    emitter.unregister_event_handler(self)
+                    self.log(f"Splnění úkolu '{self.name}'")
 
 
+class RemovedMarkEvalFun(EvaluationFunction):
+    """Tato evaluační funkce reaguje na událost odstranění značky. Mluvíme
+    zde však o explicitním odstranění značky z políčka. Nebude-li políčko
+    nejdříve opatřeno značkou a pak robotem explicitně odznačkováno, bude
+    tato evaluační funkce vracet vždy hodnotu False, a to i kdyby na políčku
+    nikdy žádná značka nebyla."""
+
+    def __init__(self, x: int, y: int):
+        """Initor třídy, který přijímá souřadnice 'x' a 'y', které patří
+        políčku, které má být sledováno.
+        """
+
+        # Volání initoru předka
+        EvaluationFunction.__init__(self, f"Removed any mark @ [{x}, {y}]")
+
+        # Uložení dodaných parametrů
+        self._x = x
+        self._y = y
+
+        # Defaultní nastavení stavu evaluační funkce
+        self.__was_demarked = False
+
+    def eval(self) -> bool:
+        return self.__was_demarked
+
+    def configure(self):
+        """Metoda, jejímž cílem je pouze zaregistrování se u vydavatele
+        událostí, kterým tato evaluační funkce naslouchá.
+        """
+        self.task.target.world.world_interface.register_event_handler(self)
+
+    def update(self, emitter: "EventEmitter", event: "Event"):
+        """Hlavní vyhodnocovací funkce, která umožňuje rozpoznat, že políčku
+        byla odstraněna značka. Nereaguje však na to, když značka na políčku
+        nebyla; musí být explicitně odstraněna robotem.
+        """
+
+        # Pokud je daná událost příslušná této evaluační funkci
+        if isinstance(event, world_events.MarkChangeEvent):
+
+            # Uložení políčka pro snazší čtení
+            field = event.field
+
+            # Porovnání, zda-li jde skutečně o sledované políčko
+            if field.x == self._x and field.y == self._y:
+
+                # Pokud má políčko značku
+                if not field.has_mark:
+                    # Změna stavu evaluační funkce
+                    self.__was_demarked = True
+
+                    # Odhlášení z odběru událostí
+                    emitter.unregister_event_handler(self)
+                    self.log(f"Splnění úkolu '{self.name}'")
 
 
+class LoggedAnything(EvaluationFunction):
+    """Evaluační funkce LoggedAnything má za cíl kontrolovat, že bylo
+    zalogováno cokoliv ze stanoveného kontextu. Defaultně je tento sledovaný
+    kontext nastaven na 'OUTPUT'. Znění zprávy však nemá vliv na splnění či
+    nesplnění cíle."""
+
+    def __init__(self, context: str = "OUTPUT"):
+        """Initor třídy, který má za cíl nastavit předka a uložit postoupené
+        údaje. Do initoru vstupuje název kontextu, ve kterém mají být zprávy
+        kontrolovány. Ten je defaultně nastaven na hodnotu 'OUTPUT'.
+
+        Velikost znaků kontextu není důležitá, defaultně se převádí na
+        kapitálky."""
+
+        # Iniciace předka
+        EvaluationFunction.__init__(
+            self, f"Logged anything in '{context}' context")
+
+        self._context = context.upper()
+        self.__logged_in_context = False
+
+    @property
+    def context(self) -> str:
+        """Vlastnost vrací kontext, který byl dané evaluační funkci svěřen."""
+        return self._context
+
+    def eval(self) -> bool:
+        """Vyhodnocení spočívá v prostém vrácení informace o tom, zda-li bylo
+        v daném kontextu logováno, tedy vnitřní stav funkce."""
+        return self.__logged_in_context
+
+    def configure(self):
+        """Konfigurace spočívá v zaregistrování se v loggeru, který má
+        kompetenci upozorňovat na události zaznamenání zprávy."""
+        self.task.target.logger.register_event_handler(self)
+
+    def update(self, emitter: "EventEmitter", event: "Event"):
+        """Funkce 'update' se stará o ověřování, že je tato událost pro
+        tuto evaluační funkci relevantní. V první řadě se kontroluje, zda
+        je dodaná událost vyžadovaného typu, dále zda je kontext záznamu
+        tím sledovaným. Pokud je toto splněno, je vnitřní stav evaluační
+        funkce nastaven na True a tato evaluační funkce se sama postará
+        o odstranění z evidence emitoru událostí; v tomto případě Loggeru.
+        """
+
+        # Kontrola relevance události
+        if isinstance(event, logging_events.LogEvent):
+
+            # Pokud je záznam obsažený v události sledovaného kontextu
+            if event.log.context == self.context:
+                # Nastavení vnitřního stavu funkce na True
+                self.__logged_in_context = True
+
+                # Ukončení odběru událostí
+                emitter.unregister_event_handler(self)
+                self.log(f"Splnění úkolu '{self.name}'")
 
 
+class LoggedSpecificMessage(EvaluationFunction):
+    """Tato evaluační funkce umožňuje ověřovat, že byla zaznamenána v loggeru
+    konkrétní zpráva v konkrétním kontextu. Zároveň instance této třídy
+    umožňují měnit 'citlivost' na jednotlivé zprávy; konkrétně velikost písmen
+    či bílé znaky na začátku a konci řetězců."""
+
+    def __init__(self, message: str, context: str = "OUTPUT",
+                 ignore_casing: bool = False, strip: bool = False):
+        """Initor, který inicializuje svého předka a ukládá si vstupní
+        nastavení v podobě:
+
+            - očekávané zprávy
+            - poslouchaného kontextu
+            - zda záleží na velikosti písmen
+            - zda záleží na počátečních a koncových bílých znacích ve zprávě
+        """
+
+        # Volání předka
+        EvaluationFunction.__init__(
+            self, f"Logged specific message '{message}' in '{context}'")
+
+        # Uložení parametrů evaluační funkce
+        self._ignore_casing = ignore_casing
+        self._strip = strip
+
+        # Iniciace stavu evaluační funkce
+        self.__logged_in_context = False
+
+        # Pokud ignorovat velikost písmen, pak převeď na kapitálky
+        if self._ignore_casing:
+            message = message.upper()
+
+        # Pokud ignorovat bílé znaky, pak oříznout
+        if self._strip:
+            message = message.strip()
+
+        # Uložení očekávané zprávy
+        self._message = message
+        self._context = context
+
+    @property
+    def message(self) -> str:
+        """Vlastnost vrací zprávu, na kterou má být evaluační funkcí čekáno.
+        """
+        return self._message
+
+    @property
+    def context(self) -> str:
+        """Vlastnost vrací název očekávaného kontextu."""
+        return self._context
+
+    def eval(self) -> bool:
+        """Funkce vrací hodnotu vnitřního stavu evaluační funkce, tedy zda
+        byla či nebyla zalogována konkrétní zpráva v daném kontextu."""
+        return self.__logged_in_context
+
+    def configure(self):
+        """Zaregistrování se u loggeru z jeho titulu emitoru událostí."""
+        self.task.target.logger.register_event_handler(self)
+
+    def update(self, emitter: "EventEmitter", event: "Event"):
+        """Funkce je odpovědná za zpracování postoupených událostí.
+
+        V první řadě se ověřuje, zda je pro tuto evaluační funkce daná
+        událost relevantní či nikoliv. Pokud ano, kontroluje se, zda-li
+        se shoduje kontext zprávy se sledovaným kontextem a konečně se
+        ověřuje, zda-li je zpráva tou očekávanou. Pokud se ukáže že ano,
+        změní se vnitřní stav evaluační funkce a je odhlášena z odběru
+        těchto událostí příslušného emitoru."""
+
+        # Kontrola příslušnosti události
+        if isinstance(event, logging_events.LogEvent):
+
+            # Kontrola příslušnosti kontextu
+            if event.log.context == self.context:
+
+                # Provedení kontroly zprávy logu
+                if self.check_message(event.log.message):
+                    # Změna stavu evaluační funkce
+                    self.__logged_in_context = True
+
+                    # Odebrání se z odběru u emitoru událostí, v tomto případě
+                    # konkrétně loggeru
+                    emitter.unregister_event_handler(self)
+                    self.log(f"Splnění úkolu '{self.name}'")
+
+    def check_message(self, message: str) -> bool:
+        """Funkce se stará o ověření zprávy dle vnitřních nastavených pravidel.
+        """
+
+        # Odstranění rozdílů ve velikosti písmen
+        if self._ignore_casing:
+            message = message.upper()
+
+        # Odstranění rozdílů v bílých znacích
+        if self._strip:
+            message = message.strip()
+
+        # Vyhodnocení, zda-li je zpráva totožná s očekávanou
+        return self.message == message
 
 
+class TurnToDirection(EvaluationFunction):
+    """Třída definuje evaluační funkci, která dokáže ověřit, že se robot
+    otočil jedním konkrétním směrem."""
+
+    def __init__(self, direction_name: str):
+        """Initor třídy, který přijímá název směru, kterým se má robot
+        natočit. Je k tomu důležité dbát na standardní názvy; povolené jsou
+        následující:
+
+            - 'EAST', 'NORTH', 'WEST' a 'SOUTH'
+            - 'E', 'N', 'W' a 'S'
+
+        Ekvivalentně lze použít názvy nepsané v kapitálkách, viz dokumentace
+        funkce 'direction_by_name(direction_name)' v modulu Direction.
+        """
+
+        # Volání initoru předka
+        EvaluationFunction.__init__(
+            self, f"Turned to direction {direction_name}")
+
+        # Vyhledání příslušného směru
+        self._direction = direction_module.Direction.direction_by_name(
+            direction_name)
+
+        # Vnitřní stav evaluační funkce
+        self.__was_turned_to = False
+
+        # Název směru musí být platný, jinak je vyhozena výjimka
+        if not self._direction:
+            raise EvaluationFunctionError(
+                f"Dodaný název směru '{direction_name}' neukazuje na žádný "
+                f"platný směr. Použijte některý z doporučených názvů: "
+                f"{direction_module.Direction.direction_names()}", self)
+
+    @property
+    def direction(self) -> "direction_module.Direction":
+        """Vlastnost vrací směr, který je v tomto kontextu sledován."""
+        return self._direction
+
+    def eval(self) -> bool:
+        """Metoda vrací vnitřní stav evaluační funkce, zda-li tato zaznamenala
+        změnu směru na stanovený, či nikoliv."""
+        return self.__was_turned_to
+
+    def configure(self):
+        """Tato metoda v této implementaci nemá význam."""
+
+    def update(self, emitter: "EventEmitter", event: "Event"):
+        """Funkce má za cíl provést filtraci nerelevantních událostí
+        a vybrat z ní ty použitelné, v tomto případě ty symbolizující
+        změnu směru natočení robota, tedy typu 'DirectionChangeEvent'.
+
+        Pokud se tento shoduje s požadovaným, vnitřní stav evaluační
+        funkce se překlopí na True a odhlásí se z odběru dalších událostí.
+        """
+
+        # Kontrola relevance události pro tuto evaluační funkci
+        if isinstance(event, world_events.DirectionChangeEvent):
+
+            # Kontrola, že je nový směr natočení robota stejný,
+            # jako ten požadovaný
+            if event.direction == self.direction:
+                # Nastav vnitřní stav funkce a odhlaš se z odběru událostí
+                self.__was_turned_to = True
+                emitter.unregister_event_handler(self)
+
+                # Zaloguj úspěšné splnění úkolu
+                self.log(f"Splnění úkolu '{self.name}'")
 
 
+class TurnToAllDirections(Conjunction):
+    """Konjunkce evaluačních funkcí pro kontrolu natočení robota do každého
+    z definovaných směrů."""
+
+    def __init__(self):
+        """Initor třídy, který má za cíl připravit svého předka (tedy
+        konjunkci evaluačních funkcí; instanci třídy 'Conjunction').
+        """
+
+        # Volání initoru předka
+        Conjunction.__init__(self, "TurnToAllDirections")
+
+    def configure(self):
+        """Konfigurační metoda se stará o iniciaci všech vyhodnocovacích
+        funkcí, které ověřují, že se robot natočil všemi dostupnými směry.
+        Konkrétně pak má za cíl naplnit tuto jednotlivými evaluačními funkcemi
+        pro kontrolu natočení do směru (tedy typu 'TurnToDirection'), a to pro
+        každý platný směr.
+        """
+        # Získání reference na rozhraní světa
+        world_interface = self.task.target.world.world_interface
+
+        # Pro každý směr zaregistruj jednu evaluační funkci
+        for direction in direction_module.Direction.list():
+
+            # Vytvoření instance evaluační funkce
+            ef = TurnToDirection(direction.name)
+
+            # Registrace evaluační funkce u event emitor
+            world_interface.register_event_handler(ef)
+
+            # Přidání evaluační funkce do konjunkce
+            self.add_eval_func(ef)
+
+
+class IsRobotAt(EvaluationFunction):
+    """Evaluační funkce, která vyhodnocuje, zda-li je robot na konkrétních
+    souřadnicích v době vyhodnocení."""
+
+    def __init__(self, x: int, y: int):
+        """Initor, který přijímá a ukládá dodané parametry pro tuto evaluační
+        funkci; konkrétně celočíselné souřadnice identifikující políčko světa.
+        """
+
+        # Volání initoru
+        EvaluationFunction.__init__(self, f"Is robot @ [{x}, {y}] right now")
+
+        # Uložení dodaných souřadnic
+        self._x = x
+        self._y = y
+
+    def eval(self) -> bool:
+        """Evaluační funkce, která zjišťuje, zda je robot postaven na
+        konkrétním políčku tak, že povolá správce stavů robotů, aby vyhledal
+        stav, který odpovídá robotovi stojícímu na daných souřadnicích.
+
+        Pokud je takový robot nalezen, je vrácena hodnota True, jinak False.
+        """
+
+        # Získání reference na stav robota podle souřadnic, tedy stojí-li
+        # na políčku s těmito souřadnicemi nějaký robot, je vrácen stav robota
+        rs = self.task.target.world.robot_state_manager.robot_state_by_coords(
+            self._x, self._y)
+
+        # Pokud není získaný stav robota None, pak je vráceno True,
+        # jinak False
+        return rs is not None
+
+    def configure(self):
+        """Konfigurační funkce v tomto kontextu nemá význam."""
+
+    def update(self, emitter: "EventEmitter", event: "Event"):
+        """Funkce pro update v tomto kontextu nemá význam."""
+
+
+class IsRobotTurnedTo(EvaluationFunction):
+    """Instance této třídy jsou odpovědné za vyhodnocování, zda je robot
+    stojící na specifických souřadnicích natočen specifikovaným směrem."""
+
+    def __init__(self, x: int, y: int, direction_name: str):
+        """Initor třídy, který přijímá souřadnice políčka, na kterém by měl
+        stát robot příslušně natočen. Natočení je definováno názvem směru;
+        pro bližší informace o povolených názvech směrů viz dokumentaci
+        funkce 'Direction.direction_by_name(str)'. Pokud tato není validní,
+        je vyhozena výjimka.
+        """
+
+        # Volání initoru předka
+        EvaluationFunction.__init__(self, f"Is robot @ [{x}, {y}] turned to "
+                                          f"'{direction_name}' right now")
+
+        # Uložení souřadnic
+        self._x = x
+        self._y = y
+
+        # Získání směru z dodaného názvu
+        self._direction = direction_module.Direction.direction_by_name(
+            direction_name)
+
+        # Ověření, že název popisuje platný směr
+        if self._direction is None:
+            raise EvaluationFunctionError(
+                f"Dodaný název směru '{direction_name}' neukazuje na žádný "
+                f"platný směr. Použijte některý z doporučených názvů: "
+                f"{direction_module.Direction.direction_names()}", self)
+
+    def eval(self) -> bool:
+        """Evaluační funkce, která zjišťuje, zda je robot otočen konkrétním
+        směrem. To je zjišťováno postupným procházením všech stavů robotů
+        v rámci jejich správce, zda neexistuje takový stav, který by"""
+
+        # Získání reference na stav robota podle souřadnic, tedy stojí-li
+        # na políčku s těmito souřadnicemi nějaký robot, je vrácen stav robota
+        rs = self.task.target.world.robot_state_manager.robot_state_by_coords(
+            self._x, self._y)
+
+        # Pokud neexistuje robot se stavem ukazujícím na políčko [x, y]
+        if not rs:
+
+            # Vrátit False
+            return False
+        else:
+
+            # Pokud směr, ve kterém je robot na daných souřadnicích natočen,
+            # je stejný, jako požadovaný, vrať True, jinak False
+            return rs.direction == self._direction
+
+    def configure(self):
+        """Konfigurační funkce v tomto kontextu nemá význam."""
+
+    def update(self, emitter: "EventEmitter", event: "Event"):
+        """Funkce pro update v tomto kontextu nemá význam."""
+
+
+class RobotIsAtAndHeadingTo(Conjunction):
+    """Tato evaluační funkce spojuje dvě funkce dohromady. Konkrétně provádí
+    konjunkci nad kontrolou, zda je nějaký robot v moment vyhodnocení na
+    políčku s dodanými souřadnicemi a zda je takový robot otočen požadovaným
+    směrem."""
+
+    def __init__(self, x: int, y: int, direction_name: str):
+        """Initor třídy, který iniciuje předka a přijímá souřadnice sledovaného
+        políčka spolu se směrem, kterým má být robot na tomto políčku otočen.
+
+        Směr natočení je zde definován textovým řetězcem. Ten musí být validí,
+        tedy v souladu s požadavky na směr (pro konkrétní informace viz
+        dokumentaci funkce 'Direction.direction_by_name(str)'. Pokud nebude
+        tato podmínka splněna, je vyhozena výjimka.
+        """
+
+        # Volání initoru předka
+        Conjunction.__init__(
+            self, f"Is robot @ [{x}, {y}] and turned to '{direction_name}'")
+
+        # Uložení souřadnic
+        self._x = x
+        self._y = y
+
+        # Získání směru z názvu směru
+        self._direction = direction_module.Direction.direction_by_name(
+            direction_name)
+
+        if self._direction is None:
+            raise EvaluationFunctionError(
+                f"Dodaný název směru '{direction_name}' neukazuje na žádný "
+                f"platný směr. Použijte některý z doporučených názvů: "
+                f"{direction_module.Direction.direction_names()}", self)
+
+    def configure(self):
+        """Funkce zjistí referenci na svět, ve kterém se robot nachází."""
+        self.add_eval_func(IsRobotAt(self._x, self._y))
+        self.add_eval_func(
+            IsRobotTurnedTo(self._x, self._y, self._direction.name))

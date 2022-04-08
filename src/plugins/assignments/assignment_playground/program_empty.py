@@ -24,7 +24,7 @@ plugin nebude a tedy nebude ani načten.
 # Import potřebných zdrojů a nástrojů
 from typing import Callable
 
-from src.fw.robot.program import AbstractProgram, AbortType
+from src.fw.robot.program import AbstractProgram
 from src.fw.robot.robot import Robot
 
 # Import zdrojů, které jsou vyžadovány jen v případě vlastní definice osazení
@@ -32,7 +32,7 @@ from src.fw.robot.robot import Robot
 # from typing import Iterable
 
 # Jméno autora, který je odpovědný za daný program
-_AUTHOR_NAME = "-----"
+_AUTHOR_NAME = "EMPTY PROGRAM"
 
 
 class Program(AbstractProgram):
@@ -56,7 +56,7 @@ class Program(AbstractProgram):
     potřebných knihoven (v horní části tohoto modulu).
     """
 
-    def run(self, robot: "Robot", log: "Callable"):
+    def run(self, robot: "Robot", log: Callable):
         """Šablona metody, která se stará o definici sekvence akcí, které
         má robot provést.
 
@@ -71,27 +71,6 @@ class Program(AbstractProgram):
         Řetězením těchto interakcí se pak robot snaží vyřešit zadanou úlohu
         a splnit tak své poslání."""
 
-        iswall = robot.get_unit("IsWallSensor").scan
-        move = robot.get_unit("ForwardMover").execute
-        turn = robot.get_unit("TurnLeft").execute
-        turnTo = robot.get_unit("TurnTo").execute
-        compass = robot.get_unit("CompassUnit").scan
-        mark = robot.get_unit("Marker").execute
-        demark = robot.get_unit("Demarker").execute
-        hasmark = robot.get_unit("HasMark").scan
-        readmark = robot.get_unit("MarkReader").scan
-
-        log("Hello World!")
-
-        mark(mark="A1")
-        log("has mark:", hasmark())
-        log("mark text:", readmark())
-        demark()
-        log("has mark:", hasmark())
-        log("mark text:", readmark())
-
-        self.terminate("Úspěšně jsem dokončil, co mi bylo uloženo",
-                       AbortType.SUCCESS)
 
 def get_program():
     """Tovární (přístupová) funkce, která vrací zcela novou instanci programu.

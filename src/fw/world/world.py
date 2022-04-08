@@ -104,6 +104,12 @@ class World:
         return tuple(filter(lambda field: field.is_path, self.fields))
 
     @property
+    def all_marked_fields(self) -> "tuple[field_mod.Field]":
+        """Vlastnost vrací ntici všech políček, která jsou opatřena nějakou
+        značkou."""
+        return tuple(filter(lambda field: field.has_mark, self.fields))
+
+    @property
     def world_interface(self) -> "world_inter_module.WorldInterface":
         """Vlastnost vrací rozhraní světa, které tomuto světu náleží."""
         return self._world_interface
@@ -113,6 +119,12 @@ class World:
         """Vlastnost vrací referenci na správce stavů robota, kterého má
         instance tohoto světa v sobě uložený."""
         return self._robot_state_manager
+
+    def fields_marked_like(self, mark_text: str) -> "tuple[field_mod.Field]":
+        """Funkce vrací všechna políčka, která jsou označena specifickým
+        textem. Tato vrací v ntici, přičemž může vracet prázdnou."""
+        return tuple(filter(lambda f: f.mark.text == mark_text,
+                            self.all_marked_fields))
 
     def has_field(self, x: int, y: int) -> bool:
         """Funkce vrací boolovskou informaci o tom, zda-li je v daném světě
@@ -140,26 +152,42 @@ class World:
         Pokud na dodaných souřadnicích není evidované políčko, je vyhozena
         výjimka.
         """
+
+        # Uložení dodaného políčka
         field = self.field(x, y)
+
+        # Pokud políčko není ve světě evidováno
         if not field:
             raise WorldError(
                 f"Nelze najít sousedy pro políčko [{x};{y}], protože není "
                 f"ve světě evidováno", self)
 
+        # Iniciace úložiště pro sousedy
         neighbours = []
+
+        # Pro všechny směry
         for direction in Direction:
+
+            # Souřadnice posunutého políčka v daném směru
             moved_coords = field.coordinates.move_in_direction(direction)
+
+            # Zjištění souseda; pokud je obsažen ve světě (není None)
+            # je přidán do úložiště sousedů
             neighbour = self.field(moved_coords.x, moved_coords.y)
             if neighbour:
                 neighbours.append(neighbour)
+
+        # Navrácení v podobě ntice
         return tuple(neighbours)
 
 
 class WorldError(PlatformError):
-    """Výjimka 'WorldError' svojí podstatou rozšířuje obecnou výjimku tím, že
+    """Výjimka 'WorldError' svojí podstatou rozšiřuje obecnou výjimku tím, že
     v sobě uchovává referenci na svět, v jehož kontextu došlo k chybě."""
 
     def __init__(self, message: str, world: "World"):
+        """Initor, který přijímá textovou zprávu o chybě a postupuje ji svému
+        předkovi, a svět, v jehož kontextu došlo k chybě."""
         PlatformError.__init__(self, message)
         self._world = world
 

@@ -60,6 +60,14 @@ class RobotStateManager(event_handling.EventEmitter):
         """Spawner, který je používán pro zasazování robotů do světa."""
         return self._spawner
 
+    @property
+    def robot_names(self) -> "tuple[str]":
+        """Vlastnost vrací názvy všech robotů, kteří jsou u tohoto správce
+        vedeni v evidenci."""
+        # Redundantní přetypování na str je z důvodu kontroly typů v IDE,
+        # které mají s lambda výrazy velký problém a vyhazují warnings
+        return tuple(map(lambda rs: str(rs.robot.name), self.robot_states))
+
     def has_robot(self, robot: "robot_module.Robot") -> bool:
         """Funkce se pokusí projít stavy robotů a vyhledat ten, který
         by v sobě popisoval stav dodaného robota. Pokud je takový nalezen,
@@ -84,6 +92,13 @@ class RobotStateManager(event_handling.EventEmitter):
             raise RobotStateManagerError(
                 f"Správce stavů robotů již robota '{robot.name}' "
                 f"s ID '{robot.id}' evidovaného má", self)
+
+        # Pokud je evidován robot se stejným názvem
+        elif robot.name in self.robot_names:
+            self.log("Robot s názvem", robot.name, "již jednou evidován je")
+            raise RobotStateManagerError(
+                f"Správce stavů robotů již robota s názvem '{robot.name}' "
+                f"jednou eviduje", self)
 
         # Vytvoření stavu robota
         robot_state = self.spawner.spawn(robot)
