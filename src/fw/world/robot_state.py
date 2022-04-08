@@ -74,20 +74,29 @@ class RobotState:
 
         Pokud ani jeden z těchto nepříznivých stavů nenastane, stavu robota
         je toto políčko přiřazeno."""
+
+        # Pokud dané políčko neexistuje
         if not field:
             raise RobotStateError(
                 f"Políčko nemůže být None", self)
+
+        # Pokud dodané políčko není ve světě
         elif not self.world.has_field(field.x, field.y):
             raise RobotStateError(
                 f"Robota není možné umístit na neexistující políčko", self)
+
+        # Pokud je políčko stěna
         elif field.is_wall:
             raise RobotStateError(
                 f"Robota nelze umístit na stěnu na souřadnicích "
                 f"[{field.x}, {field.y}]", self)
+
+        # Pokud na políčku již nějaký robot stojí a není to právě on
         elif field.has_any_robot and field.robot != self.robot:
             raise RobotStateError(
                 f"Nelze robota umístit na políčko, na kterém již jeden robot "
                 f"umístěn je: {field.robot} @ [{field.x}, {field.y}]", self)
+
         self._field = field
 
 

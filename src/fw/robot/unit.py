@@ -178,7 +178,7 @@ class Actuator(AbstractUnit):
         výjimku, protože aktuátory nejsou vybaveny schopností scanování
         světa."""
         raise UnitError(
-            f"Aktuátor '{self.name}' neumí dodávat informace o světě."
+            f"Aktuátor '{self.name}' neumí dodávat informace o světě. "
             f"Použijte funkci 'execute'.", self)
 
     def execute(self, **kwargs):
