@@ -9,6 +9,8 @@ from datetime import datetime
 import src.fw.utils.timeworks as timeworks
 import src.fw.utils.logging.logging_output as output_module
 import src.fw.utils.logging.logger_pipeline as pipeline_module
+import src.fw.target.event_handling as event_module
+import src.fw.utils.logging.logging_events as logging_events
 
 from src.fw.utils.identifiable import Identifiable
 
@@ -64,7 +66,7 @@ class Log(Identifiable):
         return timeworks.date(self.timestamp)
 
 
-class Logger:
+class Logger(event_module.EventEmitter):
     """Třída Logger je odpovědná za definici loggeru, který bude schopen
     přijímat zprávy z různých kontextů a s řídit jejich výstupní zpracování.
 
@@ -74,6 +76,7 @@ class Logger:
     def __init__(self):
         """Initor třídy, který je odpovědný za iniciaci evidence výstupních
         loggovacích zpracovatelů. Tato evidence je v úvodu prázdná."""
+        event_module.EventEmitter.__init__(self)
         self._outputs: "list[output_module.LoggingOutput]" = []
 
     @property
@@ -117,6 +120,9 @@ class Logger:
 
         # Tvorba instance třídy Log
         log_instance = Log(context, message)
+
+        # Vytvoření události a upozornění všech registrovaných odběratelů
+        self.notify_all_event_handlers(logging_events.LogEvent(log_instance))
 
         # Pro každý výstup: je-li odpovědný za tento typ logu, zaloguj ho
         for output in self.outputs:
