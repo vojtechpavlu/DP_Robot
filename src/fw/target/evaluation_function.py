@@ -292,7 +292,7 @@ class Visited(EvaluationFunction):
         """
 
         # Volání předka
-        EvaluationFunction.__init__(self, f"Visited ({x}, {y})")
+        EvaluationFunction.__init__(self, f"Visited [{x}, {y}]")
 
         # Uložení souřadnic
         self._x = x
@@ -471,7 +471,7 @@ class UsedInteraction(EvaluationFunction):
         """
         # Volání předka
         EvaluationFunction.__init__(
-            self, f"UsedInteraction '{interaction_name}'")
+            self, f"Was interaction '{interaction_name}' used")
 
         # Uložení očekávaného názvu interakce
         self._interaction_name = interaction_name
@@ -507,7 +507,6 @@ class UsedInteraction(EvaluationFunction):
 
             # Pokud je název interakce tím očekávaným
             if event.interaction.name == self.interaction_name:
-
                 # Změna stavu a odregistrování se; úkol je splněn
                 self._used_interaction = True
                 emitter.unregister_event_handler(self)
@@ -549,7 +548,6 @@ class UsedAllInteractions(Conjunction):
 
         # Pro každý název interakce
         for inter_name in self.interaction_names:
-
             # Vytvoření evaluační funkce a přidání do evidence
             ef = UsedInteraction(inter_name)
             self.add_eval_func(ef)
@@ -574,7 +572,7 @@ class IsRobotMountedWith(EvaluationFunction):
 
         # Volání initoru předka
         EvaluationFunction.__init__(
-            self, f"IsMountedWith '{unit_name}'")
+            self, f"Is robot mounted with unit '{unit_name}'")
 
         # Uložení dodaných parametrů
         self._unit_name = unit_name
@@ -629,7 +627,6 @@ class IsRobotMountedWithAll(Conjunction):
 
             # Pro každý název jednotky
             for unit_name in self._unit_names:
-
                 # Přidání nové evaluační funkce
                 self.add_eval_func(IsRobotMountedWith(
                     unit_name, robot_state.robot))
@@ -646,7 +643,7 @@ class AddedAnyMarkEvalFun(EvaluationFunction):
         """
 
         # Volání initoru předka
-        EvaluationFunction.__init__(self, f"AddedAnyMark @ [{x}, {y}]")
+        EvaluationFunction.__init__(self, f"Added any mark @ [{x}, {y}]")
 
         # Uložení dodaných parametrů
         self._x = x
@@ -681,7 +678,6 @@ class AddedAnyMarkEvalFun(EvaluationFunction):
 
                 # Pokud má políčko značku
                 if field.has_mark:
-
                     # Změna stavu evaluační funkce
                     self.__was_marked = True
 
@@ -703,7 +699,7 @@ class RemovedMarkEvalFun(EvaluationFunction):
         """
 
         # Volání initoru předka
-        EvaluationFunction.__init__(self, f"RemovedAnyMark @ [{x}, {y}]")
+        EvaluationFunction.__init__(self, f"Removed any mark @ [{x}, {y}]")
 
         # Uložení dodaných parametrů
         self._x = x
@@ -762,7 +758,7 @@ class LoggedAnything(EvaluationFunction):
 
         # Iniciace předka
         EvaluationFunction.__init__(
-            self, f"LoggedAnything in {context} context")
+            self, f"Logged anything in '{context}' context")
 
         self._context = context.upper()
         self.__logged_in_context = False
@@ -796,7 +792,6 @@ class LoggedAnything(EvaluationFunction):
 
             # Pokud je záznam obsažený v události sledovaného kontextu
             if event.log.context == self.context:
-
                 # Nastavení vnitřního stavu funkce na True
                 self.__logged_in_context = True
 
@@ -824,7 +819,7 @@ class LoggedSpecificMessage(EvaluationFunction):
 
         # Volání předka
         EvaluationFunction.__init__(
-            self, f"LoggedSpecificMessage '{message}' in '{context}'")
+            self, f"Logged specific message '{message}' in '{context}'")
 
         # Uložení parametrů evaluační funkce
         self._ignore_casing = ignore_casing
@@ -883,7 +878,6 @@ class LoggedSpecificMessage(EvaluationFunction):
 
                 # Provedení kontroly zprávy logu
                 if self.check_message(event.log.message):
-
                     # Změna stavu evaluační funkce
                     self.__logged_in_context = True
 
@@ -925,7 +919,8 @@ class TurnToDirection(EvaluationFunction):
         """
 
         # Volání initoru předka
-        EvaluationFunction.__init__(self, f"TurnToDirection {direction_name}")
+        EvaluationFunction.__init__(
+            self, f"Turned to direction {direction_name}")
 
         # Vyhledání příslušného směru
         self._direction = direction_module.Direction.direction_by_name(
@@ -969,7 +964,6 @@ class TurnToDirection(EvaluationFunction):
             # Kontrola, že je nový směr natočení robota stejný,
             # jako ten požadovaný
             if event.direction == self.direction:
-
                 # Nastav vnitřní stav funkce a odhlaš se z odběru událostí
                 self.__was_turned_to = True
                 emitter.unregister_event_handler(self)
