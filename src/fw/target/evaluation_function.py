@@ -655,7 +655,10 @@ class AddedAnyMarkEvalFun(EvaluationFunction):
         return self.__was_marked
 
     def configure(self):
-        """Funkce nemá v rámci této instance úplně smysl."""
+        """Metoda, jejímž cílem je pouze zaregistrování se u vydavatele
+        událostí, kterým tato evaluační funkce naslouchá.
+        """
+        self.task.target.world.world_interface.register_event_handler(self)
 
     def update(self, emitter: "EventEmitter", event: "Event"):
         """Hlavní vyhodnocovací funkce, která umožňuje rozpoznat, že políčko
