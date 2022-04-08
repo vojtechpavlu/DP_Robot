@@ -897,8 +897,6 @@ class LoggedSpecificMessage(EvaluationFunction):
         if self._strip:
             message = message.strip()
 
-        print(message, self.message)
-
         # Vyhodnocení, zda-li je zpráva totožná s očekávanou
         return self.message == message
 
