@@ -104,6 +104,12 @@ class World:
         return tuple(filter(lambda field: field.is_path, self.fields))
 
     @property
+    def all_marked_fields(self) -> "tuple[field_mod.Field]":
+        """Vlastnost vrací ntici všech políček, která jsou opatřena nějakou
+        značkou."""
+        return tuple(filter(lambda field: field.has_mark, self.fields))
+
+    @property
     def world_interface(self) -> "world_inter_module.WorldInterface":
         """Vlastnost vrací rozhraní světa, které tomuto světu náleží."""
         return self._world_interface
@@ -113,6 +119,12 @@ class World:
         """Vlastnost vrací referenci na správce stavů robota, kterého má
         instance tohoto světa v sobě uložený."""
         return self._robot_state_manager
+
+    def fields_marked_like(self, mark_text: str) -> "tuple[field_mod.Field]":
+        """Funkce vrací všechna políčka, která jsou označena specifickým
+        textem. Tato vrací v ntici, přičemž může vracet prázdnou."""
+        return tuple(filter(lambda f: f.mark.text == mark_text,
+                            self.all_marked_fields))
 
     def has_field(self, x: int, y: int) -> bool:
         """Funkce vrací boolovskou informaci o tom, zda-li je v daném světě
