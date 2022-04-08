@@ -66,7 +66,7 @@ class MarkChangeEvent(event_module.Event):
 
 
 @dataclass(frozen=True)
-class DirectionChange(event_module.Event):
+class DirectionChangeEvent(event_module.Event):
     """Datová třída reprezentující událost změny směru robota. Tato událost
     by měla symbolizovat změnu natočení robota do směru.
 
@@ -75,7 +75,7 @@ class DirectionChange(event_module.Event):
     je robot nově natočen.
 
     Příklad použití:
-        >>> DirectionChange(robot, direction)
+        >>> DirectionChangeEvent(robot, direction)
     """
 
     robot: "robot_module.Robot"
