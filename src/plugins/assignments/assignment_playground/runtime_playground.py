@@ -13,7 +13,8 @@ třeba před použitím upravit.
 from src.fw.platform.platform import Platform
 from src.fw.robot.program import AbstractProgram
 from src.fw.robot.robot import RobotFactory, EmptyRobotFactory
-from src.fw.target.task import VisitAllTask
+from src.fw.target.task import VisitAllTask, AddedMarkAtTask, \
+    RemovedMarkAtTask, LoggedAnythingInContext, LoggedMessageInContext
 from src.fw.utils.logging.logger import Logger
 from src.fw.world.world import World
 from src.fw.world.world_factory import WorldFactory, OpenSpaceWorldFactory
@@ -31,9 +32,14 @@ class CustomTargetFactory(TargetFactory):
     def build(self, world: "World",
               logger: "Logger") -> "Target":
         target = Target("CustomTarget", "no desc", world, logger)
-        target.add_task(
-            VisitAllTask(),
-        )
+        #target.add_task(VisitAllTask())
+        target.add_task(LoggedMessageInContext(
+            "Hello World!", ignore_casing=True, strip=True))
+        target.add_task(LoggedAnythingInContext())
+        target.add_task(AddedMarkAtTask(1, 1))
+        target.add_task(AddedMarkAtTask(2, 2))
+        target.add_task(RemovedMarkAtTask(1, 1))
+        target.add_task(RemovedMarkAtTask(2, 2))
         return target
 
 

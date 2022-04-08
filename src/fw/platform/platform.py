@@ -19,7 +19,9 @@ import src.fw.platform.runtime_factory_manager as rtf_manager_module
 import src.fw.platform.runtime as runtime_module
 import src.fw.robot.program as program_module
 import src.fw.robot.unit as unit_module
+
 from src.fw.utils.error import PlatformError
+from src.fw.utils.logging.logger_factory import DefaultLoggerFactory
 
 
 class Platform:
@@ -164,9 +166,9 @@ class Platform:
         self._runtimes: "list[runtime_module.AbstractRuntime]" = []
 
         # Vytvoření nového loggeru
-        from src.fw.utils.logging.logger_factory import DefaultLoggerFactory
-        logger = DefaultLoggerFactory().build()
-        log = logger.make_pipeline("platform").log
+        logger_factory = DefaultLoggerFactory()
+        platform_logger = logger_factory.build()
+        log = platform_logger.make_pipeline("platform").log
 
         """Postupné spouštění všech běhových prostředí. Pro každou továrnu
         běhového prostředí je získán program, pro který je spuštěna nově
@@ -183,7 +185,8 @@ class Platform:
                 log("Příprava programu autora:", program.author_name)
 
                 # Vytvoření běhového prostředí
-                runtime = runtime_factory.build(self, program, logger)
+                runtime = runtime_factory.build(
+                    self, program, logger_factory.build())
 
                 # Registrace běhového prostředí
                 self._runtimes.append(runtime)

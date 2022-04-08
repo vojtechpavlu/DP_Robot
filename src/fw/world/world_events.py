@@ -13,6 +13,7 @@ from dataclasses import dataclass
 import src.fw.target.event_handling as event_module
 import src.fw.robot.robot as robot_module
 import src.fw.world.field as field_module
+import src.fw.world.direction as direction_module
 
 
 @dataclass(frozen=True)
@@ -58,7 +59,29 @@ class MarkChangeEvent(event_module.Event):
     odebrání.
 
     Příklad použití:
-        >>> MarkChangeEvent(field)"""
+        >>> MarkChangeEvent(field)
+    """
 
     field: "field_module.Field"
+
+
+@dataclass(frozen=True)
+class DirectionChangeEvent(event_module.Event):
+    """Datová třída reprezentující událost změny směru robota. Tato událost
+    by měla symbolizovat změnu natočení robota do směru.
+
+    K tomu, aby byla událost co nejužitečnější, nosí v sobě informaci o
+    robotovi, s kterým tato událost souvisí, stejně jako směr, ve kterém
+    je robot nově natočen.
+
+    Příklad použití:
+        >>> DirectionChangeEvent(robot, direction)
+    """
+
+    robot: "robot_module.Robot"
+    direction: "direction_module.Direction"
+
+
+
+
 

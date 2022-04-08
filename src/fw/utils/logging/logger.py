@@ -133,13 +133,13 @@ class Logger(event_module.EventEmitter):
         # Tvorba instance třídy Log
         log_instance = Log(context, message)
 
-        # Vytvoření události a upozornění všech registrovaných odběratelů
-        self.notify_all_event_handlers(
-            logging_events.LogEvent(log_instance))
-
         # Pro každý výstup: je-li odpovědný za tento typ logu, zaloguj ho
         for output in self.outputs:
             if output.is_responsible_for(log_instance):
                 output.log(log_instance)
+
+        # Vytvoření události a upozornění všech registrovaných odběratelů
+        self.notify_all_event_handlers(
+            logging_events.LogEvent(log_instance))
 
 
