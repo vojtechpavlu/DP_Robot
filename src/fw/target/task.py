@@ -84,6 +84,11 @@ class Task(Identifiable, Named, Described):
         self._logger_pipeline = logger_pipeline
 
     @property
+    def numeric_evaluation(self) -> float:
+        """Vlastnost vrací vyčíslení míry splnění úkolu."""
+        return self.evaluation_function.numeric_evaluation
+
+    @property
     def evaluation_function(self) -> "ef_module.EvaluationFunction":
         """Vlastnost umožňující získání evaluační funkce."""
         return self._eval_fun

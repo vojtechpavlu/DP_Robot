@@ -71,6 +71,16 @@ class Target(Named, Described):
         údajů v případě splnění nějakého úkolu nebo podúkolu."""
         return self._logger
 
+    @property
+    def evaluate(self) -> float:
+        """Vlastnost vrací celkovou evaluaci úlohy co do jejího splnění.
+        Vrací podíl míry naplnění úkolů, tedy hodnoty z intervalu [0, 1].
+        """
+        all_summed = 0
+        for task in self.tasks:
+            all_summed += task.numeric_evaluation
+        return all_summed / len(self.tasks)
+
     def add_task(self, task: "task_module.Task"):
         """Metoda přidává úkol ke splnění do této úlohy."""
         # Uložení do evidence úkolů
