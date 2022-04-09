@@ -42,6 +42,10 @@ class Robot(Identifiable, Named):
         robota."""
         self.__log = logger_pipeline
 
+    def set_robot_name(self, new_name: str):
+        """Funkce, která umožňuje nastavit jméno robota."""
+        self._name = new_name
+
     @property
     def units(self) -> "tuple[unit_module.AbstractUnit]":
         """Vlastnost vrací ntici všech jednotek, kterými je robot osazen."""
