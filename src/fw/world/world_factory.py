@@ -14,6 +14,7 @@ import src.fw.world.spawner as spawner_module
 
 from src.fw.utils.error import PlatformError
 from src.fw.utils.logging.logger import Logger
+from src.fw.world.mark import Mark
 
 
 class WorldFactory(ABC):
