@@ -107,6 +107,12 @@ def list_assignments() -> "tuple[str]":
         assignments_path())))
 
 
+def output_path() -> str:
+    """Funkce vrací adresář, ve kterém jsou uvedeny výstupy jednotlivých
+    programů."""
+    return join_paths(root_directory_path(), "output")
+
+
 def separator() -> str:
     """Funkce vrací znak, kterým je defaultně značen pohyb ve struktuře
     souborového systému.
