@@ -85,6 +85,11 @@ class EvaluationFunction(Named, Identifiable, event_module.EventHandler):
         """Jádrem evaluační funkce je právě tato metoda, která umožňuje
         vyhodnocení splnění stanoveného úkolu."""
 
+    @property
+    def numeric_evaluation(self) -> float:
+        """Funkce se pokusí o své vyhodnocení číselnou hodnotou."""
+        return 1 if self.eval() else 0
+
     @abstractmethod
     def configure(self):
         """Abstraktní funkce, která umožňuje provedení konfigurace. Typicky
@@ -108,6 +113,14 @@ class EvaluationFunctionJunction(EvaluationFunction):
         """Vlastnost vrací ntici evaluačních funkcí, ze kterých se spojka
         skládá."""
         return tuple(self._eval_funcs)
+
+    @property
+    def numeric_evaluation(self) -> float:
+        """Funkce se pokusí o své vyhodnocení číselnou hodnotou."""
+        all_summed = 0
+        for ef in self.evaluation_functions:
+            all_summed += ef.numeric_evaluation
+        return all_summed / len(self.evaluation_functions)
 
     def add_eval_func(self, fun: "EvaluationFunction"):
         """Metoda umožňující dynamicky přidávat instance evaluačních funkcí
