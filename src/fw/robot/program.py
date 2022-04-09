@@ -7,10 +7,13 @@ from typing import Iterable
 from enum import Enum
 from typing import Callable
 
+import inspect
+
 # Import lokálních knihoven
 import src.fw.robot.robot as robot_module
 import src.fw.robot.unit as unit_module
 
+from src.fw.utils.filesystem import assignments_path, abs_to_relative
 from src.fw.utils.error import PlatformError
 
 
@@ -58,8 +61,25 @@ class AbstractProgram(ABC):
 
     @property
     def author_name(self) -> str:
-        """Funkce vrací jméno autora tohoto programu."""
+        """Vlastnost vrací jméno autora tohoto programu."""
         return self._author_name
+
+    @property
+    def absolute_path(self) -> str:
+        """Vlastnost vrací plnou absolutní cestu k pluginu, který definuje
+        tento program."""
+        return inspect.getfile(type(self))
+
+    @property
+    def path(self) -> str:
+        """Vlastnost vrací cestu k tomuto pluginu programu. Pomocí toho je
+        možné rozlišovat mezi různými programy (resp. jejich implementacemi)
+        od stejného autora pro stejné zadání.
+
+        **POZOR** - funguje výhradně v defaultním nastavení, tedy je-li
+        program umístěn ve výchozím adresáři pro zadání.
+        """
+        return abs_to_relative(self.absolute_path, assignments_path())
 
     def mount(self, robot: "robot_module.Robot",
               available_units: "Iterable[unit_module.AbstractUnit]"):
