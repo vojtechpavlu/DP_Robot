@@ -24,7 +24,7 @@ plugin nebude a tedy nebude ani načten.
 # Import potřebných zdrojů a nástrojů
 from typing import Callable
 
-from src.fw.robot.program import AbstractProgram
+from src.fw.robot.program import AbstractProgram, AbortType
 from src.fw.robot.robot import Robot
 
 # Import zdrojů, které jsou vyžadovány jen v případě vlastní definice osazení

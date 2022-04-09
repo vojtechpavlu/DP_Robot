@@ -14,13 +14,40 @@ from src.fw.platform.platform import Platform
 from src.fw.robot.program import AbstractProgram
 from src.fw.robot.robot import RobotFactory, EmptyRobotFactory
 from src.fw.utils.logging.logger import Logger
+from src.fw.world.world import World
 from src.fw.world.world_factory import WorldFactory, OpenSpaceWorldFactory
 from src.fw.world.spawner import SpawnerFactory, CoordinatesSpawnerFactory
-from src.fw.target.target import TargetFactory, AlwaysCompletedTargetFactory
+from src.fw.target.target import TargetFactory, Target
 from src.fw.world.world_interface import (WorldInterfaceFactory,
                                           DefaultWorldInterfaceFactory)
 from src.fw.platform.runtime import (AbstractRuntime, AbstractRuntimeFactory,
                                      SingleRobotRuntime)
+
+
+# Název úlohy
+_TARGET_NAME = ""
+
+# Popis úlohy
+_TARGET_DESCRIPTION = ("")
+
+
+class CustomTargetFactory(TargetFactory):
+    def build(self, world: "World",
+              logger: "Logger") -> "Target":
+        """Funkce build připraví zcela novou instanci úlohy. V prvním
+        kroku je vytvořena prázdná instance úlohy s pouze nutnými
+        parametry, v druhém kroku je naplněna požadovanými úkoly a
+        v posledním kroku je tato instance vrácena
+        """
+
+        # 1) Vytvoření instance úlohy
+        target = Target(_TARGET_NAME, _TARGET_DESCRIPTION, world, logger)
+
+        # 2) Doplnění sadou úkolů
+        # TODO - doplnění jednotlivých úkolů
+
+        # 3) Vrácení úlohy
+        return target
 
 
 def _get_unit_names() -> "list[str]":
@@ -43,7 +70,7 @@ def _get_spawner_factory() -> "SpawnerFactory":
 
 def _get_target_factory() -> "TargetFactory":
     """Funkce vrací novou instanci továrny úlohy."""
-    return AlwaysCompletedTargetFactory()  # TODO - DOPLNIT
+    return CustomTargetFactory()  # TODO - DOPLNIT
 
 
 def _get_world_interface_factory() -> "WorldInterfaceFactory":
