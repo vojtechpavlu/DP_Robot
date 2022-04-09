@@ -143,6 +143,36 @@ class World:
             if field.x == x and field.y == y:
                 return field
 
+    def add_field(self, field: "field_mod.Field"):
+        """Funkce se pokusí přidat políčko. Pokud již políčko s takovými
+        souřadnicemi má, je vyhozena výjimka."""
+
+        # Ověření, že políčko s takovými souřadnicemi doposud není evidováno
+        if self.has_field(field.x, field.y):
+            raise WorldError(
+                f"Nelze přidat políčko {field}, protože již jedno s těmito "
+                f"souřadnicemi má", self)
+
+        # Přidání daného políčka do světa
+        self._fields.append(field)
+
+    def remove_field(self, x: int, y: int):
+        """Funkce se pokusí odstranit políčko na dodaných souřadnicích.
+        Pokud políčko není evidováno, je vyhozena výjimka.
+        """
+
+        # Pokud má tento svět políčko [x, y]
+        if self.has_field(x, y):
+
+            # Odstraň ho z evidence
+            self._fields.remove(self.field(x, y))
+            self.log(f"Bylo odebráno políčko [{x}, {y}]")
+
+        # Pokud ne, vyhoď výjimku
+        else:
+            raise WorldError(f"Políčko na souřadnicích [{x}, {y}] neexistuje "
+                             f"a nelze tedy ani odstranit", self)
+
     def neighbours(self, x: int, y: int) -> "tuple[field_mod.Field]":
         """Funkce se pokusí získat všechna políčka sousedící s tím na dodaných
         souřadnicích ve všech platných směrech. Počet navrácených políček se
