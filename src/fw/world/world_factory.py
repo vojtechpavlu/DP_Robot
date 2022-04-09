@@ -5,6 +5,8 @@ je dynamicky tvořit na požádání nové instance světa."""
 from abc import ABC, abstractmethod
 
 # Import lokálních knihoven
+from typing import Iterable
+
 import src.fw.world.world as world_module
 import src.fw.world.world_interface as world_if_module
 import src.fw.world.field as field_module
@@ -47,6 +49,38 @@ class WorldFactory(ABC):
         """Abstraktní metoda stanovující protokol abstraktní třídy
         WorldFactory. Funkce je odpovědná za generování instance světa v
         závislosti na parametrech dodaných v konstruktoru."""
+
+
+class WorldFactoryOverride(WorldFactory):
+    """Továrna světa, která formou dekorátoru (resp. podle návrhového vzoru
+    Dekorátor) obaluje funkcionalitu továrny světa a upravuje tak svět
+    vytvořený."""
+
+    def __init__(self, world_factory: WorldFactory):
+        """Initor, který je odpovědný za zavolání předka a poskytnutí mu
+        dodaných hodnot parametrů. Dále také ukládá dodanou továrnu světa,
+        kterou má za cíl obohatit a doplnit."""
+
+        # Volání initoru předka
+        WorldFactory.__init__(self, world_factory.world_interface_fact,
+                              world_factory.spawner_factory)
+
+        # Uložení továrny, kterou má tato instance upravit
+        self._world_factory = world_factory
+
+    @property
+    def world_factory(self) -> WorldFactory:
+        """Vlastnost vrací továrnu, kterou má tato instance doplnit."""
+        return self._world_factory
+
+    @abstractmethod
+    def build(self, logger: "Logger") -> "world_module.World":
+        """Abstraktní metoda stanovující protokol abstraktní třídy
+        WorldFactory. Funkce je odpovědná za generování instance světa v
+        závislosti na parametrech dodaných v konstruktoru.
+
+        Konkrétně jsou instance implementující tento protokol odpovědné
+        za vytvoření světa z dodané továrny a za jeho upravení."""
 
 
 class OpenSpaceWorldFactory(WorldFactory):
