@@ -352,7 +352,7 @@ class VisitAllEvaluationFunction(Conjunction):
 
     def __init__(self):
         """Jednoduchý bezparametrický initor, který pouze iniciuje předka."""
-        Conjunction.__init__(self, "VisitAllEvaluationFunction")
+        Conjunction.__init__(self, "Visit all Evaluation Function")
 
     def configure(self):
         """Funkce se pokusí napojit pro každé navštivitelné políčko svoji
@@ -393,7 +393,7 @@ class VisitSpecificFieldEvaluationFunction(Conjunction):
         nebude tento dodržen, je vyhozena výjimka.
         """
         # Volání předka
-        Conjunction.__init__(self, "VisitSpecificFieldEvaluationFunction")
+        Conjunction.__init__(self, "Visit specific fields")
 
         # Pokud není Iterable
         if not isinstance(to_visit, Iterable):
@@ -527,7 +527,7 @@ class UsedAllInteractions(Conjunction):
         """
 
         # Iniciace předka
-        Conjunction.__init__(self, "UsedAllInteractions")
+        Conjunction.__init__(self, "Used all interactions")
 
         # Uložení všech požadovaných názvů
         self._names = interaction_names
@@ -602,7 +602,7 @@ class IsRobotMountedWithAll(Conjunction):
         """
 
         # Volání initoru předka
-        Conjunction.__init__(self, "IsRobotMountedWithAll")
+        Conjunction.__init__(self, "Is robot mounted with all units")
 
         # Uložení všech dodaných názvů jednotek
         self._unit_names = tuple(unit_names)
@@ -982,7 +982,7 @@ class TurnToAllDirections(Conjunction):
         """
 
         # Volání initoru předka
-        Conjunction.__init__(self, "TurnToAllDirections")
+        Conjunction.__init__(self, "Turn to all directions")
 
     def configure(self):
         """Konfigurační metoda se stará o iniciaci všech vyhodnocovacích
