@@ -130,6 +130,13 @@ class AbstractRuntime(Identifiable, event_module.EventEmitter):
         vytvářet záznamy."""
         return self._logger_pipeline
 
+    @property
+    @abstractmethod
+    def robots(self) -> "tuple[robot_module.Robot]":
+        """Abstraktní vlastnost definuje protokol, který umožňuje získat
+        referenci na všechny roboty, kteří se v kontextu tohoto běhového
+        prostředí vyskytovali."""
+
     def prepare(self):
         """Funkce připravující svět a úlohu ke spuštění. V podstatě si z
         dodaných továren nechá příslušné instance vygenerovat.
@@ -224,6 +231,12 @@ class SingleRobotRuntime(AbstractRuntime):
         self.__robot_container = robot_cont_module.SingleRobotContainer()
         self.__robot_container.robot = self.robot_factory.build(
             self.logger.make_pipeline("robot").log)
+
+    @property
+    def robots(self) -> "tuple[robot_module.Robot]":
+        """Vlastnost vrací jediného robota, který je v této instanci evidován,
+        a to obaleného nticí."""
+        return tuple([self.robot])
 
     @property
     def robot(self) -> "robot_module.Robot":

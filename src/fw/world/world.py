@@ -73,7 +73,7 @@ class World:
 
         """Připravení rozhraní světa z dodané továrny"""
         self._world_interface = world_if_fact.build(
-            self, self._logger.make_pipeline("world_interface").log)
+            self, self._logger.make_pipeline("w_interface").log)
 
         """Připravení správce stavů robotů. K tomu je potřeba spawner, který
         řídí přidávání robotů do světa; resp. vytváří stavy robota.
@@ -82,7 +82,7 @@ class World:
         """
         spawner = spawner_factory.build()
         self._robot_state_manager = rsm_module.RobotStateManager(
-            spawner, self._logger.make_pipeline("robot_state").log)
+            spawner, self._logger.make_pipeline("r_s_mng").log)
         spawner.world = self
 
     @property

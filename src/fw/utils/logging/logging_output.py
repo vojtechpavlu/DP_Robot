@@ -6,6 +6,7 @@ definuje obecný protokol pro všechny výstupní loggery, konkrétně třídu
 
 # Import standardních knihoven
 from abc import ABC, abstractmethod
+from textwrap import fill
 import sys
 
 # Import lokálních knihoven
@@ -41,6 +42,11 @@ class LoggingOutput(ABC):
         """Vlastnost vrací, zda-li tento výstupní zpracovatel logů přijímá
         všechny kontexty."""
         return self._takes_all
+
+    @property
+    @abstractmethod
+    def has_memo(self) -> bool:
+        """Vlastnost vrací, zda-li má tento výstup loggeru paměť či nikoliv."""
 
     def has_context(self, context_name: str) -> bool:
         """Funkce vrací, zda-li má tento výstupní logger daný kontext evidován.
@@ -109,6 +115,11 @@ class OutputWithMemo(LoggingOutput):
         v podobě ntice."""
         return tuple(self._logs)
 
+    @property
+    def has_memo(self) -> bool:
+        """Vlastnost vrací, zda-li má tento výstup loggeru paměť či nikoliv."""
+        return True
+
     def save_log(self, log: "logger_module.Log"):
         """Funkce odpovědná za uložení logu do evidence. Je přitom ověřována
         příslušnost. Pokud tato instance není odpovědná za zpracovávání logů
@@ -130,6 +141,14 @@ class OutputWithMemo(LoggingOutput):
         self._logs: "list[logger_module.Log]" = []
         return logs
 
+    @abstractmethod
+    def log(self, log: "logger_module.Log"):
+        """Abstraktní funkce definující protokol pomocí předepsání signatury
+        funkce. Implementace této funkce jsou odpovědné za vytvoření
+        příslušného výstupu dle pravidel dané třídy.
+
+        Funkce přijímá referenci na log, který by měl být zpracován."""
+
 
 class PrintingOutput(LoggingOutput):
     """Třída PrintingOutput je odpovědná za vypisování logů na konzoli."""
@@ -142,10 +161,20 @@ class PrintingOutput(LoggingOutput):
         výstupní kontexty přidat do evidence posteriorně."""
         LoggingOutput.__init__(self, take_all)
 
+    @property
+    def has_memo(self) -> bool:
+        """Vlastnost vrací, zda-li má tento výstup loggeru paměť či nikoliv."""
+        return False
+
     def log(self, log: "logger_module.Log"):
         """Funkce implementující protokol definovaný v předkovi. Funkce se
         pouze stará o výpis v daném formátu."""
-        sys.stdout.write(f"[{log.time}][{log.context}]: {log.message}\n")
+
+        prefix = f"[{log.time}][{log.context.ljust(8)}]: "
+        message = fill(log.message, width=100, initial_indent=prefix,
+                       subsequent_indent=len(prefix)*" ")
+
+        sys.stdout.write(f"{message}\n")
 
 
 class SimpleOutputWithMemo(OutputWithMemo):

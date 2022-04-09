@@ -182,6 +182,7 @@ class Platform:
             # Pro každý program
             for program in self.programs:
 
+                log("Plugin programu:", program.path)
                 log("Příprava programu autora:", program.author_name)
 
                 # Vytvoření běhového prostředí
