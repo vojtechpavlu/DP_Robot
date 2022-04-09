@@ -33,9 +33,25 @@ class DefaultLoggerFactory(LoggerFactory):
 
     def build(self) -> "logger_module.Logger":
         """Funkce tvoří logger s defaultním nastavením."""
+
+        # Vytvoření prázdného loggeru
         logger = logger_module.Logger()
-        output = logging_output_module.PrintingOutput(take_all=True)
-        output.add_context("output")
-        logger.add_output(output)
+
+        # Vytvoření výstupu pro tisknutí na konzoli, přijímá všechny kontexty
+        printer = logging_output_module.PrintingOutput(take_all=True)
+
+        # Vytvoření výstupu pro pamatování; přijímá všechny kontexty
+        memo_all = logging_output_module.SimpleOutputWithMemo(take_all=True)
+
+        # Vytvoření výstupu pro pamatování; přijímá pouze kontext "OUTPUT"
+        memo_out = logging_output_module.SimpleOutputWithMemo(take_all=False)
+        memo_out.add_context("OUTPUT")
+
+        # Registrace výstupů u loggeru
+        logger.add_output(printer)
+        logger.add_output(memo_all)
+        logger.add_output(memo_out)
+
+        # Vrácení připraveného defaultního loggeru
         return logger
 
