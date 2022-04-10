@@ -9,12 +9,14 @@ třída továrny běhových prostředí).
 from abc import ABC, abstractmethod
 from typing import Iterable, Callable
 from threading import Thread
+import traceback
 
 # Import lokálních knihoven
 from src.fw.platform.robot_program_executor import RobotProgramExecutor
 from src.fw.robot.mounting_error import MountingError
 from src.fw.utils.error import PlatformError
 from src.fw.utils.identifiable import Identifiable
+from src.fw.utils.error_holder import ErrorHolder
 
 import src.fw.world.world as world_module
 import src.fw.world.world_factory as world_fact_module
@@ -55,19 +57,32 @@ class AbstractRuntime(Identifiable, event_module.EventEmitter):
         Identifiable.__init__(self)
         event_module.EventEmitter.__init__(self)
 
+        # Uložení potřebných továren
         self._target_factory = target_factory
         self._world_factory = world_factory
         self._unit_factories = tuple(unit_factories)
-        self._program = program
         self._robot_factory = robot_factory
+
+        # Program, pro který běhové prostředí bude spuštěno
+        self._program = program
+
+        # Reference na platformu, která toto běhové prostředí spustila
         self._platform = platform
+
+        # Logger, který má být postoupen všem potřebným zdrojům pro potřeby
+        # tvorby záznamů. Výchozím přístupem je postoupit pouze potrubí daného
+        # kontextu k tomuto loggeru
         self._logger = logger
 
+        # Stanovení světa a úkolu, které budou teprve budovány
         self._world = None
         self._target = None
 
         # Příprava logovacího potrubí
         self._logger_pipeline = logger.make_pipeline("runtime").log
+
+        # Uchovatel chyby, ke které došlo
+        self._error_holder: "ErrorHolder" = None
 
     @property
     def world(self) -> "world_module.World":
@@ -129,6 +144,20 @@ class AbstractRuntime(Identifiable, event_module.EventEmitter):
         """Vlastnost vrací funkci reprezentující potrubí, pomocí kterého lze
         vytvářet záznamy."""
         return self._logger_pipeline
+
+    @property
+    def error_holder(self) -> ErrorHolder:
+        """Vlastnost vrací uchovatele chyby, který byl touto instancí vytvořen.
+        Typicky je tento vytvořen v případě vzniku chyby za účelem pozdější
+        analýzy k čemu došlo."""
+        return self._error_holder
+
+    @property
+    def any_error_occured(self) -> bool:
+        """Vlastnost vrací, zda-li došlo během chodu běhového prostředí k
+        chybě. Přesněji vrací, zda-li byla vytvořena instance ErrorHolder.
+        """
+        return self.error_holder is not None
 
     @property
     @abstractmethod
@@ -294,57 +323,52 @@ class SingleRobotRuntime(AbstractRuntime):
             if executor.raised_any:
                 raise executor.raised_exception
 
-        # Pokud dojde k chybě při osazení; když se při osazování podvádí
-        except MountingError as e:
-            for unit in self.robot.units:
-                unit.deactivate()
-
         # Předčasné ukončení programu
         except program_module.ProgramTermination as pt:
-            if pt.abort_type == program_module.AbortType.SUCCESS:
-                self.log("Program se předčasně ukončil po dokončení cíle:",
-                         pt.message)
-            elif pt.abort_type == program_module.AbortType.FAILURE:
-                self.log("Program narazil na neřešitelný problém:", pt.message)
-            elif pt.abort_type == program_module.AbortType.ERROR:
-                self.log("Program vyústil v chybu:", f"'{pt.message}'")
 
+            # Pokud se ukončil úspěšně
+            if pt.abort_type == program_module.AbortType.SUCCESS:
+                self.log("Program se předčasně ukončil po dokončení cíle")
+
+            # Pokud se ukončil neúspěšně ale bez chyby
+            elif pt.abort_type == program_module.AbortType.FAILURE:
+                self.log("Program narazil na neřešitelný problém")
+
+            # Pokud ho ukončila chyba
+            elif pt.abort_type == program_module.AbortType.ERROR:
+                self.log("Program vyústil v chybu")
+
+            # Uložení výjimky, která byla vyhozena
+            self._error_holder = ErrorHolder(pt, traceback.format_exc())
+
+        # Pokud dojde k chybě při osazení; když se při osazování podvádí
+        except MountingError as me:
+            self.robot.deactivate()
+
+            # Uložení výjimky, která byla vyhozena
+            self._error_holder = ErrorHolder(me, traceback.format_exc())
+
+        # Pokud dojde k chybě vedoucí k nekonzistenci systému
         except PlatformError as pe:
             self.robot.deactivate()
 
-            import traceback
-            import sys
+            # Uložení výjimky, která byla vyhozena
+            self._error_holder = ErrorHolder(pe, traceback.format_exc())
 
-            self.log(f"Byla vyhozena výjimka: '{pe}'")
-            traceback.print_exception(*sys.exc_info())
-
-        # Libovolná jiná chyba; je vyhozena nová výjimka
+        # Libovolná jiná chyba, například syntaktická nebo porušení nějakých
+        # vnitřních pravidel v rámci Pythonu
         except Exception as e:
             self.robot.deactivate()
 
-            import traceback
-            import sys
-
-            self.log(f"Byla vyhozena výjimka: '{e}'")
-            traceback.print_exception(*sys.exc_info())
+            # Uložení výjimky, která byla vyhozena
+            self._error_holder = ErrorHolder(e, traceback.format_exc())
 
         # Ať už došlo k chybě či nikoliv, proveď výstup
         finally:
-            self.log(50*"=")
-            self.log("EVALUATION:")
-
-            for task in self.target.tasks:
-                self.log(task.name)
-                from src.fw.target.evaluation_function import EvaluationFunctionJunction
-                if isinstance(task.evaluation_function, EvaluationFunctionJunction):
-                    junction = task.evaluation_function
-                    for ef in junction.evaluation_functions:
-                        self.log("\t", ef.name, ef.eval())
-                else:
-                    ef = task.evaluation_function
-                    self.log("\t", ef.name, ef.eval())
-
-            # TODO - kontrola Targetu a jeho vyhodnocení
+            if self.any_error_occured:
+                self.log(self.error_holder.exception_type_name, ":",
+                         self.error_holder.exception)
+                print(self.error_holder.traceback)
 
 
 class AbstractRuntimeFactory(ABC):

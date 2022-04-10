@@ -40,7 +40,7 @@ class ErrorHolder:
     @property
     def exception_type_name(self) -> str:
         """Vlastnost vrací název typu výjimky, která byla vyhozena."""
-        return self.exception.__name__
+        return self.exception_type.__name__
 
     @property
     def exception_message(self) -> str:
