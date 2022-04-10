@@ -315,13 +315,18 @@ class SingleRobotRuntime(AbstractRuntime):
             import traceback
             import sys
 
-            #self.log(f"Byla vyhozena výjimka: '{pe}'")
+            self.log(f"Byla vyhozena výjimka: '{pe}'")
             traceback.print_exception(*sys.exc_info())
 
         # Libovolná jiná chyba; je vyhozena nová výjimka
         except Exception as e:
             self.robot.deactivate()
-            raise e
+
+            import traceback
+            import sys
+
+            self.log(f"Byla vyhozena výjimka: '{e}'")
+            traceback.print_exception(*sys.exc_info())
 
         # Ať už došlo k chybě či nikoliv, proveď výstup
         finally:
