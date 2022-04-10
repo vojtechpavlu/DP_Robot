@@ -79,7 +79,7 @@ class EventEmitter(ABC):
     def notify_all_event_handlers(self, event: "Event"):
         """Funkce, která obvolá všechny své posluchače a upozorní je na vznik
         situace."""
-        for handler in self._event_handlers:
+        for handler in self.event_handlers:
             handler.update(self, event)
 
 

@@ -104,6 +104,10 @@ class Task(Identifiable, Named, Described):
         instance vyhodnocovací funkce."""
         return self._eval_fun.eval()
 
+    def __repr__(self) -> str:
+        """Funkce vrací název, který byl tomuto úkolu přidělen."""
+        return self.name
+
 
 class TaskError(PlatformError):
     """Výjimka rozšiřující svého předka o referenci na úkol, v jehož kontextu

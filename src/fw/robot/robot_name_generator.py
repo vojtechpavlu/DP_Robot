@@ -20,6 +20,27 @@ class RobotNameGenerator(ABC):
         """Abstraktní funkce odpovědná za vygenerování názvu pro robota."""
 
 
+class ConstantRobotNameGenerator(RobotNameGenerator):
+    """Instance této třídy slouží k pojmenovávání robotů jedním konstantním
+    jménem."""
+
+    def __init__(self, constant_name: str):
+        """Initor, který přijímá jméno, kterým bude každý robot na požádání
+        pojmenován."""
+        self._name = constant_name
+
+    @property
+    def constant_name(self) -> str:
+        """Vlastnost vrací jméno, kterým je každý robot na požádání pojmenován.
+        """
+        return self._name
+
+    def get(self) -> str:
+        """Funkce vrací pokaždé to samé jméno, tedy to konstantní, které
+        bylo postoupeno této instanci v initoru."""
+        return self.constant_name
+
+
 class FamousSystems(RobotNameGenerator):
     """Instance této třídy poskytují názvy slavných robotů, androidů a jiných
     systémů z oblasti výzkumu robotiky, umělé inteligence a z oblasti science
