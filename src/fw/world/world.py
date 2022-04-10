@@ -85,6 +85,8 @@ class World:
             spawner, self._logger.make_pipeline("r_s_mng").log)
         spawner.world = self
 
+        self.log(f"Vytvořen svět o šířce {self.width} a výšce {self.height}")
+
     @property
     def fields(self) -> "tuple[field_mod.Field]":
         """Vlastnost vrací ntici ze seznamu všech políček, která má svět
@@ -119,6 +121,56 @@ class World:
         """Vlastnost vrací referenci na správce stavů robota, kterého má
         instance tohoto světa v sobě uložený."""
         return self._robot_state_manager
+
+    @property
+    def width(self) -> int:
+        """Vlastnost vrací šířku světa. Ta je spočítána jako rozdíl maximální
+        souřadnice x políčka (tedy políčka nejvíce napravo) a minimální
+        souřadnice osy x (tedy políčka nejvíce nalevo). Tento rozdíl je o 1
+        navýšen, protože defaultně se indexuje od 0."""
+
+        # Stanovení nepravděpodobných hodnot
+        min_x = 10_000
+        max_x = -10_000
+
+        # Pro všechna políčka
+        for field in self.fields:
+
+            # Pokud je souřadnice x políčka větší, než dosavadní maximum
+            if field.x > max_x:
+                max_x = field.x
+
+            # Pokud je souřadnice x políčka menší, než dosavadní minimum
+            if field.x < min_x:
+                min_x = field.x
+
+        # Vrátit stanovený rozdíl
+        return (max_x - min_x) + 1
+
+    @property
+    def height(self) -> int:
+        """Vlastnost vrací výšku světa. Ta je spočítána jako rozdíl maximální
+        souřadnice y políčka (tedy políčka nejvýše) a minimální souřadnice
+        osy y (tedy políčka nejníže). Tento rozdíl je o 1 navýšen, protože
+        defaultně se indexuje od 0."""
+
+        # Stanovení nepravděpodobných hodnot
+        min_y = 10_000
+        max_y = -10_000
+
+        # Pro všechna políčka
+        for field in self.fields:
+
+            # Pokud je souřadnice x políčka větší, než dosavadní maximum
+            if field.y > max_y:
+                max_y = field.y
+
+            # Pokud je souřadnice x políčka menší, než dosavadní minimum
+            if field.y < min_y:
+                min_y = field.y
+
+        # Vrátit stanovený rozdíl
+        return (max_y - min_y) + 1
 
     def fields_marked_like(self, mark_text: str) -> "tuple[field_mod.Field]":
         """Funkce vrací všechna políčka, která jsou označena specifickým
