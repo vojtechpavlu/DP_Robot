@@ -204,6 +204,9 @@ class WorldInterface(ihm_module.InteractionHandlerManager,
 
             raise WorldInterfaceError(
                 f"Při zpracovávání interakce došlo k chybě: '{e}'", self)
+        finally:
+            # Registrace interakce do evidence
+            self.save_interaction(interaction)
 
 
 class WorldInterfaceFactory(ABC):
