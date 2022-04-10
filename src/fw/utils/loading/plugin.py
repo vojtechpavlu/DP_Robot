@@ -92,7 +92,6 @@ class Plugin(ABC):
                 if not val.is_valid_plugin(self):
                     violated_validators.append(val)
             except Exception as e:
-                print(f"VIOLATED VALIDATORS: {e}")
                 violated_validators.append(val)
         return tuple(violated_validators)
 
