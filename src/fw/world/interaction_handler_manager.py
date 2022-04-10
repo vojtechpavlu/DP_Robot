@@ -21,12 +21,23 @@ class InteractionHandlerManager(ABC):
         cyklu instance.
         """
         self._handlers: "list[inter_module.InteractionHandler]" = []
+        self._interactions: "list[inter_module.Interaction]" = []
+
+    @property
+    def applied_interactions(self) -> "tuple[inter_module.Interaction]":
+        """Vlastnost vrací ntici všech interakcí, které tento handler
+        zpracoval."""
+        return tuple(self._interactions)
 
     @property
     def interaction_handlers(self) -> "tuple[inter_module.InteractionHandler]":
         """Vlastnost vrací ntici všech handlerů, které má správce v evidenci.
         """
         return tuple(self._handlers)
+
+    def save_interaction(self, interaction: "inter_module.Interaction"):
+        """Funkce zaregistruje dodanou interakci do evidence."""
+        self._interactions.append(interaction)
 
     def add_interaction_handler(self,
                                 handler: "inter_module.InteractionHandler"):
@@ -41,7 +52,8 @@ class InteractionHandlerManager(ABC):
                     f"interakce: '{handler.interaction_type}'", self)
         self._handlers.append(handler)
 
-    def has_interaction_handler(self, interaction: "inter_module.Interaction") -> bool:
+    def has_interaction_handler(
+            self, interaction: "inter_module.Interaction") -> bool:
         """Funkce se pokusí vyhledat handler odpovědný za zpracování interakcí
         daného typu. Pokud-že takový není nalezen, je vráceno False, jinak
         True."""
@@ -63,11 +75,12 @@ class InteractionHandlerManager(ABC):
             if handler.is_mine(interaction):
                 return handler
         raise InteractionHandlerManagerError(
-            f"Pro interakci '{type(interaction)}' není handler evidován", self)
+            f"Pro interakci '{type(interaction)}' "
+            f"není handler evidován", self)
 
     @abstractmethod
-    def process_interaction(self,
-                            interaction: "inter_module.Interaction") -> object:
+    def process_interaction(
+            self, interaction: "inter_module.Interaction") -> object:
         """Abstraktní funkce se pokusí o zpracování dané interakce."""
 
 
