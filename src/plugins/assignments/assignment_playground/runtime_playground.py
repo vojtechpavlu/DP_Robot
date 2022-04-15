@@ -116,7 +116,7 @@ class PlaygroundRuntimeFactory(AbstractRuntimeFactory):
         return SingleRobotRuntime(
             self.world_factory, self.target_factory,
             self.pick_unit_factories(platform, self.available_units_names),
-            program, self.robot_factory, platform, logger)
+            program, self.robot_factory, platform, logger, self)
 
 
 def get_runtime_factory() -> "AbstractRuntimeFactory":

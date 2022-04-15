@@ -148,8 +148,8 @@ class FunctionReturnValueTypeValidator(PluginValidator):
             self, "Function Return Value Type Validator",
             f"Validátor ověřuje, že zavolání funkce s názvem "
             f"'{function_name}' s dodanými parametry '{params}' vrátí hodnotu "
-            f"typu '{to_be_class}'. Pokud ne, bude prohlášen plugin za "
-            f"nevalidní, stejně tak nebude-li mít funkci daného názvu."
+            f"typu '{to_be_class.__name__}'. Pokud ne, bude prohlášen plugin "
+            f"za nevalidní, stejně tak nebude-li mít funkci daného názvu."
         )
 
         self._function_name: str = function_name
@@ -200,11 +200,11 @@ class FunctionReturnValueTypeValidator(PluginValidator):
                 # Funkce daného názvu není přítomna
                 return False
         except pl.PluginError as ple:
-            print(f"CHYBA PŘI VALIDACI NÁVRATOVÉ HODNOTY {ple}")
             return False
         except Exception as e:
-            print(f"OBECNÁ CHYBA PŘI VALIDACI NÁVRATOVÉ HODNOTY {e}")
             return False
+
+        # TODO - log chybných pluginů
 
 
 

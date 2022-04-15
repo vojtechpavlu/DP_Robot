@@ -17,7 +17,7 @@ import src.fw.utils.logging.logger as logger_module
 import src.fw.utils.loading.runtime_factory_loader as rt_loader_module
 import src.fw.utils.loading.program_loader as p_loader_module
 import src.fw.utils.loading.unit_factory_loader as uf_loader_module
-
+from src.fw.utils.error import PlatformError
 
 
 class ResultBuilder(ABC):
@@ -150,7 +150,17 @@ class PlatformResultBuilder(ResultBuilder):
         potomky, kteří se starají o vybudování výstupu."""
 
 
+class ResultBuilderError(PlatformError):
+    """"""
 
+    def __init__(self, message: str, builder: ResultBuilder):
+        """"""
+        PlatformError.__init__(self, message)
+        self._builder = builder
 
+    @property
+    def builder(self) -> ResultBuilder:
+        """"""
+        return self._builder
 
 
