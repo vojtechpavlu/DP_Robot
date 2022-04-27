@@ -165,7 +165,7 @@ class Plugin(ABC):
         else:
             raise PluginError(f"Plugin atribut '{attr_name}' nemá", self)
 
-    def get_function(self, fun_name: str):
+    def get_function(self, fun_name: str) -> Callable:
         """Tato funkce se pokusí vyhledat funkci daného názvu uvnitř modulu
         pluginu.
 

@@ -100,12 +100,6 @@ class World:
         return tuple(filter(lambda field: field.is_path, self.fields))
 
     @property
-    def all_paths(self) -> "tuple[field_mod.Field]":
-        """Vlastnost vrací ntici ze seznamu všech políček, která jsou stěnou,
-        tedy potomky třídy Wall."""
-        return tuple(filter(lambda field: field.is_path, self.fields))
-
-    @property
     def all_marked_fields(self) -> "tuple[field_mod.Field]":
         """Vlastnost vrací ntici všech políček, která jsou opatřena nějakou
         značkou."""

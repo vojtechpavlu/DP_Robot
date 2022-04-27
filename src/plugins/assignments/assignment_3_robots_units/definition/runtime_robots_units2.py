@@ -1,25 +1,16 @@
-"""Úloha je zaměřená na úvodní seznámení s robotem a jeho vlastnostmi.
+"""Úloha je zaměřená na ověření správného pochopení, jak je robot uvnitř
+složen, především pak se zaměřením na jednotky, kterými je osazen.
 
-Pohybem ve struktuře se program robota dokáže dostat k některým informacím
-o robotovi; v tomto případě je požadováno, aby program zaznamenal do výstupu
-název robota.
+Konkrétní znalost, která je k tomu třeba, je elementární práce s kolekcemi.
 
-Toto je plugin definice jednoho ze scénářů ověřování správnosti programů. Zde
-se testuje získání názvu robota z programu. Název robota je zde nastaven na
-"Karel".
-
-Dvě definice běhového prostředí slouží k podrobnějšímu otestování, kdy je
-cílem ověřit, že se program dokáže přizpůsobit jiným okolnostem; v tomto
-případě různým jménům robota.
-"""
+V tomto zadání je robot osazen několika jednotkami. Cílem je, aby program byl
+schopen správně vypsat jejich názvy."""
 
 
 # Import potřebných zdrojů
 from src.fw.platform.platform import Platform
 from src.fw.robot.program import AbstractProgram
-from src.fw.robot.robot import RobotFactory, EmptyRobotFactory, \
-    CompleteRobotFactory
-from src.fw.robot.robot_name_generator import ConstantRobotNameGenerator
+from src.fw.robot.robot import RobotFactory, EmptyRobotFactory
 from src.fw.target.task import LoggedAnythingInContext, LoggedMessageInContext
 from src.fw.utils.logging.logger import Logger
 from src.fw.world.world import World
@@ -33,17 +24,14 @@ from src.fw.platform.runtime import (AbstractRuntime, AbstractRuntimeFactory,
 
 
 # Název úlohy
-_TARGET_NAME = "Robot Introduction - Karel"
+_TARGET_NAME = "Robot's Units 2"
 
 # Popis úlohy
-_TARGET_DESCRIPTION = ("Úvodní seznámení s robotem. Cílem je ověřit, "
-                       "že dodané programy jsou schopny reagovat i na "
-                       "změnu podmínek, tedy změnu jména robota.")
-
-# Připravení proměnné, které bude použito pro zajištění konzistence
-# napříč všemi částmi tohoto zadání. V případě potřeby stačí změnit
-# pouze tuto hodnotu.
-_DEFAULT_ROBOT_NAME = "Karel"
+_TARGET_DESCRIPTION = ("Robot je osazen třemi jednotkami. Cílem této "
+                       "úlohy je rozšířit původní zadání o jiné názvy"
+                       "jednotek, kterými jsou roboti osazeni. Pomocí "
+                       "toho lze zjistit, které programy si jsou schopny "
+                       "poradit se změnou podmínek a které ne.")
 
 
 class CustomTargetFactory(TargetFactory):
@@ -59,11 +47,14 @@ class CustomTargetFactory(TargetFactory):
         target = Target(_TARGET_NAME, _TARGET_DESCRIPTION, world, logger)
 
         # 2) Doplnění sadou úkolů
-        # Úkol, že program vypíše alespoň něco
-        target.add_task(LoggedAnythingInContext())
+        # Pro každý název jednotky k osazení
+        for unit_name in _get_unit_names():
 
-        # Úkol, že program vypíše požadovaný text
-        target.add_task(LoggedMessageInContext(_DEFAULT_ROBOT_NAME))
+            # Přidej úkol výpisu jejího názvu do výstupu
+            target.add_task(LoggedMessageInContext(unit_name))
+
+        # Pro lepší kontrolu plnění naslouchej jakémukoliv výstupu
+        target.add_task(LoggedAnythingInContext())
 
         # 3) Vrácení úlohy
         return target
@@ -72,16 +63,13 @@ class CustomTargetFactory(TargetFactory):
 def _get_unit_names() -> "list[str]":
     """Funkce vrací seznam názvů jednotek, které jsou pro danou úlohu
     povoleny."""
-    return []   # Žádné jednotky nejsou pro tuto úlohu povoleny
+    return ["CompassUnit", "GPS", "Demarker"]
 
 
 def _get_robot_factory() -> "RobotFactory":
     """Funkce vrací novou instanci továrny robotů, která bude použita
     pro tvorbu robotů v dané úloze."""
-
-    # Předpřipravení robota; zde je robot pouze pojmenován
-    return CompleteRobotFactory(
-        [], ConstantRobotNameGenerator(_DEFAULT_ROBOT_NAME))
+    return EmptyRobotFactory()
 
 
 def _get_spawner_factory() -> "SpawnerFactory":
@@ -106,7 +94,7 @@ def _get_world_factory() -> "WorldFactory":
                                  _get_spawner_factory())
 
 
-class RobotIntroductionRuntimeFactory(AbstractRuntimeFactory):
+class TemplateRuntimeFactory(AbstractRuntimeFactory):
     """Tato třída slouží k zpřístupnění tvorby co nejjednoduššího běhového
     prostředí. Chování této třídy je silně ovlivněno definicí přístupových
     funkcí v horní části tohoto modulu.
@@ -140,6 +128,6 @@ def get_runtime_factory() -> "AbstractRuntimeFactory":
     rozhodujícím faktorem pro validátory pluginů v kontextu dynamické
     tvorby běhových prostředí.
     """
-    return RobotIntroductionRuntimeFactory()
+    return TemplateRuntimeFactory()
 
 

@@ -49,7 +49,8 @@ class AbstractRuntime(Identifiable, event_module.EventEmitter):
                  program: "program_module.AbstractProgram",
                  robot_factory: "robot_module.RobotFactory",
                  platform: "platform_module.Platform",
-                 logger: "logger_module.Logger"):
+                 logger: "logger_module.Logger",
+                 runtime_factory: "AbstractRuntimeFactory"):
         """Initor funkce, který přijímá tovární třídu světa, tovární třídu
         úlohy, množinu povolených továrních tříd jednotek a referenci na
         program."""
@@ -83,6 +84,15 @@ class AbstractRuntime(Identifiable, event_module.EventEmitter):
 
         # Uchovatel chyby, ke které došlo
         self._error_holder: "ErrorHolder" = None
+
+        # Uložení reference na továrnu, která tuto instanci stvořila
+        self._runtime_factory = runtime_factory
+
+    @property
+    def runtime_factory(self) -> "AbstractRuntimeFactory":
+        """Vlastnost vrací referenci na továrnu běhového prostředí, která
+        tuto instanci vytvořila."""
+        return self._runtime_factory
 
     @property
     def world(self) -> "world_module.World":
@@ -245,7 +255,8 @@ class SingleRobotRuntime(AbstractRuntime):
                  program: "program_module.AbstractProgram",
                  robot_factory: "robot_module.RobotFactory",
                  platform: "platform_module.Platform",
-                 logger: "logger_module.Logger"):
+                 logger: "logger_module.Logger",
+                 runtime_factory: "AbstractRuntimeFactory"):
         """Initor třídy, který přijímá tovární třídy (továrnu světa, úlohy,
         robotů a továrny jednotek) a referenci na program, který má být pro
         jediného robota spuštěn. Dále přijímá referenci na platformu, pod
@@ -254,7 +265,7 @@ class SingleRobotRuntime(AbstractRuntime):
         # Volání předka
         AbstractRuntime.__init__(
             self, world_factory, target_factory, unit_factories, program,
-            robot_factory, platform, logger)
+            robot_factory, platform, logger, runtime_factory)
 
         # Příprava kontejneru robota
         self.__robot_container = robot_cont_module.SingleRobotContainer()
@@ -437,6 +448,13 @@ class AbstractRuntimeFactory(ABC):
         """
         return self._target_factory
 
+    @property
+    def absolute_path(self) -> str:
+        """Vlastnost vrací plnou absolutní cestu k pluginu, který definuje
+        tuto továrnu běhových prostředí."""
+        import inspect
+        return inspect.getfile(type(self))
+
     @abstractmethod
     def build(self, platform: "platform_module.Platform",
               program: "program_module.AbstractProgram",
@@ -452,8 +470,9 @@ class AbstractRuntimeFactory(ABC):
         jednotlivé významné komponenty dělat záznamy o své aktivitě."""
 
     @staticmethod
-    def pick_unit_factories(platform: "platform_module.Platform",
-                            unit_names: "Iterable[str]"):
+    def pick_unit_factories(
+            platform: "platform_module.Platform", unit_names: "Iterable[str]"
+    ) -> "tuple[unit_module.AbstractUnitFactory]":
         """Statická funkce se pokusí vybrat z dodané platformy všechny
         tovární třídy jednotek tak, aby byl zjednodušen přenos z jejich
         názvu na konkrétní instance.
@@ -487,7 +506,7 @@ class AbstractRuntimeFactory(ABC):
                     unit_name))
 
             # Vrácení naplněného seznamu továrnami jednotek
-            return uf
+            return tuple(uf)
 
 
 

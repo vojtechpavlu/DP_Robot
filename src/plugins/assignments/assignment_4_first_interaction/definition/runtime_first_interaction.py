@@ -1,49 +1,27 @@
-"""Úloha je zaměřená na úvodní seznámení s robotem a jeho vlastnostmi.
-
-Pohybem ve struktuře se program robota dokáže dostat k některým informacím
-o robotovi; v tomto případě je požadováno, aby program zaznamenal do výstupu
-název robota.
-
-Toto je plugin definice jednoho ze scénářů ověřování správnosti programů. Zde
-se testuje získání názvu robota z programu. Název robota je zde nastaven na
-"Karel".
-
-Dvě definice běhového prostředí slouží k podrobnějšímu otestování, kdy je
-cílem ověřit, že se program dokáže přizpůsobit jiným okolnostem; v tomto
-případě různým jménům robota.
+"""
 """
 
 
 # Import potřebných zdrojů
 from src.fw.platform.platform import Platform
 from src.fw.robot.program import AbstractProgram
-from src.fw.robot.robot import RobotFactory, EmptyRobotFactory, \
-    CompleteRobotFactory
-from src.fw.robot.robot_name_generator import ConstantRobotNameGenerator
-from src.fw.target.task import LoggedAnythingInContext, LoggedMessageInContext
+from src.fw.robot.robot import RobotFactory, EmptyRobotFactory
 from src.fw.utils.logging.logger import Logger
 from src.fw.world.world import World
 from src.fw.world.world_factory import WorldFactory, OpenSpaceWorldFactory
 from src.fw.world.spawner import SpawnerFactory, CoordinatesSpawnerFactory
 from src.fw.target.target import TargetFactory, Target
-from src.fw.world.world_interface import (WorldInterfaceFactory,
-                                          DefaultWorldInterfaceFactory)
-from src.fw.platform.runtime import (AbstractRuntime, AbstractRuntimeFactory,
-                                     SingleRobotRuntime)
+from src.fw.world.world_interface import (
+    WorldInterfaceFactory, DefaultWorldInterfaceFactory)
+from src.fw.platform.runtime import (
+    AbstractRuntime, AbstractRuntimeFactory, SingleRobotRuntime)
 
 
 # Název úlohy
-_TARGET_NAME = "Robot Introduction - Karel"
+_TARGET_NAME = "První interakce"
 
 # Popis úlohy
-_TARGET_DESCRIPTION = ("Úvodní seznámení s robotem. Cílem je ověřit, "
-                       "že dodané programy jsou schopny reagovat i na "
-                       "změnu podmínek, tedy změnu jména robota.")
-
-# Připravení proměnné, které bude použito pro zajištění konzistence
-# napříč všemi částmi tohoto zadání. V případě potřeby stačí změnit
-# pouze tuto hodnotu.
-_DEFAULT_ROBOT_NAME = "Karel"
+_TARGET_DESCRIPTION = ("Cílem úlohy je")
 
 
 class CustomTargetFactory(TargetFactory):
@@ -59,11 +37,7 @@ class CustomTargetFactory(TargetFactory):
         target = Target(_TARGET_NAME, _TARGET_DESCRIPTION, world, logger)
 
         # 2) Doplnění sadou úkolů
-        # Úkol, že program vypíše alespoň něco
-        target.add_task(LoggedAnythingInContext())
 
-        # Úkol, že program vypíše požadovaný text
-        target.add_task(LoggedMessageInContext(_DEFAULT_ROBOT_NAME))
 
         # 3) Vrácení úlohy
         return target
@@ -72,41 +46,38 @@ class CustomTargetFactory(TargetFactory):
 def _get_unit_names() -> "list[str]":
     """Funkce vrací seznam názvů jednotek, které jsou pro danou úlohu
     povoleny."""
-    return []   # Žádné jednotky nejsou pro tuto úlohu povoleny
+    return ["*"]  # TODO - DOPLNIT
 
 
 def _get_robot_factory() -> "RobotFactory":
     """Funkce vrací novou instanci továrny robotů, která bude použita
     pro tvorbu robotů v dané úloze."""
-
-    # Předpřipravení robota; zde je robot pouze pojmenován
-    return CompleteRobotFactory(
-        [], ConstantRobotNameGenerator(_DEFAULT_ROBOT_NAME))
+    return EmptyRobotFactory()  # TODO - DOPLNIT
 
 
 def _get_spawner_factory() -> "SpawnerFactory":
     """Funkce vrací novou instanci továrny spawnerů, kterých bude použito
     pro zasazování robotů do světa."""
-    return CoordinatesSpawnerFactory(1, 1)
+    return CoordinatesSpawnerFactory(1, 1)  # TODO - DOPLNIT
 
 
 def _get_target_factory() -> "TargetFactory":
     """Funkce vrací novou instanci továrny úlohy."""
-    return CustomTargetFactory()
+    return CustomTargetFactory()  # TODO - DOPLNIT
 
 
 def _get_world_interface_factory() -> "WorldInterfaceFactory":
     """Funkce vrací zcela novou instanci továrny rozhraní světa."""
-    return DefaultWorldInterfaceFactory()
+    return DefaultWorldInterfaceFactory()  # TODO - DOPLNIT
 
 
-def _get_world_factory() -> "WorldFactory":
+def _get_world_factory() -> "WorldFactory":  # TODO - DOPLNIT
     """Funkce vrací novou instanci továrny světa."""
-    return OpenSpaceWorldFactory(3, 3, _get_world_interface_factory(),
+    return OpenSpaceWorldFactory(10, 10, _get_world_interface_factory(),
                                  _get_spawner_factory())
 
 
-class RobotIntroductionRuntimeFactory(AbstractRuntimeFactory):
+class FirstInteractionRuntimeFactory(AbstractRuntimeFactory):  # TODO - DOPLNIT
     """Tato třída slouží k zpřístupnění tvorby co nejjednoduššího běhového
     prostředí. Chování této třídy je silně ovlivněno definicí přístupových
     funkcí v horní části tohoto modulu.
@@ -134,12 +105,12 @@ class RobotIntroductionRuntimeFactory(AbstractRuntimeFactory):
             program, self.robot_factory, platform, logger, self)
 
 
-def get_runtime_factory() -> "AbstractRuntimeFactory":
+def get_runtime_factory() -> "AbstractRuntimeFactory":  # TODO - DOPLNIT
     """Hlavní přístupová funkce, která vrací továrnu běhového prostředí.
     Tato funkce (co do existence, funkce a typu návratové hodnoty) je
     rozhodujícím faktorem pro validátory pluginů v kontextu dynamické
     tvorby běhových prostředí.
     """
-    return RobotIntroductionRuntimeFactory()
+    return FirstInteractionRuntimeFactory()
 
 
