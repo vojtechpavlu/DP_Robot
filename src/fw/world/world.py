@@ -123,23 +123,8 @@ class World:
         souřadnice osy x (tedy políčka nejvíce nalevo). Tento rozdíl je o 1
         navýšen, protože defaultně se indexuje od 0."""
 
-        # Stanovení nepravděpodobných hodnot
-        min_x = 10_000
-        max_x = -10_000
-
-        # Pro všechna políčka
-        for field in self.fields:
-
-            # Pokud je souřadnice x políčka větší, než dosavadní maximum
-            if field.x > max_x:
-                max_x = field.x
-
-            # Pokud je souřadnice x políčka menší, než dosavadní minimum
-            if field.x < min_x:
-                min_x = field.x
-
-        # Vrátit stanovený rozdíl
-        return (max_x - min_x) + 1
+        return (max(self.fields, key=lambda f: f.x).x -
+                min(self.fields, key=lambda f: f.x).x) + 1
 
     @property
     def height(self) -> int:
@@ -147,24 +132,19 @@ class World:
         souřadnice y políčka (tedy políčka nejvýše) a minimální souřadnice
         osy y (tedy políčka nejníže). Tento rozdíl je o 1 navýšen, protože
         defaultně se indexuje od 0."""
+        return (max(self.fields, key=lambda f: f.y).y -
+                min(self.fields, key=lambda f: f.y).y) + 1
 
-        # Stanovení nepravděpodobných hodnot
-        min_y = 10_000
-        max_y = -10_000
+    @property
+    def world_dimensions(self) -> "tuple[int, int]":
+        """Vlastnost vrací rozměry světa. Tím je myšleno jakou má šířku a
+        výšku, tedy rozdíly mezi nejvyšší a nejnižší hodnotou souřadnice
+        navýšeny o 1.
 
-        # Pro všechna políčka
-        for field in self.fields:
-
-            # Pokud je souřadnice x políčka větší, než dosavadní maximum
-            if field.y > max_y:
-                max_y = field.y
-
-            # Pokud je souřadnice x políčka menší, než dosavadní minimum
-            if field.y < min_y:
-                min_y = field.y
-
-        # Vrátit stanovený rozdíl
-        return (max_y - min_y) + 1
+        První hodnota v ntici je šířka (tedy osa 'x'), druhá hodnota je výška
+        (tedy osa 'y').
+        """
+        return self.width, self.height
 
     def fields_marked_like(self, mark_text: str) -> "tuple[field_mod.Field]":
         """Funkce vrací všechna políčka, která jsou označena specifickým
