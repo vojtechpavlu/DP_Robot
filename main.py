@@ -6,16 +6,37 @@ from src.fw.utils.loading.unit_factory_loader import DefaultUnitFactoryLoader
 
 import src.fw.target.results.html_results as html
 
-assignment = "assignment_3_robots_units"
-
-platform = Platform(
-    [DefaultUnitFactoryLoader()],
-    [DefaultProgramLoader(assignment)],
-    DefaultRuntimeFactoryLoader(assignment)
-)
-
-platform.load()
-platform.run()
+from src.fw.gui.visualization import (build_graphical_interface, window_close,
+                                      update_runtime)
+import threading
+import time
 
 
-html.PlatformHTMLBuilder(platform).build()
+def _build_platform(assignment: str):
+    platform = Platform(
+        [DefaultUnitFactoryLoader()],
+        [DefaultProgramLoader(assignment)],
+        DefaultRuntimeFactoryLoader(assignment),
+        update_runtime,
+    )
+    return platform
+
+
+def _run_platform(platform: Platform):
+    time.sleep(1)
+    platform.load()
+    platform.run()
+
+    html.PlatformHTMLBuilder(platform).build()
+    window_close()
+
+
+assgn = "assignment_playground"
+pltf = _build_platform(assgn)
+
+platform_thread = threading.Thread(target=_run_platform, args=(pltf,))
+platform_thread.setDaemon(True)
+platform_thread.start()
+
+build_graphical_interface(pltf)
+
