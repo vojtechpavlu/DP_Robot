@@ -19,15 +19,72 @@ _PATH_COLOUR = "bisque"
 """Definice barvy, která bude reprezentovat políčko typu stěna."""
 _WALL_COLOUR = "grey4"
 
+"""Definice barvy, kterou je políčko ohraničeno."""
+_OUTLINE_COLOUR = "gold"
+
+"""Definice barvy, kterou má robot"""
+_ROBOT_COLOUR = "red"
+
 """Definice velikosti políčka"""
-_FIELD_DEFINITION = {"w": 20, "h": 20}
+_FIELD_W = 25
+_FIELD_H = 25
 
 """Text značící nedostupnost (Not Available; defaultně 'N/A')."""
 _NOT_AVAILABLE = "N/A"
 
 
-class FieldVisualization:
+def east_robot_polygon(x_indent, y_indent):
     """"""
+    return (
+        x_indent + _FIELD_W, y_indent + (_FIELD_H * 0.5),
+        x_indent + 0, y_indent + _FIELD_H,
+        x_indent + (_FIELD_W * 0.25), y_indent + (_FIELD_H * 0.5),
+        x_indent + 0, y_indent + 0
+    )
+
+
+def north_robot_polygon(x_indent, y_indent):
+    """"""
+    return (
+        x_indent + (_FIELD_W * 0.5), y_indent + 0,
+        x_indent + _FIELD_W, y_indent + _FIELD_H,
+        x_indent + (_FIELD_W * 0.5), y_indent + (_FIELD_H * 0.75),
+        x_indent + 0, y_indent + _FIELD_H
+    )
+
+
+def west_robot_polygon(x_indent, y_indent):
+    """"""
+    return (
+        x_indent + 0, y_indent + (_FIELD_H * 0.5),
+        x_indent + _FIELD_W, y_indent + 0,
+        x_indent + (_FIELD_W * 0.75), y_indent + (_FIELD_H * 0.5),
+        x_indent + _FIELD_W, y_indent + _FIELD_H
+    )
+
+
+def south_robot_polygon(x_indent, y_indent):
+    """"""
+    return (
+        x_indent + (_FIELD_W * 0.5), y_indent + _FIELD_H,
+        x_indent + 0, y_indent + 0,
+        x_indent + (_FIELD_W * 0.5), y_indent + (_FIELD_H * 0.25),
+        x_indent + _FIELD_W, y_indent + 0
+    )
+
+
+def resovle_robot_polygon(rs, x_indent, y_indent):
+    """"""
+
+    dn = rs.direction.name
+    if dn == "EAST":
+        return east_robot_polygon(x_indent, y_indent)
+    elif dn == "NORTH":
+        return north_robot_polygon(x_indent, y_indent)
+    elif dn == "WEST":
+        return west_robot_polygon(x_indent, y_indent)
+    elif dn == "SOUTH":
+        return south_robot_polygon(x_indent, y_indent)
 
 
 class Component:
@@ -58,13 +115,16 @@ class WorldVisualization(Component):
         Component.__init__(self, gui, global_frame)
 
         # Nastavení hlavního frame
-        self._frame = tk.LabelFrame(global_frame, text="WORLD", padx=5, pady=5)
+        self._frame = tk.LabelFrame(global_frame, text="Aktuální svět",
+                                    padx=5, pady=5)
         self._frame.grid(row=0, column=1)
 
         # Nastavení plátna
         self._canvas = tk.Canvas(self.frame, width=100, height=100,
                                  bg=_BACKGROUND_COLOUR)
         self._canvas.pack()
+
+        self._robot_vis = []
 
     @property
     def frame(self) -> tk.LabelFrame:
@@ -76,11 +136,64 @@ class WorldVisualization(Component):
         """"""
         return self._canvas
 
-    def redraw(self, platform: platform_module.Platform):
+    def redraw(self):
         """"""
-        runtime = platform.current_runtime
-        world = runtime.world
+        # Odstranění plátna
+        self.canvas.delete("all")
+        self.canvas.destroy()
 
+        # Pomocné přístupové proměnné
+        runtime = self.gui.platform.current_runtime
+        world = runtime.world
+        width = world.width
+        height = world.height
+
+        self._canvas = tk.Canvas(self.frame, width=width*_FIELD_W,
+                                 height=height*_FIELD_H, bg=_BACKGROUND_COLOUR)
+        self._canvas.pack()
+
+        min_x = min(world.fields, key=lambda f: f.x).x
+        min_y = min(world.fields, key=lambda f: f.y).y
+
+        for field in world.fields:
+            colour = _PATH_COLOUR if field.is_path else _WALL_COLOUR
+            self._draw_field(field.x - min_x, field.y - min_y, colour, height)
+
+        self.redraw_robots()
+
+    def _draw_field(self, x: int, y: int, colour: str, height: int):
+        """"""
+        w = _FIELD_W
+        h = _FIELD_H
+        self.canvas.create_rectangle(
+            x * w,  # Stanovení šířky horního levého rohu
+            (height - y - 1) * h,  # Stanovení výšky horního levého rohu
+            (x * w) + w,  # Stanovení šířky dolního pravého rohu
+            ((height - y - 1) * h) + h,  # Stanovení výšky dolního pravého rohu
+            fill=colour,  # Stanovení barvy výplně políčka
+            outline=_OUTLINE_COLOUR  # Stanovení barvy ohraničení políčka
+        )
+
+    def redraw_robots(self):
+
+        if len(self._robot_vis) > 0:
+            for robot in self._robot_vis:
+                self.canvas.delete(robot)
+        self._robot_vis = []
+
+        world = self.gui.platform.current_runtime.world
+        rs_m = world.robot_state_manager
+
+        min_x = min(world.fields, key=lambda f: f.x).x
+        min_y = min(world.fields, key=lambda f: f.y).y
+        max_y = max(world.fields, key=lambda f: f.y).y
+
+        for rs in rs_m.robot_states:
+            x_indent = (rs.field.x - min_x) * _FIELD_W
+            y_indent = (max_y - rs.field.y - min_y) * _FIELD_H
+            self._robot_vis.append(self.canvas.create_polygon(
+                resovle_robot_polygon(rs, x_indent, y_indent),
+                fill=_ROBOT_COLOUR, outline="black"))
 
 
 class RuntimeVisualization(Component):
@@ -89,8 +202,8 @@ class RuntimeVisualization(Component):
     def __init__(self, gui: "GraphicalInterface", global_frame: tk.LabelFrame):
         Component.__init__(self, gui, global_frame)
         self._frame = tk.LabelFrame(
-            global_frame, text="RUNTIME", padx=5, pady=5)
-        self._frame.grid(row=0, column=0)
+            global_frame, text="Status", padx=5, pady=5)
+        self._frame.grid(row=0, column=0, sticky="N")
 
         # Definice popisných labelů
         id_label = tk.Label(self.frame, text="ID autora:")
@@ -130,6 +243,8 @@ class GraphicalInterface:
 
     _EVENT_SIGNATURES = {
         "runtime_change": "<<runtime_change>>",
+        "world_change": "<<world_change>>",
+        "robot_change": "<<robot_change>>",
     }
 
     def __init__(self, platform: "platform_module.Platform"):
@@ -137,10 +252,11 @@ class GraphicalInterface:
         self._master = tk.Tk()
         self._platform = platform
 
-        self._master.title("TEST TITLE")
+        self._master.title(platform.assignment_name)
 
-        self._global_frame = tk.LabelFrame(self._master, text="GLOBAL FRAME",
+        self._global_frame = tk.LabelFrame(self._master, text="Průběh testů",
                                            padx=5, pady=5)
+
         self._global_frame.pack(padx=10, pady=10)
 
         self._runtime_c = RuntimeVisualization(self, self._global_frame)
@@ -152,6 +268,14 @@ class GraphicalInterface:
         self._master.bind(
             GraphicalInterface._EVENT_SIGNATURES["runtime_change"],
             lambda e: self._update_runtime()
+        )
+        self._master.bind(
+            GraphicalInterface._EVENT_SIGNATURES["world_change"],
+            lambda e: self._update_world()
+        )
+        self._master.bind(
+            GraphicalInterface._EVENT_SIGNATURES["robot_change"],
+            lambda e: self._update_robot()
         )
 
     @property
@@ -171,8 +295,20 @@ class GraphicalInterface:
         self._runtime_c.set_author(_NOT_AVAILABLE, runtime.program.author_name,
                                    self.platform.current_runtime_index)
 
+    def _update_world(self):
+        self._world_c.redraw()
+
+    def _update_robot(self):
+        self._world_c.redraw_robots()
+
     def notify_runtime_change(self):
         self._update(GraphicalInterface._EVENT_SIGNATURES["runtime_change"])
+
+    def notify_world_change(self):
+        self._update(GraphicalInterface._EVENT_SIGNATURES["world_change"])
+
+    def notify_robot_change(self):
+        self._update(GraphicalInterface._EVENT_SIGNATURES["robot_change"])
 
     def close(self):
         self._is_active = False
@@ -193,12 +329,15 @@ def build_graphical_interface(platform: "platform_module.Platform"):
     _GI.run()
 
 
-def update_world():
-    pass
-
-
 def update_runtime():
     _GI.notify_runtime_change()
+
+
+def update_world():
+    _GI.notify_world_change()
+
+def update_robot():
+    _GI.notify_robot_change()
 
 
 def window_close():
