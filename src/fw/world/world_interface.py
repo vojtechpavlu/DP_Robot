@@ -26,6 +26,7 @@ import src.fw.target.event_handling as event_module
 import src.fw.robot.robot_events as robot_event_module
 
 from src.fw.utils.error import PlatformError
+from src.conf.configuration import sleep_time
 
 """Definice zámku, kterého je použito pro odbavování více požadavků s jediným
 možným aktivním přístupem ke světu v jeden okamžik."""
@@ -33,7 +34,7 @@ _LOCK = threading.Lock()
 
 """Doba, po kterou má být robot 'uspán', aby bylo možné simulovat pohyb s
 omezenou rychlostí."""
-_SLEEPTIME = 0.3
+_SLEEP_TIME = sleep_time()
 
 
 class WorldInterface(ihm_module.InteractionHandlerManager,
@@ -183,7 +184,7 @@ class WorldInterface(ihm_module.InteractionHandlerManager,
         světa, resp. jeho rozhraní. Před zpracováním dané interakce je však
         tato podrobena zkouškám ověřujícím její platnost.
         """
-        time.sleep(_SLEEPTIME / 2)
+        time.sleep(_SLEEP_TIME / 2)
         with _LOCK:
             try:
                 # Kontrola interakce
@@ -219,7 +220,7 @@ class WorldInterface(ihm_module.InteractionHandlerManager,
             finally:
                 # Registrace interakce do evidence
                 self.save_interaction(interaction)
-                time.sleep(_SLEEPTIME / 2)
+                time.sleep(_SLEEP_TIME / 2)
 
 
 class WorldInterfaceFactory(ABC):
