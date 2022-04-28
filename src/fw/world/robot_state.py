@@ -14,6 +14,7 @@ Stav robota se stará o umístění robota ve světě, co do jeho:
 import src.fw.world.world as world_module
 import src.fw.world.field as field_module
 import src.fw.robot.robot as robot_module
+import src.fw.gui.visualization as visualization
 
 from src.fw.utils.error import PlatformError
 from src.fw.world.direction import Direction
@@ -57,6 +58,7 @@ class RobotState:
     def direction(self, direction: "Direction"):
         """Vlastnost nastavuje směr, kterým je robot natočen"""
         self._direction = direction
+        visualization.update_robot()
 
     @property
     def field(self) -> "field_module.Field":
@@ -98,6 +100,7 @@ class RobotState:
                 f"umístěn je: {field.robot} @ [{field.x}, {field.y}]", self)
 
         self._field = field
+        visualization.update_robot()
 
 
 class RobotStateError(PlatformError):

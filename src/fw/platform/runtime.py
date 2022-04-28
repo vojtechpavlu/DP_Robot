@@ -180,8 +180,14 @@ class AbstractRuntime(Identifiable, event_module.EventEmitter):
         """Funkce připravující svět a úlohu ke spuštění. V podstatě si z
         dodaných továren nechá příslušné instance vygenerovat.
         """
+        # Lazy import funkce pro upozornění na změnu světa
+        from src.fw.gui.visualization import update_world
+
         # Tvorba světa
         self._world = self.world_factory.build(self.logger)
+
+        # Upozornění grafického rozhraní na změnu světa
+        update_world()
 
         # Dodání reference světa pro přípravu úlohy; aby úloha mohla být
         # provázána se světem a sledovat v něm plnění úkolů této úlohy
@@ -311,6 +317,10 @@ class SingleRobotRuntime(AbstractRuntime):
 
             # Zasazení robota do světa pomocí registrace jeho stavu
             self.world.robot_state_manager.register_robot(self.robot)
+
+            # Upozornění na nového robota
+            from src.fw.gui import visualization
+            visualization.update_robot()
 
             # Vytvoření exekutoru, pomocí kterého bude program robota spuštěn
             executor = RobotProgramExecutor(
