@@ -35,7 +35,7 @@ class Platform:
         - Správce továren běhových prostředí (RuntimeFactoryManager)
     """
 
-    def __init__(self,
+    def __init__(self, assignment_name: str,
                  unit_fact_loaders: "Iterable[ufl_module.UnitFactoryLoader]",
                  program_loaders: "Iterable[program_loader.ProgramLoader]",
                  runtime_loader: "rtf_module.RuntimeFactoryLoader",
@@ -59,6 +59,11 @@ class Platform:
         S těmito správci pak instance této třídy řídí celý proces životního
         cyklu jednotlivých běhových prostředí pro každý program.
         """
+
+        # Uložení názvu zadání
+        self._assignment_name = assignment_name
+
+        # Připravení správců továren
         self._unit_factory_manager = uf_manager_module.UnitFactoryManager(
             unit_fact_loaders)
         self._program_manager = prg_manager_module.ProgramManager(
@@ -76,6 +81,11 @@ class Platform:
         """Funkce, která má být zavolána pokaždé, když je změněno běhové
         prostředí pro potřeby překreslení GUI."""
         self._runtime_change_notification = runtime_change_notification
+
+    @property
+    def assignment_name(self) -> str:
+        """Vlastnost vrací název zadání, které bylo počato k testování."""
+        return self._assignment_name
 
     @property
     def unit_factory_manager(self) -> "uf_manager_module.UnitFactoryManager":
