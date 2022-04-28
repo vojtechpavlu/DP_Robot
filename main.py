@@ -14,6 +14,7 @@ import time
 
 def _build_platform(assignment: str):
     platform = Platform(
+        assignment,
         [DefaultUnitFactoryLoader()],
         [DefaultProgramLoader(assignment)],
         DefaultRuntimeFactoryLoader(assignment),
