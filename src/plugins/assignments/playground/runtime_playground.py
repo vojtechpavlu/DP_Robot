@@ -17,7 +17,8 @@ from src.fw.target.task import VisitAllTask, AddedMarkAtTask, \
     RemovedMarkAtTask, LoggedAnythingInContext, LoggedMessageInContext
 from src.fw.utils.logging.logger import Logger
 from src.fw.world.world import World
-from src.fw.world.world_factory import WorldFactory, OpenSpaceWorldFactory
+from src.fw.world.world_factory import WorldFactory, OpenSpaceWorldFactory, \
+    WallRebuilder
 from src.fw.world.spawner import SpawnerFactory, CoordinatesSpawnerFactory
 from src.fw.target.target import TargetFactory, AlwaysCompletedTargetFactory, \
     Target
@@ -32,14 +33,7 @@ class CustomTargetFactory(TargetFactory):
     def build(self, world: "World",
               logger: "Logger") -> "Target":
         target = Target("CustomTarget", "no desc", world, logger)
-        #target.add_task(VisitAllTask())
-        target.add_task(LoggedMessageInContext(
-            "Hello World!", ignore_casing=True, strip=True))
-        target.add_task(LoggedAnythingInContext())
-        target.add_task(AddedMarkAtTask(1, 1))
-        target.add_task(AddedMarkAtTask(2, 2))
-        target.add_task(RemovedMarkAtTask(1, 1))
-        target.add_task(RemovedMarkAtTask(2, 2))
+        target.add_task(VisitAllTask())
         return target
 
 
@@ -89,8 +83,9 @@ def _get_world_factory() -> "WorldFactory":
     Na hřišti je vždy rozhraní světa 10x10 políček (resp. otevřený prostor
     8x8 cest a tento čtverec obehnaný zdí.
     """
-    return OpenSpaceWorldFactory(7, 7, _get_world_interface_factory(),
-                                 _get_spawner_factory())
+    return WallRebuilder(OpenSpaceWorldFactory(
+        8, 8, _get_world_interface_factory(),_get_spawner_factory()),
+        ((5, 5),))
 
 
 class PlaygroundRuntimeFactory(AbstractRuntimeFactory):
