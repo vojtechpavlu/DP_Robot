@@ -113,14 +113,15 @@ class AlwaysCompletedTargetFactory(TargetFactory):
     za splněný, neboť má tak nastavenu i evaluační funkci vracející za všech
     okolností hodnotu True."""
 
-    def build(self, world: "world_module.World",
-              logger: "logger_module.Logger") -> "Target":
+    def build(
+            self, world: "world_module.World",logger: "logger_module.Logger",
+            name: str = "Always successful target",
+            desc: str = "Úloha, která je automaticky splněna") -> "Target":
         """Funkce odpovědná za vytvoření úlohy, která je automaticky
         považována za splněnou, neboť má jediný úkol, který je de facto
         také automaticky splněn.
         """
-        target = Target("Always successful target",
-                        "Úloha, která je automaticky splněna", world, logger)
+        target = Target(name, desc, world, logger)
         target.add_task(task_module.always_true_task())
         return target
 
