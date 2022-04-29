@@ -47,8 +47,7 @@ _TARGET_DESCRIPTION = ("")  # TODO - Doplnit popisek úlohy
 
 
 class CustomTargetFactory(TargetFactory):
-    def build(self, world: "World",
-              logger: "Logger") -> "Target":
+    def build(self, world: "World", logger: "Logger") -> "Target":
         """Funkce build připraví zcela novou instanci úlohy. V prvním
         kroku je vytvořena prázdná instance úlohy s pouze nutnými
         parametry, v druhém kroku je naplněna požadovanými úkoly a
