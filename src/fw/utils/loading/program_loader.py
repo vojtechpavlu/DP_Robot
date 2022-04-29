@@ -25,35 +25,6 @@ from src.fw.utils.filesystem import assignment
 instance programu robota"""
 _ACCESS_FUN = "get_program"
 
-"""Výchozí identifikátory pluginů, které jsou používány pro vytipování
-pluginů v kontextu programů."""
-_DEFAULT_IDENTIFIERS = [
-
-    # Zdrojové soubory musí mít koncovku '.py'
-    pl_identifier.ExtensionPluginIdentifier(".py"),
-
-    # Zdrojové soubory musí začínat řetězcem 'unit_'
-    pl_identifier.PrefixPluginIdentifier("program_")
-]
-
-"""Výchozí validátory pluginů, které jsou používány pro ověření platnosti
-a správnosti pluginů v kontextu programů."""
-_DEFAULT_VALIDATORS = [
-
-    # Modul musí být syntakticky validní
-    pl_validator.SyntaxValidator(),
-
-    # Modul musí být opatřen neprázdným dokumentačním komentářem
-    pl_validator.ModuleDocstringExistenceValidator(),
-
-    # Modul musí obsahovat funkci s definovaným názvem
-    pl_validator.FunctionExistenceValidator(_ACCESS_FUN),
-
-    # Modul musí obsahovat funkci vracející hodnotu konkrétního typu
-    pl_validator.FunctionReturnValueTypeValidator(
-        _ACCESS_FUN, program_module.AbstractProgram)
-]
-
 
 class ProgramLoader(loader_module.PluginLoader):
     """Instance třídy ProgramLoader jsou odpovědné za dynamické načítání
@@ -99,7 +70,7 @@ class ProgramLoader(loader_module.PluginLoader):
             lambda valid_plugin: valid_plugin.program, self.load()))
 
     @property
-    def not_valid_plugins(self) -> "tuple[ProgramPlugin]":
+    def not_valid_plugins(self) -> "tuple[ClassBasedProgramPlugin]":
         """Vlastnost implementuje protokol předka. Tato funkce vrací ntici
         všech pluginů, které sice prošly identifikací, ale nebyly validní.
 
@@ -107,12 +78,12 @@ class ProgramLoader(loader_module.PluginLoader):
         těmito pluginy v pořádku."""
         invalid_plugins = []
         for path in self.potential_plugins:
-            plugin = ProgramPlugin(path, self, _ACCESS_FUN)
+            plugin = ClassBasedProgramPlugin(path, self, _ACCESS_FUN)
             if not plugin.is_valid_plugin:
                 invalid_plugins.append(plugin)
         return tuple(invalid_plugins)
 
-    def load(self) -> "tuple[ProgramPlugin]":
+    def load(self) -> "tuple[ClassBasedProgramPlugin]":
         """Implementace abstraktní funkce předka, která načte všechny validní
         pluginy a vrátí je v sdružené do ntice.
 
@@ -124,14 +95,14 @@ class ProgramLoader(loader_module.PluginLoader):
         """
         valid_plugins = []
         for potential_plg_path in self.potential_plugins:
-            plugin = ProgramPlugin(potential_plg_path, self, _ACCESS_FUN)
+            plugin = ClassBasedProgramPlugin(
+                potential_plg_path, self, _ACCESS_FUN)
             if plugin.is_valid_plugin:
                 valid_plugins.append(plugin)
-            # TODO - log nevalidního pluginu
         return tuple(valid_plugins)
 
 
-class ProgramPlugin(plugin_module.Plugin):
+class ClassBasedProgramPlugin(plugin_module.Plugin):
     """Instance třídy ProgramPlugin sdružují funkcionalitu pro získávání
     referencí na programy získané z dynamického načítání pluginů.
 
@@ -182,7 +153,51 @@ class ProgramPlugin(plugin_module.Plugin):
         return self.get_function(self._access_point_function)()
 
 
-class DefaultProgramLoader(ProgramLoader):
+class FunctionBasedProgramPlugin(plugin_module.Plugin):
+    """Instance třídy FunctionBasedProgramPlugin sdružují funkcionalitu pro
+    získávání referencí na programy získané z dynamického načítání pluginů.
+    """
+
+    def __init__(self, abs_path: str, plugin_loader: "ProgramLoader",
+                 run_fun_name: str, mount_fun_name: str, author_id_attr: str,
+                 author_name_attr: str):
+        """Initor třídy, který je odpovědný za přípravu celé instance.
+
+        Konkrétně přijímá absolutní cestu k souboru modulu, kterým je de facto
+        definován plugin, dále referenci na loader (konkrétně instanci třídy
+        ProgramLoader), který je odpovědný za vytvoření této instance, a
+        název přístupové funkce, která má být zavolána pro získání instance
+        programu.
+        """
+        # Volání předka
+        plugin_module.Plugin.__init__(self, abs_path, plugin_loader)
+
+        # Uložení názvů sledovaných funkcí a atributů
+        self._run_fun_name = run_fun_name
+        self._mount_fun_name = mount_fun_name
+        self._author_id_attr = author_id_attr
+        self._author_name_attr = author_name_attr
+
+    @property
+    def program(self) -> "program_module.ProgramPrototype":
+        """"""
+        if not self.has_function(self._run_fun_name):
+            raise plugin_module.PluginError(
+                f"Plugin nemá požadovanou funkci definice programu "
+                f"'{self._run_fun_name}'", self)
+
+        run_fun = self.get_function(self._run_fun_name)
+        mount_fun = None
+        if self.has_function(self._mount_fun_name):
+            mount_fun = self.get_function(self._mount_fun_name)
+        author_id = str(self.get_attribute(self._author_id_attr))
+        author_name = str(self.get_attribute(self._author_name_attr))
+
+        return program_module.ProgramPrototype(
+            author_id, author_name, self.absolute_path, run_fun, mount_fun)
+
+
+class DefaultClassBasedProgramLoader(ProgramLoader):
     """Třída rozšiřuje svého předka nastavením defaultních hodnot. Tyto jsou
     specifikovány v horní části tohoto modulu.
 
@@ -192,7 +207,37 @@ class DefaultProgramLoader(ProgramLoader):
     Předpokladem je, že programy jsou uloženy v adresáři všech zadání.
     Výchozí cesta je tedy (relativně vůči kořeni projektu) následující:
 
-    'src/plugins/assignments/[název zadání]'"""
+    'src/plugins/assignments/[název zadání]'
+    """
+
+    """Výchozí identifikátory pluginů, které jsou používány pro vytipování
+    pluginů v kontextu programů."""
+    _DEFAULT_IDENTIFIERS = [
+
+        # Zdrojové soubory musí mít koncovku '.py'
+        pl_identifier.ExtensionPluginIdentifier(".py"),
+
+        # Zdrojové soubory musí začínat řetězcem 'unit_'
+        pl_identifier.PrefixPluginIdentifier("program_")
+    ]
+
+    """Výchozí validátory pluginů, které jsou používány pro ověření platnosti
+    a správnosti pluginů v kontextu programů."""
+    _DEFAULT_VALIDATORS = [
+
+        # Modul musí být syntakticky validní
+        pl_validator.SyntaxValidator(),
+
+        # Modul musí být opatřen neprázdným dokumentačním komentářem
+        pl_validator.ModuleDocstringExistenceValidator(),
+
+        # Modul musí obsahovat funkci s definovaným názvem
+        pl_validator.FunctionExistenceValidator(_ACCESS_FUN),
+
+        # Modul musí obsahovat funkci vracející hodnotu konkrétního typu
+        pl_validator.FunctionReturnValueTypeValidator(
+            _ACCESS_FUN, program_module.AbstractProgram)
+    ]
 
     def __init__(self, assignment_name: str):
         """Initor třídy, který přijímá název zadání, které je reprezentováno
@@ -200,5 +245,145 @@ class DefaultProgramLoader(ProgramLoader):
 
         Předpokladem je, že všechny programy k otestování jsou v rámci tohoto
         adresáře."""
-        ProgramLoader.__init__(self, assignment(assignment_name),
-                               _DEFAULT_IDENTIFIERS, _DEFAULT_VALIDATORS)
+        ProgramLoader.__init__(
+            self, assignment(assignment_name),
+            DefaultClassBasedProgramLoader._DEFAULT_IDENTIFIERS,
+            DefaultClassBasedProgramLoader._DEFAULT_VALIDATORS)
+
+
+class DefaultFunBasedProgramLoader(ProgramLoader):
+    """Výchozí loader programů, který je odpovědný za zpracování pluginů
+    reprezentovaných modulem, ve kterém je samotný program definován jako
+    funkce."""
+
+    """Název funkce, která obsahuje definici samotného programu robota.
+    Pokud tato funkce není v modulu obsažena, nemůže být toto řešení za 
+    žádných okolností přijato."""
+    _PROGRAM_FUNCTION_NAME = "run"
+
+    """Název funkce, která obsahuje definici osazovací procedury. Tato
+    funkce je volitelná."""
+    _MOUNTING_FUNCTION_NAME = "mount"
+
+    """Specifikace požadovaných personálií, které musí být studentem
+    vyplněny pro jeho identifikaci. Pokud modul tyto neobsahuje, nesmí
+    být připuštěn k testování."""
+    _AUTHOR_ID = "AUTHOR_ID"
+    _AUTHOR_NAME = "AUTHOR_NAME"
+
+    """Výchozí identifikátory pluginů, které jsou používány pro vytipování
+    pluginů v kontextu programů."""
+    _DEFAULT_IDENTIFIERS = [
+
+        # Zdrojové soubory musí mít koncovku '.py'
+        pl_identifier.ExtensionPluginIdentifier(".py"),
+
+        # Zdrojové soubory musí začínat řetězcem 'unit_'
+        pl_identifier.PrefixPluginIdentifier("program_"),
+
+        # Zdrojové soubory musí mít maximálně 100 kB
+        pl_identifier.MaxFilesizePluginIdentifier(102400)
+    ]
+
+    """Výchozí validátory pluginů, které jsou používány pro ověření platnosti
+    a správnosti pluginů v kontextu programů."""
+    _DEFAULT_VALIDATORS = [
+
+        # Modul musí být syntakticky validní
+        pl_validator.SyntaxValidator(),
+
+        # Modul musí být opatřen neprázdným dokumentačním komentářem
+        pl_validator.ModuleDocstringExistenceValidator(),
+
+        # Modul musí obsahovat funkci s definovaným názvem
+        pl_validator.FunctionExistenceValidator(_PROGRAM_FUNCTION_NAME),
+
+        # Modul musí obsahovat atribut reprezentující ID autora
+        pl_validator.HasAttributePluginValidator(_AUTHOR_ID),
+
+        # Modul musí obsahovat atribut reprezentující jméno autora
+        pl_validator.HasAttributePluginValidator(_AUTHOR_NAME),
+
+        # Modul musí obsahovat atribut s ID o délce alespoň 3 znaků
+        pl_validator.CustomAttributePluginValidator(
+            _AUTHOR_ID, lambda v: type(v) == str and len(v) > 3,
+            "Author ID Validator",
+            f"Kontrola, že má modul definováno ID autora pod atributem "
+            f"'{_AUTHOR_ID}' v podobě textového řetězce a o délce alespoň "
+            f"3 znaků."),
+
+        # Modul musí obsahovat atribut se jménem autora
+        pl_validator.CustomAttributePluginValidator(
+            _AUTHOR_NAME, lambda v: type(v) == str and len(v) > 4,
+            "Author Name Validator",
+            f"Kontrola, že má modul definováno jméno autora v atributu "
+            f"'{_AUTHOR_NAME}' o délce alespoň 4 znaků.")
+    ]
+
+    def __init__(self, assignment_name: str):
+        """Initor, který přijímá název zadání a připravuje loader vybavený
+        identifikátory a validátory pro zpracování pluginu programu s definicí
+        programu ve funkci modulu."""
+
+        ProgramLoader.__init__(
+            self, assignment(assignment_name),
+            DefaultFunBasedProgramLoader._DEFAULT_IDENTIFIERS,
+            DefaultFunBasedProgramLoader._DEFAULT_VALIDATORS)
+
+    @property
+    def not_valid_plugins(self) -> "tuple[FunctionBasedProgramPlugin]":
+        """Vlastnost implementuje protokol předka. Tato funkce vrací ntici
+        všech pluginů, které sice prošly identifikací, ale nebyly validní.
+
+        Této vlastnosti lze využít ke zpětnému odhalování, co s nebylo s
+        těmito pluginy v pořádku.
+        """
+        invalid_plugins = []
+
+        # Napříč všemi potenciálně validními pluginy
+        for path in self.potential_plugins:
+
+            # Vytvořit plugin
+            plugin = FunctionBasedProgramPlugin(
+                path, self, self._PROGRAM_FUNCTION_NAME,
+                self._MOUNTING_FUNCTION_NAME, self._AUTHOR_ID,
+                self._AUTHOR_NAME)
+
+            # Pokud není validní
+            if not plugin.is_valid_plugin:
+                invalid_plugins.append(plugin)
+
+        # Vrátit všechny nevalidní pluginy
+        return tuple(invalid_plugins)
+
+    def load(self) -> "tuple[FunctionBasedProgramPlugin]":
+        """Implementace abstraktní funkce předka, která načte všechny validní
+        pluginy a vrátí je v sdružené do ntice.
+
+        V první řadě si vytipuje pomocí identifikátorů všechny potenciální
+        pluginy (vlastnost 'potential_plugins' implementovaná v předkovi) a
+        pro každý vybuduje instanci třídy 'ProgramPlugin'. Pokud je tento
+        stanoven podle všech validátorů za validní, je zařazen do výstupní
+        množiny validních pluginů.
+        """
+        valid_plugins = []
+
+        # Napříč všemi identifikovanými pluginy
+        for potential_plg_path in self.potential_plugins:
+
+            # Vytvoření potenciálně validního pluginu
+            plugin = FunctionBasedProgramPlugin(
+                potential_plg_path, self, self._PROGRAM_FUNCTION_NAME,
+                self._MOUNTING_FUNCTION_NAME, self._AUTHOR_ID,
+                self._AUTHOR_NAME)
+
+            # Ověření, že je plugin validní
+            if plugin.is_valid_plugin:
+                valid_plugins.append(plugin)
+
+        # Vrácení validních pluginů
+        return tuple(valid_plugins)
+
+
+
+

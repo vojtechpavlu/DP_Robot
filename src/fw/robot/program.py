@@ -53,11 +53,17 @@ class AbstractProgram(ABC):
               - narazil na chybu
     """
 
-    def __init__(self, author_name: str):
+    def __init__(self, author_name: str, author_id: str = ""):
         """Jednoduchý initor funkce, který slouží k uchování svých
         potřebných atributů. Jmenovitě jde především o jméno autora programu.
         """
+        self._author_id = author_id
         self._author_name = author_name
+
+    @property
+    def author_id(self) -> str:
+        """Vlastnost vrací identifikátor autora programu."""
+        return self._author_id
 
     @property
     def author_name(self) -> str:
@@ -142,4 +148,52 @@ class ProgramTermination(PlatformError):
     def abort_type(self) -> AbortType:
         """Vlastnost vrací typ, s jakým se program ukončil."""
         return self._abort_type
+
+
+class ProgramPrototype(AbstractProgram):
+    """"""
+
+    def __init__(self, author_id: str, author_name: str, abs_module_path: str,
+                 run_fun: Callable, mounting_fun: Callable = None):
+        """"""
+
+        # Volání initoru předka
+        AbstractProgram.__init__(self, author_name, author_id)
+
+        # Uložení dodaných funkcí
+        self._mounting_fun = mounting_fun
+        self._run_fun = run_fun
+
+        # Uložení abs cesty k souboru, ze kterého je tato instance stvořena
+        self._abs_module_path = abs_module_path
+
+    @property
+    def absolute_path(self) -> str:
+        """Vlastnost vrací absolutní cestu k souboru, který reprezentuje
+        plugin s definicí programu."""
+        return self._abs_module_path
+
+    def mount(self, robot: "robot_module.Robot",
+              available_units: "Iterable[unit_module.AbstractUnit]"):
+        """Tato metoda obsahuje univerzální implementaci, která se stará o:
+
+            - spuštění výchozí osazovací procedury, pokud nebyla jiná
+              (tedy vlastní, studentem vytvořená) dodána, nebo
+            - spuštění vlastní osazovací procedury
+        """
+        # Pokud nebyla dodána vlastní implementace
+        if self._mounting_fun is None:
+
+            # Zavolej osazovací proceduru předka
+            super().mount(robot, available_units)
+
+        else:
+            # Zavolej tuto osazovací funkci
+            self._mounting_fun(robot, available_units)
+
+    def run(self, robot: "robot_module.Robot", log: "Callable"):
+        """Metoda, která se stará o spuštění programu robota."""
+        self._run_fun(robot, log, self.terminate)
+
+
 
