@@ -45,6 +45,10 @@ class LoggerPipeline:
 
     def log(self, *message: str):
         """Samotná funkce, která se postará o zalogování dodané textové zprávy
-        do privátního loggeru."""
+        do privátního loggeru. Přijímá v parametru libovolné množství hodnot,
+        které jsou v těle funkce převedeny na textové řetězce. Lze ji tedy
+        použít například takto:
+            >>> log('3+5=', 3 + 5)
+        """
         self.__logger.log(self._context, " ".join(map(str, message)))
 
