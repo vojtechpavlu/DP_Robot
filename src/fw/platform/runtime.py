@@ -305,10 +305,10 @@ class SingleRobotRuntime(AbstractRuntime):
         # Nastavení programu pro robota
         self.robot.program = self.program
 
-        # Spuštění přípravné procedury pro osazování robota
-        self.program.mount(self.robot, self.units)
-
         try:
+            # Spuštění přípravné procedury pro osazování robota
+            self.program.mount(self.robot, self.units)
+
             # Kontrola osazení
             self.check_mounting(self.robot)
 
