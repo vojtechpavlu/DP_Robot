@@ -15,8 +15,8 @@ mají příslušný požadovaný protokol a lze s nimi bezpečně pracovat.
 from __future__ import annotations
 
 # Import standardních knihoven
-from abc import ABC, abstractmethod
-from typing import Type
+from abc import abstractmethod
+from typing import Type, Callable
 
 # Import lokálních knihoven
 import src.fw.utils.loading.plugin as pl
@@ -181,7 +181,7 @@ class FunctionReturnValueTypeValidator(PluginValidator):
 
     @property
     def num_of_params(self) -> int:
-        """Vlasnost vrací jednoduše počet definovaných vstupních parametrů.
+        """Vlastnost vrací jednoduše počet definovaných vstupních parametrů.
         """
         return len(self.params)
 
@@ -199,14 +199,125 @@ class FunctionReturnValueTypeValidator(PluginValidator):
             else:
                 # Funkce daného názvu není přítomna
                 return False
-        except pl.PluginError as ple:
+        except pl.PluginError:
             return False
-        except Exception as e:
+        except Exception:
             return False
 
-        # TODO - log chybných pluginů
+
+class HasAttributePluginValidator(PluginValidator):
+    """Třída odpovědná za kontrolu programů co do existence atributu. Pokud
+    není atribut daného přítomný, vyhodnotí tento modul jako nevalidní."""
+
+    def __init__(self, attr_name: str):
+        """Initor instancí třídy, který přijímá název požadovaného atributu.
+        Pokud tento není v modulu přítomný, bude vyhodnocen jako nevalidní.
+        """
+
+        # Volání initoru předka
+        PluginValidator.__init__(
+            self, "Has Attribute",
+            "Validátor ověřující, že má plugin reprezentovaný daným souborem "
+            f"požadovaný atribut s názvem '{attr_name}'.")
+
+        # Uložení názvu požadovaného atributu
+        self._attr_name = attr_name
+
+    @property
+    def attribute_name(self) -> str:
+        """Vlastnost vrací název požadovaného atributu. Pokud tento v modulu
+        není, nebude prohlášen za validní."""
+        return self._attr_name
+
+    def is_valid_plugin(self, plugin: "pl.Plugin") -> bool:
+        """Kontrola, že dodaný plugin reprezentovaný modulem obsahuje atribut
+        specifického názvu. Pokud tomu tak není, je vrácena hodnota False."""
+        try:
+            return plugin.has_attribute(self.attribute_name)
+        except pl.PluginError:
+            return False
+        except Exception:
+            return False
 
 
+class CustomAttributePluginValidator(PluginValidator):
+    """Třída reprezentující validátor atributu pomocí dodané funkce. Zde je
+    ověřováno, že nejen, že dodaný modul daný atribut obsahuje, ale také že
+    je tento atribut dle dodané funkce validní."""
+
+    def __init__(
+            self, attr_name: str, validation_function: Callable,
+            validator_name: str="Custom Attribute Check",
+            validator_desc: str="Kontrola, že specifikovaný atribut modulu "
+                                "je dle dodané funkce validní."):
+        """Initor, který přijímá název sledovaného atributu a hodnotící funkci.
+        Předpokladem je, že je tato funkce validní a že vrací hodnotu True či
+        False."""
+
+        # Volání initoru předka
+        PluginValidator.__init__(self, validator_name, validator_desc)
+
+        # Uložení požadovaných hodnot
+        self._attr_name = attr_name
+        self._validation_fun = validation_function
+
+    @property
+    def attr_name(self) -> str:
+        """Název atributu, který má být sledován."""
+        return self._attr_name
+
+    @property
+    def validation_function(self) -> Callable:
+        """Validační funkce, která ověřuje, že atribut má požadovanou podobu.
+        """
+        return self._validation_fun
+
+    def is_valid_plugin(self, plugin: "pl.Plugin") -> bool:
+        """Metoda, která se pokusí vyhledat v modulu reprezentujícím plugin
+        atribut daného názvu. Pokud ho neobsahuje nebo je dle dodané funkce
+        vyhodnocen jako neplatný, je vrácena hodnota False, stejně tak,
+        dojde-li během vyhodnocování k chybě. Jinak vrací True."""
+        try:
+            if plugin.has_attribute(self.attr_name):
+                return self.validation_function(
+                    plugin.get_attribute(self.attr_name))
+            else:
+                return False
+        except pl.PluginError:
+            return False
+        except Exception:
+            return False
 
 
+class RegexAttributePluginValidator(CustomAttributePluginValidator):
+    """Validátor textových řetězců uložených v atributech modulu
+    reprezentujícího plugin. Tento atribut musí být přítomen a musí být
+    typu `str`."""
+
+    def __init__(self, attr_name: str, regex: str):
+        """Initor, který přijímá název sledovaného atributu a regulární
+        výraz, kterým má být text v atributu ověřen."""
+
+        # Volání initoru předka
+        CustomAttributePluginValidator.__init__(
+            self, attr_name, self._regex_check, "Regex Attribute Validator",
+            f"Kontrola, že atribut obsahuje textový řetězec a že ten odpovídá "
+            f"regulárnímu výrazu: '{regex}' (bez uvozovek).")
+
+        # Uložení regulárního výrazu
+        self._regex = regex
+
+    def _regex_check(self, value: str):
+        """Metoda, které bude použito pro kontrolu, že atribut obsahující
+        textový řetězec odpovídá danému regulárnímu výrazu."""
+
+        # Lokální import knihovny re
+        import re
+
+        # Kontrola, že je obsah daného atributu skutečně textový řetězec
+        if type(value) != str:
+            return False
+
+        # Vrácení výsledku
+        return bool(re.match(self._regex, value))
 

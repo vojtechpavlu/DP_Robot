@@ -62,13 +62,15 @@ class PlatformHTMLBuilder(PlatformResultBuilder):
                     <link href='../bootstrap.min.css' rel='stylesheet'>
                 </head>
                 <body>
-                    <h1>Výsledky Platformy</h1>
-                    <p>Výstup vytvořen: {datetime.datetime.now()}<p>
-                    <hr />
-                    {self._summary_table()}
-                    <hr />
-                    {self._plugin_loading()}
-                    <hr />
+                    <div style="margin: auto; width: 95%">
+                        <h1>Výsledky Platformy</h1>
+                        <p>Výstup vytvořen: {datetime.datetime.now()}<p>
+                        <hr />
+                        {self._summary_table()}
+                        <hr />
+                        {self._plugin_loading()}
+                        <hr />
+                    <div>
                 </body>
                 <script></script>
             </html>
@@ -105,7 +107,10 @@ class PlatformHTMLBuilder(PlatformResultBuilder):
 
     def _table_head(self) -> str:
         """"""
-        head = ("<thead>\n<th>Autor</th>\n<th>Plugin</th>")
+        head = ("<thead>"
+                    "<th>ID autora</th>"
+                    "<th>Jméno autora</th>"
+                    "<th>Plugin</th>")
         rf_paths = []
         for rt in self.runtimes:
             if rt.runtime_factory.absolute_path not in rf_paths:
@@ -118,7 +123,10 @@ class PlatformHTMLBuilder(PlatformResultBuilder):
         tbody = "<tbody>"
 
         for program in self.platform.programs:
-            tbody = (f"{tbody}\n<tr>\n<th>{program.author_name}</th>"
+            tbody = (f"{tbody}"
+                     "<tr>"
+                     f"<th>{program.author_id}</th>" 
+                     f"<th>{program.author_name}</th>"
                      f"<td><samp>{program.path}</samp></td>")
             for rt in self.runtimes:
                 if rt.program.absolute_path == program.absolute_path:
@@ -132,13 +140,13 @@ class PlatformHTMLBuilder(PlatformResultBuilder):
         val = runtime.target.evaluate * 100
 
         if val > 90:
-            return f"⭐ ({val} %)"
+            return f"⭐ ({int(val + 0.5)} %)"
         if val > 70:
-            return f"✅ ({val} %)"
+            return f"✅ ({int(val + 0.5)} %)"
         elif val > 20:
-            return f"⛔ ({val} %)"
+            return f"⛔ ({int(val + 0.5)} %)"
         else:
-            return f"🔥 ({val} %)"
+            return f"🔥 ({int(val + 0.5)} %)"
 
     def _plugin_loading(self) -> str:
         """"""

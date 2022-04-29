@@ -7,7 +7,7 @@ uzlem celého systému."""
 
 
 # Import standardních knihoven
-from typing import Iterable
+from typing import Iterable, Callable
 
 # Import lokálních knihoven
 import src.fw.utils.loading.unit_factory_loader as ufl_module
@@ -35,10 +35,11 @@ class Platform:
         - Správce továren běhových prostředí (RuntimeFactoryManager)
     """
 
-    def __init__(self,
+    def __init__(self, assignment_name: str,
                  unit_fact_loaders: "Iterable[ufl_module.UnitFactoryLoader]",
                  program_loaders: "Iterable[program_loader.ProgramLoader]",
-                 runtime_loader: "rtf_module.RuntimeFactoryLoader"):
+                 runtime_loader: "rtf_module.RuntimeFactoryLoader",
+                 runtime_change_notification: "Callable"):
         """Initor třídy, který přijímá loadery jednotlivých funkčních
         bloků.
 
@@ -58,6 +59,11 @@ class Platform:
         S těmito správci pak instance této třídy řídí celý proces životního
         cyklu jednotlivých běhových prostředí pro každý program.
         """
+
+        # Uložení názvu zadání
+        self._assignment_name = assignment_name
+
+        # Připravení správců továren
         self._unit_factory_manager = uf_manager_module.UnitFactoryManager(
             unit_fact_loaders)
         self._program_manager = prg_manager_module.ProgramManager(
@@ -65,7 +71,21 @@ class Platform:
         self._runtime_factory_manager = (
                 rtf_manager_module.RuntimeFactoryManager(runtime_loader))
 
+        # Proměnná pro všechna běhová prostředí, která byla spuštěna
         self._runtimes: "list[runtime_module.AbstractRuntime]" = []
+
+        # Proměnná pro uložení aktuálně běžícího běhového prostředí
+        self._current_runtime: "runtime_module.AbstractRuntime" = None
+        self._current_runtime_index = 0
+
+        """Funkce, která má být zavolána pokaždé, když je změněno běhové
+        prostředí pro potřeby překreslení GUI."""
+        self._runtime_change_notification = runtime_change_notification
+
+    @property
+    def assignment_name(self) -> str:
+        """Vlastnost vrací název zadání, které bylo počato k testování."""
+        return self._assignment_name
 
     @property
     def unit_factory_manager(self) -> "uf_manager_module.UnitFactoryManager":
@@ -115,6 +135,18 @@ class Platform:
         """Vlastnost vrací ntici továren jednotek, které byly dynamicky
         načteny z příslušných pluginů."""
         return self.unit_factory_manager.registered_factories
+
+    @property
+    def current_runtime(self) -> "runtime_module.AbstractRuntime":
+        """Vlastnost vrací aktuálně běžící běhové prostředí. Může být vrácena
+        hodnota 'None', nebylo-li doposud stanoveno či aktuálně žádné neběží.
+        """
+        return self._current_runtime
+
+    @property
+    def current_runtime_index(self) -> int:
+        """Vlastnost vrací pořadí aktuálně běžícího běhového prostředí."""
+        return self._current_runtime_index
 
     def load(self):
         """Vlastnost je odpovědná za načtení všech pluginů. Jmenovitě se stará
@@ -182,6 +214,9 @@ class Platform:
             # Pro každý program
             for program in self.programs:
 
+                # Zvýšení pořadí běhového prostředí
+                self._current_runtime_index += 1
+
                 log("Plugin programu:", program.path)
                 log("Příprava programu autora:", program.author_name)
 
@@ -192,10 +227,15 @@ class Platform:
                 # Registrace běhového prostředí
                 self._runtimes.append(runtime)
 
+                # Nastavení aktuálního běhového prostředí
+                self._current_runtime = runtime
+                self._runtime_change_notification()
+
+                # Záznam o spouštění běhového prostředí
                 log("Spouštím runtime:", type(runtime_factory).__name__)
+
                 # Spuštění běhového prostředí
                 runtime.run()
-            # TODO - evaluace výsledků
 
 
 class PlatformLoadingError(PlatformError):

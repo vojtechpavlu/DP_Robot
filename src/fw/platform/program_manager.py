@@ -57,7 +57,6 @@ class ProgramManager:
         """
         if program not in self.registered_programs:
             self._registered.append(program)
-        # TODO - LOG pokusu o znovupřidání programu
 
     def load(self):
         """Hlavní funkce třídy, která se pokusí načíst všechny programy pomocí
@@ -78,9 +77,9 @@ class ProgramManager:
                 self.register(program)
 
         if self.num_of_registered == 0:
-            # TODO - specifikace výjimky
             raise Exception(
-                f"Žádný loader nebyl schopen načíst žádný program: "
+                f"Žádný loader nebyl schopen načíst žádný program pro "
+                f"stanovené zadání '{self.program_loaders[0].destination}': "
                 f"{self.program_loaders=}")
 
 

@@ -163,6 +163,12 @@ class Markable(ABC):
         """Vlastnost vymaže značku z evidence a vrátí ji."""
         mark = self.mark
         self._mark = None
+
+        # Upozornění na změnu značky
+        from src.fw.gui.visualization import update_marks
+        update_marks()
+
+        # Vrácení nové značky
         return mark
 
     @property
@@ -213,7 +219,14 @@ class Markable(ABC):
 
         # Pokud je vše v pořádku
         else:
+            # Uložení nové značky
             self._mark = new_mark
+
+            # Upozornění na změnu značky
+            from src.fw.gui.visualization import update_marks
+            update_marks()
+
+            # Vrácení nové značky
             return self.mark
 
     @property
