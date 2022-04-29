@@ -104,7 +104,7 @@ class PluginLoader(ABC):
         užšímu výběru (validaci)."""
         not_potential_plugins = []
         for file in deep_list_files(self.destination, False):
-            if not self.is_potential_plugin(file):
+            if not (self.is_potential_plugin(file) or self.is_forbidden(file)):
                 not_potential_plugins.append(file)
         return tuple(not_potential_plugins)
 
@@ -154,7 +154,8 @@ class PluginLoader(ABC):
         identifikátorů, které soubor na dodané cestě prohlásily za neplatný
         roven nule, pak je dodaný soubor potenciálním pluginem.
         """
-        return len(self.violated_identifiers(abs_path)) == 0
+        return (len(self.violated_identifiers(abs_path)) == 0 and
+                not self.is_forbidden(abs_path))
 
     @abstractmethod
     def load(self) -> "tuple[pl.Plugin]":
@@ -162,6 +163,16 @@ class PluginLoader(ABC):
         pluginů a jejich vrácení. Výstupem funkce je tedy ntice všech pluginů,
         obalujících modul k importování, které dle definovaných pravidel v
         rámci množiny identifikátorů se zdají být platnými pluginy."""
+
+    @staticmethod
+    def is_forbidden(abs_path: str) -> bool:
+        """Statická metoda, která vrací hodnotu podle toho, zda-li jde
+        či nejde o zakázaný soubor. Tyto soubory jsou dále v procesu
+        identifikace zcela ignorovány, neboť s nimi nemá smysl ztrácet čas.
+
+        Zakázaným souborem je takový, který má v názvu řetězec '__pycache__'.
+        """
+        return '__pycache__' in abs_path
 
 
 class PluginLoaderError(error.PlatformError):
