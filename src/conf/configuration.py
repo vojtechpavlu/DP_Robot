@@ -16,7 +16,7 @@ Podoba tohoto zadání odpovídá relativní cestě (od kořene projektu):
 
 přičemž se zde stanovuje pouze název adresáře.
 """
-_ASSIGNMENT: str = "assignment_playground"
+_ASSIGNMENT: str = "playground"
 
 
 """Proměnná stanovující dobu, po kterou má trvat krok jedné interakce.
@@ -60,7 +60,12 @@ def unit_factory_loaders() -> tuple:
     from src.fw.utils.loading.unit_factory_loader import (
         DefaultUnitFactoryLoader)
 
-    return (DefaultUnitFactoryLoader(),)
+    # Funkce vrací ntici všech loaderů továren jednotek
+    return (
+
+        # Výchozí loader továren jednotek
+        DefaultUnitFactoryLoader(),
+    )
 
 
 def program_loaders() -> tuple:
@@ -68,9 +73,15 @@ def program_loaders() -> tuple:
     dynamické načítání programů, tedy studentských řešení."""
 
     # Lokální import pro zpřehlednění celého modulu
-    from src.fw.utils.loading.program_loader import DefaultProgramLoader
+    from src.fw.utils.loading.program_loader import (
+        DefaultFunBasedProgramLoader)
 
-    return (DefaultProgramLoader(assignment()),)
+    # Funkce vrací ntici všech loaderů programů
+    return (
+
+        # Výchozí loader programů definovaných funkcí 'run'
+        DefaultFunBasedProgramLoader(assignment()),
+    )
 
 
 def runtime_factory_loaders():
@@ -82,6 +93,7 @@ def runtime_factory_loaders():
     from src.fw.utils.loading.runtime_factory_loader import (
         DefaultRuntimeFactoryLoader)
 
+    # Funkce vrací výchozí loader továren běhových prostředí
     return DefaultRuntimeFactoryLoader(assignment())
 
 
