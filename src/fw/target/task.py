@@ -307,6 +307,22 @@ class EndAtPosition(Task):
             ef_module.RobotIsAtAndHeadingTo(x, y, direction_name))
 
 
+class EndedAtCoords(Task):
+    """Instance této třídy odpovídají za kontrolu, že robot při evaluaci
+    (typicky na konci běhu programu) je zastaven na specifickém políčku.
+    """
+
+    def __init__(self, x: int, y: int):
+        """Initor, který přijímá souřadnice políčka, na kterém se má robot
+        zastavit. Pokud po ukončení robot není na tomto políčku, bude úkol
+        vyhodnocen jako nesplněný."""
+
+        Task.__init__(
+            self, f"Robot se zastavil na souřadnicích [{x}, {y}]",
+            f"Úkol ověřuje, že se robot zastavil na souřadnicích [{x}, {y}] "
+            f"natočen v libovolném směru.", ef_module.IsRobotAt(x, y))
+
+
 class AbortedWith(Task):
     """Instance této třídy odpovídají za kontrolu, že se program robota
     ukončil předčasně a se specifickým způsobem."""
