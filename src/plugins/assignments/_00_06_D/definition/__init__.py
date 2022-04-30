@@ -1,12 +1,7 @@
-"""V této úloze je požadováno, aby program byl schopen zjistit jednotky,
-kterými je osazen. Připravené prostředí tedy připraví robota s osazenými
-jednotkami.
+"""V této úloze je požadováno, aby program byl schopen zjistit, zda nestojí
+před stěnou. Pokud ano, nechť vypíše True, jinak False.
 
-Program musí pomocí své funkce 'log' zaznamenat jejich názvy. Názvy jednotek
-získává program z robota, který si své prostředky uchovává. Všechny názvy
-jednotek lze tedy získat následovně:
-
-    >>> robot.unit_names
+K tomu je robot osazen jednotkou IsWallSensor, která tuto informaci vrací.
 """
 
 
