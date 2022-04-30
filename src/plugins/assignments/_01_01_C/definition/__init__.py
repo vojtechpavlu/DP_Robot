@@ -5,7 +5,7 @@ naboural a rozbil se.
 Proto je robot osazen jednotkami IsWallSensor a ForwardMover.
 
 Kromě toho je dobré, aby program sám rozpoznal, že úkol splnil, a samostatně
-se vypnul. Toho lze docílit hned několika způsoby. Zde jsou zmíněny dva:
+se ukončil. Toho lze docílit hned několika způsoby. Zde jsou zmíněny dva:
 
 
     def run(robot, log, terminate):
