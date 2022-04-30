@@ -447,7 +447,8 @@ class GraphicalInterface:
 
     def _update_marks(self):
         """Funkce odpovědná za delegování odpovědnosti o překreslení značek."""
-        self._world_c.redraw_marks()
+        if self.platform.current_runtime.is_ready:
+            self._world_c.redraw_marks()
 
     def notify_runtime_change(self):
         """Vnější upozornění na změnu v běhovém prostředí. K této funkci lze
