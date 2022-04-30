@@ -130,7 +130,7 @@ class PlatformHTMLBuilder(PlatformResultBuilder):
                      "<tr>"
                      f"<th>{program.author_id}</th>" 
                      f"<th>{program.author_name}</th>"
-                     f"<td><samp>{program.path}</samp></td>")
+                     f"<td><small><samp>{program.path}</samp></small></td>")
             for rt in self.runtimes:
                 if rt.program.absolute_path == program.absolute_path:
                     tbody = f"{tbody}\n<td>{self.evaluate(rt)}</td>"
