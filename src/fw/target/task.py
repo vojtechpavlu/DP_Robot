@@ -99,6 +99,23 @@ class Task(Identifiable, Named, Described):
         """Vlastnost umožňující nastavení evaluační funkce mimo initor."""
         self._eval_fun = new_eval_fun
 
+    @property
+    def evaluation_functions(self) -> "tuple[ef_module.EvaluationFunction]":
+        """Vlastnost vrací ntici evaluačních funkcí. Pokud je evaluační funkce
+        daného úkolu spojením více evaluačních funkcí, pak je vrácena tato
+        množina."""
+
+        # Uložení do proměnné pro upozornění IDE že jde skutečně o správný typ
+        ef = self.evaluation_function
+
+        # Pokud jde o spojení více evaluačních funkcí
+        if isinstance(ef, ef_module.EvaluationFunctionJunction):
+            return ef.evaluation_functions
+
+        # Pokud je evaluační funkce sama za sebe, vrať ji v ntici
+        else:
+            return ef,
+
     def eval(self) -> bool:
         """Metoda umožňující vyhodnocení daného úkolu co do jeho splnění pomocí
         instance vyhodnocovací funkce."""
