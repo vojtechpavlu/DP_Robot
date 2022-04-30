@@ -72,8 +72,7 @@ def run(robot: Robot, log: Callable, terminate: Callable):
                         pokračovat, lze upozornit systém zavoláním této funkce
     """
 
-    log("Robot", robot.name, "Vás zdraví")
-    terminate("Úspěšně jsem splnil všechny své úkoly.", SUCCESS)
+    terminate("ÚSPĚCH", SUCCESS)
 
 
 """Funkce upravující výchozí osazení robota. Její uvedení je typicky 

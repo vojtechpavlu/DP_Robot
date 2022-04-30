@@ -22,7 +22,7 @@ _ASSIGNMENT: str = "playground"
 """Proměnná stanovující dobu, po kterou má trvat krok jedné interakce.
 Pomocí tohoto drobného čekání je možné zajistit simulaci pohybu robota.
 Tato doba je v sekundách, jejichž počet je stanoven hodnotou typu float."""
-_SLEEP_TIME: float = 0.05
+_SLEEP_TIME: float = 0.1
 
 
 """Proměnná stanovuje, zda-li má či nemá být vybudován HTML výstup."""
