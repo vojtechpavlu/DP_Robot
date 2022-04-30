@@ -351,6 +351,10 @@ class HTMLRuntimeBuilder(RuntimeResultBuilder):
                         <br />
                         <hr />
                         <br />
+                        {self.error_alert()}
+                        <br />
+                        <hr />
+                        <br />
                         {self.about_runtime()}
                         <br />
                         <hr />
@@ -405,6 +409,64 @@ class HTMLRuntimeBuilder(RuntimeResultBuilder):
               </div>
             </div>
             """)
+
+    def error_alert(self):
+        """"""
+
+        from src.fw.robot.program import ProgramTermination, AbortType
+
+        result = "<h2>Chyby a předčasné ukončení programu</h2>"
+
+        if not self.runtime.any_error_occured:
+            return (
+                f"{result}\n<p class='lead'>K žádné chybě nedošlo a program "
+                f"se nakonec ukončil sám.</p>")
+
+        error = self.runtime.error_holder.exception
+
+        if isinstance(error, ProgramTermination):
+            if error.abort_type == AbortType.SUCCESS:
+                return (
+                    f"""
+                    <div class='alert alert-success' role='alert'>
+                        <h4>Program se předčasně ukončil sám</h4>
+                        <p>Program se sám ukončil (způsobem 
+                        '<samp>Success</samp>'), tedy rozpoznal, že svůj úkol
+                        splnil.</p>
+                        <hr />
+                        <p class='mb-0'>'<samp>{error.message}</samp>'</p>
+                    </div>""")
+
+            elif error.abort_type == AbortType.FAILURE:
+                return(
+                    f"""
+                    <div class='alert alert-warning' role='alert'>
+                        <h4>Program se předčasně ukončil sám</h4>
+                        <p>Program se sám ukončil (způsobem 
+                        '<samp>Failure</samp>'), tedy rozpoznal neřešitelnou
+                        situaci.</p>
+                        <hr />
+                        <p class='mb-0'>'<samp>{error.message}</samp>'</p>
+                    </div>""")
+        return (
+                f"""
+                <div class='alert alert-danger' role='alert'>
+                    <h4>Program byl předčasně ukončen z důvodu chyby</h4>
+                    <p>Program byl kvůli chybě předčasně ukončen kvůli chybě
+                    
+                    '<strong><samp>{(
+                    self.runtime.error_holder.exception_type_name
+                    )}</samp></strong>'.</p>
+                    
+                    <br />
+                    
+                    <pre><code>
+                        {self.runtime.error_holder.traceback}
+                    </code><pre>
+                    
+                    <hr />
+                    <p class='mb-0'>'<samp>{error.message}</samp>'</p>
+                </div>""")
 
     def about_runtime(self):
         return (
