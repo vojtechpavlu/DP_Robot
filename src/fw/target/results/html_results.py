@@ -4,6 +4,7 @@
 
 # Import standardních knihoven
 from abc import ABC, abstractmethod
+import datetime
 
 # Import lokálních knihoven
 from src.fw.target.results.result_builder import (
@@ -52,7 +53,6 @@ class PlatformHTMLBuilder(PlatformResultBuilder):
 
     def build(self):
         """"""
-        import datetime
         result = (
             f"""
             <!DOCTYPE html>
@@ -84,6 +84,9 @@ class PlatformHTMLBuilder(PlatformResultBuilder):
 
         with open(platform_file, "w", encoding="utf-8") as f:
             f.write(result.replace("   ", "").replace("  ", ""))
+
+        for runtime in self.runtimes:
+            HTMLRuntimeBuilder(runtime, self.dir_name).build()
 
         import webbrowser
         webbrowser.open(f"file://"
@@ -140,29 +143,44 @@ class PlatformHTMLBuilder(PlatformResultBuilder):
         val = runtime.target.evaluate * 100
 
         if val > 90:
-            return f"⭐ ({int(val + 0.5)} %)"
+            return (
+                f"<a href='runtimes/{runtime.hex_id}.html' target='_blank'>"
+                f"⭐ ({int(val + 0.5)} %)</a>")
         if val > 70:
-            return f"✅ ({int(val + 0.5)} %)"
+            return (
+                f"<a href='runtimes/{runtime.hex_id}.html' target='_blank'>"
+                f"✅ ({int(val + 0.5)} %)</a>")
         elif val > 20:
-            return f"⛔ ({int(val + 0.5)} %)"
+            return (
+                f"<a href='runtimes/{runtime.hex_id}.html' target='_blank'>"
+                f"⛔ ({int(val + 0.5)} %)</a>")
         else:
-            return f"🔥 ({int(val + 0.5)} %)"
+            return (
+                f"<a href='runtimes/{runtime.hex_id}.html' target='_blank'>"
+                f"🔥 ({int(val + 0.5)} %)</a>")
 
     def _plugin_loading(self) -> str:
         """"""
         return (
             f"""
+            <br />
             <h2 class='mt-3'>Načítání pluginů</h2>
             <p class="lead">
             V tomto bloku je uveden proces načítání pluginů. Konkrétně
             načítání <strong>továren jednotek</strong>, 
             <strong>továren běhových prostředí</strong> a 
             <strong>programů robotů</strong>.</p>
+            <br />
             {self._uf_plugins_loading()}\n
+            <br />
             {self._rt_plugins_loading()}\n
+            <br />
             {self._p_plugins_loading()}\n
+            <br />
             {self._invalid_plugins()}\n
+            <br />
             {self._not_identified_plugins()}\n
+            <br />
             """)
 
     def _uf_plugins_loading(self) -> str:
@@ -171,7 +189,11 @@ class PlatformHTMLBuilder(PlatformResultBuilder):
         <p class='lead'>Celkem bylo načteno {len(self.unit_factories)} 
         pluginů továrních jednotek, kterými bylo možné robota osadit. 
         Validní pluginy byly tyto:</p>
-        {self._valid_loader_analysis(self.unit_factories_loaders)}""")
+        {self._valid_loader_analysis(self.unit_factories_loaders)}
+        <br/ >
+        <p class='lead'>Pokud zde není uveden plugin, který očekáváte, zkuste
+        se podívat do nevalidních a neidentifikovanách pluginů.</p>
+        """)
 
     def _rt_plugins_loading(self) -> str:
         """"""
@@ -179,7 +201,10 @@ class PlatformHTMLBuilder(PlatformResultBuilder):
         <p class='lead'>Celkem bylo načteno 
         {len(self.runtime_factory_loader.runtime_factories)} továren běhových
         prostředí, ve kterých byla ověřována správnost programů robotů.
-        {self._valid_loader_analysis(tuple([self.runtime_factory_loader]))}""")
+        {self._valid_loader_analysis(tuple([self.runtime_factory_loader]))}
+        <br/ >
+        <p class='lead'>Pokud zde není uveden plugin, který očekáváte, zkuste
+        se podívat do nevalidních a neidentifikovanách pluginů.</p>""")
 
     def _p_plugins_loading(self) -> str:
         """"""
@@ -187,7 +212,10 @@ class PlatformHTMLBuilder(PlatformResultBuilder):
         <p class='lead'>Celkem bylo načteno {sum(tuple(map(
             lambda pl: len(pl.programs), self.program_loaders)))} pluginů 
         programů. Validní pluginy programů byly tyto:</p>
-        {self._valid_loader_analysis(self.program_loaders)}""")
+        {self._valid_loader_analysis(self.program_loaders)}
+        <br/ >
+        <p class='lead'>Pokud zde není uveden plugin, který očekáváte, zkuste
+        se podívat do nevalidních a neidentifikovanách pluginů.</p>""")
 
     def _invalid_plugins(self) -> str:
         """"""
@@ -265,7 +293,7 @@ class PlatformHTMLBuilder(PlatformResultBuilder):
         for plugin_loader in plugin_loaders:
             for plugin in plugin_loader.not_identified_plugins:
                 plugin_results.append(
-                    f"<li class='list-group-item list-group-item-warning'>"
+                    "<li class='list-group-item list-group-item-warning mt-1'>"
                     f"<strong>{type(plugin_loader).__name__}"
                     f"</strong>: <samp>{plugin}</samp>"
                     f"""{PlatformHTMLBuilder._reason_for_not_identification(
@@ -291,4 +319,181 @@ class PlatformHTMLBuilder(PlatformResultBuilder):
             result = f"{result}\n{name}"
         return f"{result}</ul>"
 
+class HTMLRuntimeBuilder(RuntimeResultBuilder):
+
+    def __init__(self, runtime: runtime_module.AbstractRuntime,
+                 dirname: str):
+        RuntimeResultBuilder.__init__(self, runtime)
+
+        self._dirname = dirname
+
+    @property
+    def dirname(self) -> str:
+        """"""
+        return self._dirname
+
+    def build(self):
+        result = (
+            f"""
+            <!DOCTYPE html>
+            <html>
+                <head>
+                    <title>Výsledky programu {self.runtime_id}</title>
+                    <link href='../../bootstrap.min.css' rel='stylesheet'>
+                </head>
+                <body>
+                    <div style="margin: auto; width: 95%">
+                        <h1>Výsledky běhového prostředí</h1>
+                        <i>Výstup vytvořen: {datetime.datetime.now()}</i>
+                        <hr />
+                        <br />
+                        {self.about_program()}
+                        <br />
+                        <hr />
+                        <br />
+                        {self.about_runtime()}
+                        <br />
+                        <hr />
+                        <br />
+                        {self.target_fulfillment()}
+                        <br />
+                        <hr />
+                        <br />
+                        {self.logs()}
+                    <div>
+                </body>
+                <script></script>
+            </html>"""
+        )
+
+        folder = fs.join_paths(self.dirname, "runtimes")
+        rt_file = fs.join_paths(folder, f"{self.runtime_id}.html")
+
+        if not fs.exists(folder):
+            import os
+            os.makedirs(fs.join_paths(self.dirname, "runtimes"))
+
+        with open(rt_file, "w", encoding="utf-8") as f:
+            f.write(result.replace("   ", "").replace("  ", ""))
+
+    def about_program(self):
+
+        program = self.runtime.program
+
+        return (
+
+            f"""
+            <div class="card bg-light text-dark mb-3">
+              <div class="card-header">
+                O programu
+              </div>
+              <div class="card-body">
+                <h3 class="card-title">
+                <b>{self.program.author_id} - {self.author_name}</b></h3>
+                <p class="card-text">
+                    <strong>Umístění pluginu: </strong>
+                    <samp>{program.path}</samp>
+                    <br />
+                    <strong>Jméno robota: </strong> 
+                    <samp>{self.robots[0].name}</samp>
+                </p>
+                <div class='card-footer'>
+                    <small class="text-muted">Úspěšnost 
+                    {(int(self.runtime.target.evaluate * 100 + 0.5))} %.\t 
+                    <a href="#target-results">Více</a></small>
+                </div>
+              </div>
+            </div>
+            """)
+
+    def about_runtime(self):
+        return (
+            f"""
+            <h2>O běhovém prostředí <i>{self.runtime.target.name}</i></h2>
+            <i>ID běhového prostředí: {self.runtime_id}</i>
+            <hr />
+            <p class='lead'>{self.runtime.target.description}</p>
+            <br />
+            <h3>Dostupné jednotky</h3>
+            {self.available_units()}
+            """)
+
+    def available_units(self):
+        units = self.runtime.units
+        result = (
+            f"<p class='lead'>Zde jsou uvedeny jednotky, kterými bylo možné "
+            f"robota osadit.</p>"
+            f"<br />"
+            f"<div class='row'>")
+        for unit in units:
+            result = f"{result}\n{self.describe_unit(unit)}"
+        return f"{result}</div>"
+
+    def describe_unit(self, unit):
+
+        was_mounted = unit.name in self.runtime.robots[0].unit_names
+
+        was_mounted_text = ""
+
+        if was_mounted:
+            was_mounted_text = "<i>Robot byl touto jednotkou osazen</i>"
+        else:
+            was_mounted_text = "<i>Robot byl touto jednotkou osazen nebyl</i>"
+
+        return (
+            f"""
+            <div class='col-md-4'>
+                <div class="card bg-light mb-3">
+                  <div class="card-header">
+                    {'Aktuátor' if unit.is_actuator else 'Senzor'}
+                  </div>
+                  <div class="card-body">
+                    <h4 class="card-title">{unit.name}</h5>
+                    <p class="card-text lean">{unit.description}</p>
+                    <p class="card-text">
+                        <small class="text-muted">{was_mounted_text}</small>
+                    </p>
+                  </div>
+                </div>
+            </div>
+            """)
+
+    def target_fulfillment(self):
+        """"""
+        target = self.runtime.target
+
+        result = (
+            f"<h2 id='target-results'>Úloha '<samp>{target.name}</samp>' "
+            f"a její výsledky</h2>\n<i>{target.description}</i>"
+            f"<br />"
+            f"<ul>")
+
+        for task in target.tasks:
+            task_result = (
+                f"<li>{'✅' if task.eval() else '❌'} <b>{task.name}</b> "
+                f"<i>({task.description})</i><ul>")
+            for ef in task.evaluation_functions:
+                task_result = (
+                    f"{task_result}<li>{'✅' if ef.eval() else '❌'} {ef.name}"
+                    f"</li>")
+            result = f"{result}\n{task_result}</ul><br />"
+        return f"{result}</ul>"
+
+    def logs(self):
+
+        result = (
+            "<h2>Záznamy</h2>"
+            "<p class='lead'>Zde jsou uvedené záznamy spjaté s tímto během</p>"
+            "<br />"
+            "<samp><ul style='list-style-type: none'>")
+
+        for o in self.logger.outputs:
+            if o.has_memo and o.takes_all:
+                for log in o.remember:
+                    result = (
+                        f"{result}<li>[{log.time[0:8]}]"
+                        f"[{log.context}]: {log.message}</li>")
+                break
+
+        return f"{result}</ul><samp>"
 
