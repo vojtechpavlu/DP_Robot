@@ -71,28 +71,19 @@ def run(robot: Robot, log: Callable, terminate: Callable):
                         svým programem dojde do stavu, kdy již nemá smysl
                         pokračovat, lze upozornit systém zavoláním této funkce
     """
-
-    log("Robot", robot.name, "Vás zdraví")
-    terminate("Úspěšně jsem splnil všechny své úkoly.", SUCCESS)
-
-
-"""Funkce upravující výchozí osazení robota. Její uvedení je typicky 
-volitelné. Pokud ji chcete upravit, odstraňte její zakomentování."""
-# def mount(robot: "Robot", available_units: "tuple[AbstractUnit]"):
-#     """Funkce pro osazení robota. Tato přijímá robota, který má být osazen,
-#     a sadu jednotek, kterými je robota možné osadit. Aktuální tělo funkce
-#     odpovídá výchozímu procesu osazování."""
-#     for unit in available_units:
-#         robot.mount(unit)
+    find_another_if_wall(robot, terminate)
+    find_another_if_wall(robot, terminate)
+    find_another_if_wall(robot, terminate)
 
 
 # *****************************************************************************
 # ------------------------- Definice podprogramů ------------------------------
 
 
-"""Zde je prostor pro definici vlastních funkcí, pomocí kterých lze hlavní 
-program strukturovat. Zde by měly být uvedeny funkce rozpadající celou
-funkcionalitu na menší a často opakované bloky."""
-
-# def auxiliary_function(log: Callable):
-#     log('Hello World!')
+def find_another_if_wall(robot: Robot, terminate: Callable):
+    """Funkce, která otočí robota, je-li před ním stěna."""
+    if robot.get_unit("IsWallSensor").scan():
+        robot.get_unit("TurnLeft").execute()
+        return
+    robot.get_unit("ForwardMover").execute()
+    terminate("Našel jsem směr a posunul se!", SUCCESS)
