@@ -193,6 +193,9 @@ class AbstractRuntime(Identifiable, event_module.EventEmitter):
         # provázána se světem a sledovat v něm plnění úkolů této úlohy
         self._target = self.target_factory.build(self._world, self.logger)
 
+        # Nastavení reference na běhové prostředí úloze pro potřeby testování
+        self._target.runtime = self
+
         # Vytvoření a vyhození události, že běhové prostředí bylo připraveno
         self.notify_all_event_handlers(
             runtime_events.RuntimePreparedEvent(self))

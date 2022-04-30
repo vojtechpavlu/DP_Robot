@@ -307,6 +307,22 @@ class EndAtPosition(Task):
             ef_module.RobotIsAtAndHeadingTo(x, y, direction_name))
 
 
+class AbortedWith(Task):
+    """Instance této třídy odpovídají za kontrolu, že se program robota
+    ukončil předčasně a se specifickým způsobem."""
+
+    def __init__(self, abort_type: str):
+        """Initor, který přijímá název typu předčasného ukončení (viz výčtový
+        typ 'AbortType'). Tento název nerozlišuje velká a malá písmena, je
+        automaticky převeden na kapitálky."""
+        Task.__init__(
+            self,
+            f"Předčasné ukončení programu způsobem '{abort_type.upper()}'",
+            f"Úkol, který ověřuje, že se program předčasně ukončil způsobem "
+            f"'{abort_type.upper()}'.",
+            ef_module.ProgramTerminatedWith(abort_type))
+
+
 def always_true_task() -> "Task":
     """Funkce vrací instanci úkolu, který je vykonstruován tak, že je vždy
     za všech okolností pravdivý, tedy splněný."""

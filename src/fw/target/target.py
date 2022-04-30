@@ -6,16 +6,21 @@ evaluaci, vedle toho i abstraktní třída TargetFactory, která je odpovědná 
 tvorbu a přípravu takových instancí.
 """
 
+# Prevence cyklických importů
+from __future__ import annotations
+
 # Import standardních knihoven
 from abc import ABC, abstractmethod
 
 # Import lokálních knihoven
 from src.fw.utils.described import Described
+from src.fw.utils.error import PlatformError
 from src.fw.utils.named import Named
 
 import src.fw.target.task as task_module
 import src.fw.world.world as world_module
 import src.fw.utils.logging.logger as logger_module
+import src.fw.platform.runtime as runtime_module
 
 
 class Target(Named, Described):
@@ -44,6 +49,10 @@ class Target(Named, Described):
         """Reference na svět, který má za úkol daná úloha sledovat. Díky tomu
         je schopná úloha kontrolovat naplnění svého cíle testování."""
         self._world = world
+
+        """Reference na běhové prostředí, které může vydávat své vlastní
+        události."""
+        self._runtime: runtime_module.AbstractRuntime = None
 
         """Příprava seznamu, který bude použit pro ukládání úkolů ke splnění.
         V úvodní fázi životního cyklu je pochopitelně tento seznam defaultně
@@ -80,6 +89,26 @@ class Target(Named, Described):
         for task in self.tasks:
             all_summed += task.numeric_evaluation
         return all_summed / len(self.tasks)
+
+    @property
+    def runtime(self) -> runtime_module.AbstractRuntime:
+        """Vlastnost vrací nastavené běhové prostředí."""
+        return self._runtime
+
+    @runtime.setter
+    def runtime(self, new_runtime: runtime_module.AbstractRuntime):
+        """Setter pro běhové prostředí. Pokud je již nastaveno, je vyhozena
+        výjimka, stejně jako pokud se pokusí uložit hodnotu None."""
+
+        if new_runtime is None:
+            raise TargetError(
+                "Nově nastavovaná hodnota běhového prostředí nesmí být None",
+                self)
+        elif self.runtime is not None:
+            raise TargetError(
+                "Běhové prostředí nelze přenastavovat", self)
+        else:
+            self._runtime = new_runtime
 
     def add_task(self, task: "task_module.Task"):
         """Metoda přidává úkol ke splnění do této úlohy."""
@@ -125,5 +154,11 @@ class AlwaysCompletedTargetFactory(TargetFactory):
         target.add_task(task_module.always_true_task())
         return target
 
+
+class TargetError(PlatformError):
+    """"""
+    def __init__(self, message: str, target: Target):
+        PlatformError.__init__(self, message)
+        self.target = target
 
 
