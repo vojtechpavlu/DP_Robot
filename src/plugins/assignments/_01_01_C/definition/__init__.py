@@ -2,7 +2,7 @@
 před stěnou. Pokud-že před stěnou stojí, posunout se naopak nesmí, protože by
 naboural a rozbil se.
 
-Proto je robot osazen jednotkami IsWallSensor a ForwardMover.
+Proto je robot osazen jednotkami IsWallSensor, ForwardMover a LeftTurner.
 
 Kromě toho je dobré, aby program sám rozpoznal, že úkol splnil, a samostatně
 se ukončil. Toho lze docílit hned několika způsoby. Zde jsou zmíněny dva:
