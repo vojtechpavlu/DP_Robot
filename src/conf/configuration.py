@@ -16,13 +16,13 @@ Podoba tohoto zadání odpovídá relativní cestě (od kořene projektu):
 
 přičemž se zde stanovuje pouze název adresáře.
 """
-_ASSIGNMENT: str = "playground"
+_ASSIGNMENT: str = "_09_00_P"
 
 
 """Proměnná stanovující dobu, po kterou má trvat krok jedné interakce.
 Pomocí tohoto drobného čekání je možné zajistit simulaci pohybu robota.
 Tato doba je v sekundách, jejichž počet je stanoven hodnotou typu float."""
-_SLEEP_TIME: float = 0.1
+_SLEEP_TIME: float = 0.07
 
 
 """Proměnná stanovuje, zda-li má či nemá být vybudován HTML výstup."""
