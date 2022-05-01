@@ -1158,3 +1158,59 @@ class RobotIsAtAndHeadingTo(Conjunction):
         self.add_eval_func(IsRobotAt(self._x, self._y))
         self.add_eval_func(
             IsRobotTurnedTo(self._x, self._y, self._direction.name))
+
+
+class ProgramTerminatedWith(EvaluationFunction):
+    """Instance této třídy jsou schopny zařadit terminaci programů mezi
+    sledované úkoly. Z dodaného způsobu předčasného ukončení programu lze
+    ověřovat, zda vůbec a za jakých podmínek se program ukončil."""
+
+    def __init__(self, abort_type: str):
+        """Initor, který přijímá název způsobu předčasného ukončení programu.
+        Ten nemusí být v kapitálkách, je automaticky převáděn."""
+        EvaluationFunction.__init__(
+            self, f"Program se ukončil způsobem '{abort_type.upper()}'")
+        self._abort_type = abort_type.upper()
+
+    @property
+    def abort_type(self) -> str:
+        """Očekávaný způsob ukončení programu."""
+        return self._abort_type
+
+    def eval(self) -> bool:
+        """Vyhodnocení, zda bylo běhové prostředí ukončeno očekávaným
+        způsobem."""
+
+        # Získání reference na běhové prostředí
+        runtime = self.task.target.runtime
+
+        # Pokud během exekuce programu došlo k předčasnému ukončení
+        if runtime.any_error_occured:
+
+            # Lokální import pro zpřehlednění
+            from src.fw.robot.program import ProgramTermination
+            error = runtime.error_holder.exception
+
+            # Pokud je chyba typu ProgramTermination
+            if isinstance(error, ProgramTermination):
+
+                # a způsob terminace je stejný, jako očekávaný
+                if error.abort_type.name.upper() == self.abort_type:
+                    return True
+
+        # Za jiných okolností False
+        return False
+
+    def configure(self):
+        """V tomto případě je konfigurace zbytečná."""
+        pass
+
+    def update(self, emitter: "EventEmitter", event: "Event"):
+        """V tomto případě je update zbytečný."""
+
+
+
+
+
+
+

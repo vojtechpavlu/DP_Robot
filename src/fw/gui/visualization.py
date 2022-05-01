@@ -306,19 +306,23 @@ class RuntimeVisualization(Component):
         id_label = tk.Label(self.frame, text="ID autora:")
         name_label = tk.Label(self.frame, text="Jméno autora:")
         status_label = tk.Label(self.frame, text="Status:")
+        program_label = tk.Label(self.frame, text="Program:")
 
         # Definice konkrétních hodnot
         self._current_id = tk.Label(self.frame, text=_NOT_AVAILABLE)
         self._a_name = tk.Label(self.frame, text=_NOT_AVAILABLE)
         self._a_status = tk.Label(self.frame, text=_NOT_AVAILABLE)
+        self._a_program = tk.Label(self.frame, text=_NOT_AVAILABLE)
 
         # Přidání do tabulky
         id_label.grid(row=0, sticky="W")
         name_label.grid(row=1, sticky="W")
         status_label.grid(row=2, sticky="W")
+        program_label.grid(row=3, sticky="W")
         self._current_id.grid(row=0, column=1, sticky="E")
         self._a_name.grid(row=1, column=1, sticky="E")
         self._a_status.grid(row=2, column=1, sticky="E")
+        self._a_program.grid(row=3, column=1, sticky="E")
 
         # Celkový počet běhových prostředí, která mají být platformou spuštěna
         self._num_of_rts = 0
@@ -340,6 +344,8 @@ class RuntimeVisualization(Component):
         self._current_id.configure(text=author_id)
         self._a_name.configure(text=author_name)
         self._a_status.configure(text=f"{index}/{self._num_of_rts}")
+        self._a_program.configure(
+            text=self.gui.platform.current_runtime.program.path)
 
 
 class GraphicalInterface:
@@ -441,7 +447,8 @@ class GraphicalInterface:
 
     def _update_marks(self):
         """Funkce odpovědná za delegování odpovědnosti o překreslení značek."""
-        self._world_c.redraw_marks()
+        if self.platform.current_runtime.is_ready:
+            self._world_c.redraw_marks()
 
     def notify_runtime_change(self):
         """Vnější upozornění na změnu v běhovém prostředí. K této funkci lze

@@ -82,8 +82,13 @@ class RuntimeFactoryManager:
             self.register(runtime_factory)
 
         if self.num_of_registered == 0:
+            message = ""
+            for inv in self.loader.not_valid_plugins:
+                message = (f"{message}\n\t- {inv.module_path}: "
+                           f"{inv.violated_validators}")
             raise RuntimeFactoryManagerError(
-                "Nebyla načtena jediná továrna běhových prostředí.", self)
+                f"Nebyla načtena jediná továrna běhových prostředí. "
+                f"Nevalidní pluginy: {message}", self)
 
 
 class RuntimeFactoryManagerError(PlatformError):

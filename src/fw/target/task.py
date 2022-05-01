@@ -5,8 +5,7 @@ tedy jaký má mít protokol.
 """
 
 # Import standardních knihoven
-from collections import Callable
-from typing import Iterable
+from typing import Iterable, Callable
 
 
 # Import lokálních knihoven
@@ -98,6 +97,23 @@ class Task(Identifiable, Named, Described):
                             new_eval_fun: "ef_module.EvaluationFunction"):
         """Vlastnost umožňující nastavení evaluační funkce mimo initor."""
         self._eval_fun = new_eval_fun
+
+    @property
+    def evaluation_functions(self) -> "tuple[ef_module.EvaluationFunction]":
+        """Vlastnost vrací ntici evaluačních funkcí. Pokud je evaluační funkce
+        daného úkolu spojením více evaluačních funkcí, pak je vrácena tato
+        množina."""
+
+        # Uložení do proměnné pro upozornění IDE že jde skutečně o správný typ
+        ef = self.evaluation_function
+
+        # Pokud jde o spojení více evaluačních funkcí
+        if isinstance(ef, ef_module.EvaluationFunctionJunction):
+            return ef.evaluation_functions
+
+        # Pokud je evaluační funkce sama za sebe, vrať ji v ntici
+        else:
+            return ef,
 
     def eval(self) -> bool:
         """Metoda umožňující vyhodnocení daného úkolu co do jeho splnění pomocí
@@ -288,6 +304,38 @@ class EndAtPosition(Task):
             f"Úkol, který ověřuje, že robot po svém ukončení je na políčku "
             f"na souřadnicích [{x}, {y}] a natočen směrem '{direction_name}'",
             ef_module.RobotIsAtAndHeadingTo(x, y, direction_name))
+
+
+class EndedAtCoords(Task):
+    """Instance této třídy odpovídají za kontrolu, že robot při evaluaci
+    (typicky na konci běhu programu) je zastaven na specifickém políčku.
+    """
+
+    def __init__(self, x: int, y: int):
+        """Initor, který přijímá souřadnice políčka, na kterém se má robot
+        zastavit. Pokud po ukončení robot není na tomto políčku, bude úkol
+        vyhodnocen jako nesplněný."""
+
+        Task.__init__(
+            self, f"Robot se zastavil na souřadnicích [{x}, {y}]",
+            f"Úkol ověřuje, že se robot zastavil na souřadnicích [{x}, {y}] "
+            f"natočen v libovolném směru.", ef_module.IsRobotAt(x, y))
+
+
+class AbortedWith(Task):
+    """Instance této třídy odpovídají za kontrolu, že se program robota
+    ukončil předčasně a se specifickým způsobem."""
+
+    def __init__(self, abort_type: str):
+        """Initor, který přijímá název typu předčasného ukončení (viz výčtový
+        typ 'AbortType'). Tento název nerozlišuje velká a malá písmena, je
+        automaticky převeden na kapitálky."""
+        Task.__init__(
+            self,
+            f"Předčasné ukončení programu způsobem '{abort_type.upper()}'",
+            f"Úkol, který ověřuje, že se program předčasně ukončil způsobem "
+            f"'{abort_type.upper()}'.",
+            ef_module.ProgramTerminatedWith(abort_type))
 
 
 def always_true_task() -> "Task":

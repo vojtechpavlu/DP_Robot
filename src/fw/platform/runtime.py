@@ -88,6 +88,15 @@ class AbstractRuntime(Identifiable, event_module.EventEmitter):
         # Uložení reference na továrnu, která tuto instanci stvořila
         self._runtime_factory = runtime_factory
 
+        # Hodnota kontrolující, že je běhové prostředí připraveno
+        self._is_ready = False
+
+    @property
+    def is_ready(self) -> bool:
+        """Vlastnost vrací hodnotu o tom, zda-li je běhové prostředí
+        připraveno k běhu či nikoliv."""
+        return self._is_ready
+
     @property
     def runtime_factory(self) -> "AbstractRuntimeFactory":
         """Vlastnost vrací referenci na továrnu běhového prostředí, která
@@ -186,12 +195,18 @@ class AbstractRuntime(Identifiable, event_module.EventEmitter):
         # Tvorba světa
         self._world = self.world_factory.build(self.logger)
 
-        # Upozornění grafického rozhraní na změnu světa
-        update_world()
-
         # Dodání reference světa pro přípravu úlohy; aby úloha mohla být
         # provázána se světem a sledovat v něm plnění úkolů této úlohy
         self._target = self.target_factory.build(self._world, self.logger)
+
+        # Nastavení reference na běhové prostředí úloze pro potřeby testování
+        self._target.runtime = self
+
+        # Změna stavu o připravenosti k běhu na True
+        self._is_ready = True
+
+        # Upozornění grafického rozhraní na změnu světa
+        update_world()
 
         # Vytvoření a vyhození události, že běhové prostředí bylo připraveno
         self.notify_all_event_handlers(
@@ -320,7 +335,7 @@ class SingleRobotRuntime(AbstractRuntime):
 
             # Upozornění na nového robota
             from src.fw.gui import visualization
-            visualization.update_robot()
+            visualization.update_world()
 
             # Vytvoření exekutoru, pomocí kterého bude program robota spuštěn
             executor = RobotProgramExecutor(
