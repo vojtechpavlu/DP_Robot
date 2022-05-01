@@ -5,8 +5,7 @@ tedy jaký má mít protokol.
 """
 
 # Import standardních knihoven
-from collections import Callable
-from typing import Iterable
+from typing import Iterable, Callable
 
 
 # Import lokálních knihoven

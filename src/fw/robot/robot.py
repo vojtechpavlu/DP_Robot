@@ -3,8 +3,7 @@ klíčových tříd celého systému."""
 
 # Import standardních knihoven
 from abc import ABC, abstractmethod
-from collections import Callable
-from typing import Iterable
+from typing import Iterable, Callable
 
 # Import lokálních knihoven
 import src.fw.robot.mounting_error as mounting_error_module
